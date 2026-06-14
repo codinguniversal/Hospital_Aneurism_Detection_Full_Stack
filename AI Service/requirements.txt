@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+albumentations==1.4.15
+opencv-python-headless
+timm
+pydicom
+numpy
+scipy
+huggingface_hub
+albucore==0.0.16

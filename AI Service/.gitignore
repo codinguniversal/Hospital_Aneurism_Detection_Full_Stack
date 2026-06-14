@@ -1,0 +1,16 @@
+# Virtual Environments
+venv/
+venv_win/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# Model Weights (Share these via Google Drive instead)
+model_weights/*.pt
+model_weights/*.pth
+
+# Temp & Data Files
+*.zip
+extracted/
+test_patient/
