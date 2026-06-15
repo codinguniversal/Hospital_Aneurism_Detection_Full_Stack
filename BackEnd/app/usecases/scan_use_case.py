@@ -1,6 +1,5 @@
 from app.services.data_layer import NoSQLDataLayer
 from app.services.ai_service import AIService
-from fastapi import Depends
 from app.services.data_layer import get_data_layer
 from app.services.ai_service import get_ai_service
 
@@ -21,8 +20,8 @@ class ScanAnalysisUseCase:
         await self.data_layer.update_scan_results(scan_id, results=analysis_results)
         return analysis_results
 
-def get_manual_scan_analysis_use_case(
-    data_layer: NoSQLDataLayer = Depends(get_data_layer),
-    ai_service: AIService = Depends(get_ai_service)
-) -> ScanAnalysisUseCase:
-    return  ScanAnalysisUseCase(data_layer= data_layer, ai_service= ai_service)
+def get_scan_analysis_use_case() -> ScanAnalysisUseCase:
+    return ScanAnalysisUseCase(
+        data_layer=get_data_layer(), 
+        ai_service=get_ai_service()
+    )

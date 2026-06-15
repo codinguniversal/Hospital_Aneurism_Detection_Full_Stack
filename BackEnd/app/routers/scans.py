@@ -1,22 +1,18 @@
-import httpx
-from fastapi import APIRouter, HTTPException, status, Depends
 from datetime import datetime
+from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.scan_schema import ScanAnalysisRequest
-from app.services.data_layer import get_data_layer, NoSQLDataLayer
-from app.services.ai_service import AIService , get_ai_service
-from BackEnd.app.services.usecases.scan_use_case import ScanAnalysisUseCase, get_manual_scan_analysis_use_case
-
+from app.services.ai_service import  AIServiceError 
+from app.usecases.scan_use_case import ScanAnalysisUseCase, get_scan_analysis_use_case
 
 router = APIRouter(
     prefix="/scans",
     tags = ["AI Scanning"]
 )
 
-
 @router.post("/analyze-manual", status_code= status.HTTP_200_OK)
 async def run_manual_analysis(
     analysis_request : ScanAnalysisRequest,
-    use_case: ScanAnalysisUseCase = Depends(get_manual_scan_analysis_use_case)
+    use_case: ScanAnalysisUseCase = Depends(get_scan_analysis_use_case)
 ):
     """
     endpoint triggered when Run Analysis button in front end table is pressed
@@ -36,4 +32,9 @@ async def run_manual_analysis(
         raise HTTPException(
             status_code= status.HTTP_404_NOT_FOUND,
             detail= str(exc)
+        )
+    except AIServiceError as exc:
+        raise HTTPException(
+            status_code = exc.status_code,
+            detail = str(exc)
         )
