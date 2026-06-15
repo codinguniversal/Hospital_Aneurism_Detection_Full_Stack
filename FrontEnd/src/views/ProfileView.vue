@@ -46,9 +46,9 @@ import {computed} from 'vue'
 import { authStore } from '../store.js'
 
 const professionalEmail = computed(()=>{
-  if(!authStore.userName) return 'user@hospital.org'
+  if(!authStore.userName) return `user@hospital.org`
   const sanitizedName =  authStore.userName.toLowerCase().replace(/\s+/g, '')
-  return 'dr.${sanitizedName}@hospital.org' 
+  return `dr.${sanitizedName}@hospital.org` 
 })
 </script>
 

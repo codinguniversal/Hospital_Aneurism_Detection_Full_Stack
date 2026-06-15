@@ -66,7 +66,7 @@
         <div class="toggle-container">
           <button @click="toggleExpand" class="action-btn btn-outline-green full-width">
             <i class="fa" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            {{ expanded ? 'Show Top ${DEFUALT_VISIBLE_COUNT} Locations Only' : 'View All ${allLocations.length} Locations' }}
+            {{  expanded ? `Show Top ${DEFUALT_VISIBLE_COUNT} Locations Only` : `View All ${allLocations.length} Locations` }}
           </button>
         </div>
       </div>
