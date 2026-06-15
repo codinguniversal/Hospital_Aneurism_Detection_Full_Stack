@@ -24,7 +24,7 @@
 
         <div class="info-group">
           <label>Email Address</label>
-          <div class="info-value">dr.{{ authStore.userName.toLowerCase().replace(/\s+/g, '') || 'user' }}@hospital.org</div>
+          <div class="info-value">dr.{{professionalEmail}}@hospital.org</div>
         </div>
 
         <div class="info-group">
@@ -42,7 +42,14 @@
 </template>
 
 <script setup>
+import {computed} from 'vue'
 import { authStore } from '../store.js'
+
+const professionalEmail = computed(()=>{
+  if(!authStore.userName) return 'user@hospital.org'
+  const sanitizedName =  authStore.userName.toLowerCase().replace(/\s+/g, '')
+  return 'dr.${sanitizedName}@hospital.org' 
+})
 </script>
 
 <style scoped>

@@ -66,7 +66,7 @@
         <div class="toggle-container">
           <button @click="toggleExpand" class="action-btn btn-outline-green full-width">
             <i class="fa" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-            {{ expanded ? 'Show Top 5 Locations Only' : 'View All 13 Locations' }}
+            {{ expanded ? 'Show Top ${DEFUALT_VISIBLE_COUNT} Locations Only' : 'View All ${allLocations.length} Locations' }}
           </button>
         </div>
       </div>
@@ -87,6 +87,7 @@
 import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
+const DEFUALT_VISIBLE_COUNT = 5
 const router = useRouter()
 const route = useRoute()
 
@@ -117,7 +118,7 @@ const displayedLocations = computed(() => {
   if (expanded.value) {
     return allLocations.value // Return all 13 
   }
-  return allLocations.value.slice(0, 5) // Return only top 5 
+  return allLocations.value.slice(0, DEFUALT_VISIBLE_COUNT) // Return only top 5 
 })
 
 const toggleExpand = () => {
