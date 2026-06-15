@@ -19,6 +19,9 @@ async def run_timeframe_scan_analysis():
 
     for scan in pending_scans:
         scan_id = scan.get("id")
+        if not scan_id or not isinstance(scan_id, str):
+            logger.warning("Encountered pending scan with a missing or invalid ID format.")
+            continue
         try:
             await use_case.execute(scan_id= scan_id)
         except Exception as exc:
