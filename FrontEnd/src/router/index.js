@@ -1,29 +1,48 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { authStore } from '../store.js'
+
 import LoginView from '../views/LoginView.vue'
-import RegisterView from '../views/RegisterView.vue'
+import AdminView from '../views/AdminView.vue'
+import ManageUsersView from '../views/ManageUsersView.vue'
 import RecordsView from '../views/RecordsView.vue'
 import ProfileView from '../views/ProfileView.vue'
-import ResultsView from '../views/ResultsView.vue' 
+import ResultsView from '../views/ResultsView.vue'
+import ExplainView from '../views/ExplainView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: '/login' },
+    { path: '/', redirect: () => authStore.role === 'admin' ? '/admin' : '/login' },
     { path: '/login', name: 'login', component: LoginView },
-    { path: '/register', name: 'register', component: RegisterView },
-    { path: '/records', name: 'records', component: RecordsView, meta: {requiresAuth: true} },
-    { path: '/profile', name: 'profile', component: ProfileView, meta: {requiresAuth: true} },
-  
-    { path: '/results/:id', name: 'results', component: ResultsView, meta: {requiresAuth: true} } 
+    
+    // Admin Realm
+    { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAuth: true, role: 'admin' } },
+    { path: '/manage', name: 'manage', component: ManageUsersView, meta: { requiresAuth: true, role: 'admin' } },
+
+    // Doctor Realm
+    { path: '/records', name: 'records', component: RecordsView, meta: { requiresAuth: true, role: 'doctor' } },
+    { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true, role: 'doctor' } },
+    { path: '/results/:id', name: 'results', component: ResultsView, meta: { requiresAuth: true, role: 'doctor' } },
+    { path: '/explain/:id', name: 'explain', component: ExplainView, meta: { requiresAuth: true, role: 'doctor' } }
   ]
 })
-router.beforeEach((to, from, next)=>{
-  if (to.meta.requiresAuth && !authStore.isAuthenticated){
+
+// The Bouncer
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next("/login")
-  }else {
+  } 
+  else if (to.meta.requiresAuth && to.meta.role !== authStore.role) {
+    // Kicks users out of each other's pages
+    next(authStore.role === 'admin' ? '/admin' : '/records')
+  } 
+  else if (to.path === '/login' && authStore.isAuthenticated) {
+    // Stops logged-in users from seeing the login screen
+    next(authStore.role === 'admin' ? '/admin' : '/records')
+  } 
+  else {
     next()
   }
-}
-)
+})
+
 export default router

@@ -2,15 +2,18 @@ import { reactive } from 'vue'
 
 export const authStore = reactive({
   isAuthenticated: false,
-  userName: '',
+  employeeId: '',
+  role: '', 
   
-  login(name) {
+  login(identifier, role) {
     this.isAuthenticated = true
-    this.userName = name
+    this.role = role
+    this.employeeId = identifier
   },
   
   logout() {
     this.isAuthenticated = false
-    this.userName = ''
+    this.employeeId = ''
+    this.role = ''
   }
 })
