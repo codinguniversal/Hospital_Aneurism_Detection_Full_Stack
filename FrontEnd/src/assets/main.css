@@ -1,5 +1,38 @@
 @import './base.css';
 
+:root {
+  --color-primary: #0aa159;
+  --color-dark: #2c3e50;
+  --color-grey: #7f8c8d;
+  --border-radius: 8px;
+}
+
+.card-container { 
+  background: #ffffff; 
+  border-radius: 12px; 
+  padding: 30px; 
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
+}
+.card-container.wide { max-width: 1000px; width: 100%; }
+
+.form-control { 
+  width: 100%; 
+  padding: 12px; 
+  border: 1px solid #dcdde1; 
+  border-radius: var(--border-radius); 
+  outline: none; 
+}
+
+.action-btn {
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+.btn-green { background-color: var(--color-primary); color: white; }
+.btn-grey { background-color: #cbd5e1; color: var(--color-dark); }
+
 #app {
   max-width: 1280px;
   margin: 0 auto;

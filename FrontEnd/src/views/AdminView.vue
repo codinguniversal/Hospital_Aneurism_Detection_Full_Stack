@@ -69,7 +69,6 @@ const saveSettings = () => { alert(`AI runs from ${startHour.value}:00 to ${endH
 
 <style scoped>
 .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 1000px; }
-.card-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
 .page-header { border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; margin-bottom: 20px; }
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 8px; }

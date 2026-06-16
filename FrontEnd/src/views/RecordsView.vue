@@ -77,13 +77,7 @@ const goToPatient = (patientId) => {
 
 <style scoped>
 /* LIGHT THEME CARD STYLES */
-.card-container {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-  width: 100%;
-}
+.card-container {width: 100%;}
 
 .card-container.wide { max-width: 1100px; }
 
@@ -93,7 +87,6 @@ const goToPatient = (patientId) => {
 
 /* CLEAN TABLE STYLES */
 .table-responsive { width: 100%; overflow-x: auto; }
-.clean-table { width: 100%; border-collapse: collapse; text-align: left; }
 .clean-table th { padding: 15px; background-color: #f8f9fa; color: #5c6bc0; font-weight: 700; font-size: 14px; text-transform: uppercase; border-bottom: 2px solid #e9ecef; }
 .clean-table td { padding: 15px; border-bottom: 1px solid #e9ecef; vertical-align: middle; color: #34495e; }
 .clean-table tbody tr:hover { background-color: #f8f9fa; }

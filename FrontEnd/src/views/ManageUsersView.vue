@@ -45,9 +45,8 @@ const deleteUser = (id) => {
 </script>
 
 <style scoped>
-.card-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); width: 1000px; }
+.card-container { width: 1000px; }
 .page-header { border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; margin-bottom: 20px; }
-.clean-table { width: 100%; border-collapse: collapse; text-align: left; }
 .clean-table th { padding: 15px; background-color: #f8f9fa; color: #5c6bc0; font-weight: 700; font-size: 14px; text-transform: uppercase; border-bottom: 2px solid #e9ecef; }
 .clean-table td { padding: 15px; border-bottom: 1px solid #e9ecef; vertical-align: middle; color: #34495e; }
 .badge { background: #e8f5e9; color: #43a047; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }

@@ -43,7 +43,7 @@ import { authStore } from '../store.js'
 </script>
 
 <style scoped>
-.card-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); width: 100%; max-width: 800px; }
+.card-container { width: 100%; max-width: 800px; }
 .page-header { margin-bottom: 25px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
 .page-header h1 { color: #2c3e50; font-size: 28px; margin-bottom: 5px; }
 .page-header p { color: #7f8c8d; font-size: 15px; }

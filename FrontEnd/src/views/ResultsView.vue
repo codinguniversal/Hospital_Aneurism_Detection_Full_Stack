@@ -120,7 +120,7 @@ const getRiskClass = (prob) => {
 </script>
 
 <style scoped>
-.card-container { background: #ffffff; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); width: 100%; }
+.card-container { width: 100%; }
 .card-container.wide { max-width: 1200px; }
 .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
 .header-actions { display: flex; gap: 10px; }
@@ -136,7 +136,7 @@ const getRiskClass = (prob) => {
 .dashboard-main { background: #ffffff; border: 1px solid #e9ecef; border-radius: 10px; padding: 20px; }
 .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .results-header h3 { color: #2c3e50; font-size: 18px; display: flex; align-items: center; gap: 8px; }
-.clean-table { width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 15px; }
+.clean-table { margin-bottom: 15px; }
 .clean-table th { padding: 12px 15px; background-color: #f8f9fa; color: #5c6bc0; font-weight: 700; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #e9ecef; }
 .clean-table td { padding: 12px 15px; border-bottom: 1px solid #e9ecef; vertical-align: middle; color: #34495e; font-size: 14px; }
 .clean-table tbody tr:hover { background-color: #f8f9fa; }
