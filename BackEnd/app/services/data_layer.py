@@ -1,4 +1,7 @@
 # mock data layer service for development
+from typing import Any, Dict, Optional
+
+
 class NoSQLDataLayer:
     def __init__(self):
         self._scans_collection = {
@@ -24,7 +27,24 @@ class NoSQLDataLayer:
                 "results": {"total_probability": 0.02, "urgency_label": "Low"}
             }
         }
-
+        self._users_collection = {
+            "admin@hospital.org": {
+                "employeeId": "ADMIN-01",
+                "email": "admin@hospital.org",
+                "password": "admin123",
+                "role": "admin",
+                "mock_token": "mock-secure-jwt-token-xyz"
+            },
+            "123456": {
+                "employeeId": "123456",
+                "email": "dr.ahmed@hospital.org",
+                "password": "doctor123",
+                "role": "doctor",
+                "mock_token": "mock-secure-jwt-token-abc"
+            }
+        }
+    async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:
+        return self._users_collection.get(identifier)
     async def get_scan_binary_data(self, scan_id: str)-> bytes | None:
         scan = self._scans_collection.get(scan_id)
         return scan["binary_data"] if scan else None
