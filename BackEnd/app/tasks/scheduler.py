@@ -1,42 +1,44 @@
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import logging
 from datetime import datetime
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from app.dependencies import get_patient_repository, get_scan_analysis_use_case
 from app.config import settings
-from app.services.data_layer import get_data_layer
+from app.services.mock_data_layer import get_data_layer
 from app.services.ai_service import get_ai_service
-from BackEnd.app.usecases.scan_analysis_use_case import ScanAnalysisUseCase 
+from app.usecases.scan_analysis_use_case import ScanAnalysisUseCase 
+from app.repositories.mock_patient_repository import MockPatientRepository
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()
 
 async def run_timeframe_scan_analysis():
     """called when within the timeframe"""
-    data_layer = get_data_layer()
-    ai_service = get_ai_service()
-    use_case = ScanAnalysisUseCase(data_layer= data_layer, ai_service= ai_service)
+    patient_repo = get_patient_repository()
+    scan_analysis_use_case = get_scan_analysis_use_case()
 
-    pending_scans = await data_layer.get_all_pending_scans()
+    try:
+        pending_scans = await patient_repo.get_all_pending_scans()
+    except Exception as exc:
+        logger.error(f"Failed to fetch pending scans from repository: {exc}")
+        return
 
     for scan in pending_scans:
-        scan_id = scan.get("id")
-        if not scan_id or not isinstance(scan_id, str):
-            logger.warning("Encountered pending scan with a missing or invalid ID format.")
-            continue
         try:
-            await use_case.execute(scan_id= scan_id)
+            await scan_analysis_use_case.execute(scan_id=scan.id)
         except Exception as exc:
-            logger.error(f"Failed processing automatic scan {scan_id}: {exc}")
+            logger.error(f"Failed processing automatic scan {scan.id}: {exc}")
             continue
+
 def start_apscheduler():
     """defines the time frame for the scan execution
     using cron rules: minute hour dayOfTheMonth month dayOfTheWeek
     """
-
     scheduler.add_job(
         run_timeframe_scan_analysis,
-        trigger = "cron",
-        hour = f"{settings.automatic_scan_start_hour}-{settings.automatic_scan_end_hour}",
-        minute = "0",
-        id = "aneurysm_idle_batch_job"
+        trigger="cron",
+        hour=f"{settings.automatic_scan_start_hour}-{settings.automatic_scan_end_hour}",
+        minute="0",
+        id="aneurysm_idle_batch_job"
     )
     scheduler.start()

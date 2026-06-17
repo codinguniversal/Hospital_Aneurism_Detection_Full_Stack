@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from app.routers import scans
+from BackEnd.app.routers import scans_route
 from app.tasks.scheduler import start_apscheduler
 
 @asynccontextmanager
@@ -17,6 +17,6 @@ app = FastAPI(
     lifespan = lifespan
     )
 
-app.include_router(scans.router)
+app.include_router(scans_route.router)
 
 

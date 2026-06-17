@@ -1,13 +1,27 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from app.domain.entities import ScanEntity, UserEntity
+from app.domain.entities import ScanEntity, UserEntity, PatientEntity
 
 class UserRepository(ABC):
     @abstractmethod
     async def get_by_identifer(self, identifer:str) -> Optional[UserEntity]:
         """fetch complete userEntity or return None"""
         pass
+    @abstractmethod
+    async def add_user(self, user: UserEntity)-> None:
+        """Persist a new user in the data layer"""
+        pass
 class PatientRepository(ABC):
+    # Patient Functiosn
+    @abstractmethod
+    async def get_all_patients(self) ->List[PatientEntity]:
+        """returns all patients"""
+        pass
+    @abstractmethod
+    async def get_patient_by_id(self, patiend_id : str)-> Optional[PatientEntity]:
+        """Fetch details of a specific paitient and their nested scans and if analyzed their results"""
+        pass
+    # Scan Functions
     @abstractmethod
     async def get_scan_binary_data(self, scan_id: str)-> bytes | None:
         """returns the dicom images  or None"""
