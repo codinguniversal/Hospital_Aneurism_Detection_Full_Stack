@@ -1,0 +1,6 @@
+$kind: http-request
+name: Get Patient by ID
+method: GET
+url: '{{baseUrl}}/patients/{{patient_id}}'
+order: 2000
+description: "Retrieve a specific patient's details including their scans. Returns 404 if not found."

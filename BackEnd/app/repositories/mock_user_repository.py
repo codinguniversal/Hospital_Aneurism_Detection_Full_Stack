@@ -2,7 +2,7 @@ from typing import Optional
 
 from app.domain.entities import UserEntity
 from app.domain.repositories import UserRepository
-from BackEnd.app.services.mock_data_layer import NoSQLDataLayer
+from app.services.mock_data_layer import NoSQLDataLayer
 
 
 class MockUserRepository(UserRepository):

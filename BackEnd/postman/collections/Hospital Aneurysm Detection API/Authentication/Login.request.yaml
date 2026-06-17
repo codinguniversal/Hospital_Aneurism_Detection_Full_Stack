@@ -1,0 +1,17 @@
+$kind: http-request
+name: Login
+method: POST
+url: '{{baseUrl}}/auth/login'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "loginIdentifier": "user@example.com",
+      "password": "password123",
+      "isAdmin": false
+    }
+description: 'Authenticate a user. Returns employee_id, email, and role on success. Returns 401 on invalid credentials.'

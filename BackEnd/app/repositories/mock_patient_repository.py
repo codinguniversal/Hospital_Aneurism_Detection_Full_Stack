@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from app.domain.entities import PatientEntity, ScanEntity
 from app.domain.repositories import PatientRepository
-from BackEnd.app.services.mock_data_layer import  NoSQLDataLayer
+from app.services.mock_data_layer import  NoSQLDataLayer
 
 class MockPatientRepository(PatientRepository):
     def __init__(self, data_layer: NoSQLDataLayer):

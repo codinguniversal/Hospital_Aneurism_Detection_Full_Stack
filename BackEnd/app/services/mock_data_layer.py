@@ -11,6 +11,8 @@ class NoSQLDataLayer:
                 "scans": [
                     {
                         "id": "scan_001",
+                        "patient_id": "pat_001",
+                        "scan_date": "2026-06-17",
                         "status": "Pending",
                         "binary_data": b"mock-dicom-bytes-for-alice",
                         "results": None
@@ -23,6 +25,8 @@ class NoSQLDataLayer:
                 "scans": [
                     {
                         "id": "scan_002",
+                        "patient_id": "pat_002",
+                        "scan_date": "2026-06-17",
                         "status": "Pending",
                         "binary_data": b"mock-dicom-bytes-for-bob",
                         "results": None
@@ -30,12 +34,19 @@ class NoSQLDataLayer:
                 ]
             }
         }
+
         self._users_collection = {
             "admin@hospital.org": {
                 "employeeId": "ADMIN-01",
                 "email": "admin@hospital.org",
                 "password": "admin123",
                 "role": "admin"
+            },
+            "user@example.com": {
+                "employeeId": "USER-01",
+                "email": "user@example.com",
+                "password": "password123",
+                "role": "Doctor"
             }
         }
     async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:

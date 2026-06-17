@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from BackEnd.app.routers import scans_route
+from app.routers import scans_route, auth_route, patient_route
 from app.tasks.scheduler import start_apscheduler
 
 @asynccontextmanager
@@ -18,5 +18,7 @@ app = FastAPI(
     )
 
 app.include_router(scans_route.router)
+app.include_router(auth_route.router)
+app.include_router(patient_route.router)
 
 

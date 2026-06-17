@@ -1,0 +1,17 @@
+$kind: http-request
+name: Analyze Scan
+method: POST
+url: '{{baseUrl}}/api/scans/{{scan_id}}/analyze'
+order: 1000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "patient_name": "John Doe",
+      "patient_id": "patient-001",
+      "scan_id": "scan-001"
+    }
+description: 'Trigger AI analysis for a specific scan. Returns status, patient_name, scan_id, analysis_timestamp, and result. Returns 404 if scan not found, 500+ on AI service error.'

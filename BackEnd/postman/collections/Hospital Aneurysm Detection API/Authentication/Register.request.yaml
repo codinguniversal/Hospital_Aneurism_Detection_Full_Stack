@@ -1,0 +1,18 @@
+$kind: http-request
+name: Register
+method: POST
+url: '{{baseUrl}}/auth/register'
+order: 2000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "johndoe",
+      "email": "johndoe@example.com",
+      "password": "securepassword",
+      "gender": "male"
+    }
+description: 'Register a new user. Returns 201 on success, 400 on validation error.'

@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     ai_timeout_limit: int = 60
     automatic_scan_start_hour:  int = 8
     automatic_scan_end_hour: int = 17
-    automatic_scan_interval = 60
+    automatic_scan_interval: int  = 60
     class Config:
         env_file = ".env"
 
