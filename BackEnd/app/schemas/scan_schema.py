@@ -1,18 +1,18 @@
 from datetime import datetime
-from typing import Any
+from typing import Dict, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
-class ScanAnalysisRequest(BaseModel):
-    patient_name: str
-    patient_id: str
-    scan_id: str
+class ScanCreateSchema(BaseModel):
+    id: str
+    img_file_path: str  # Frontend tells API where the raw zip/DICOM file was saved on E:
 
-class ScanAnalysisResponse(BaseModel):
-    model_config = ConfigDict(from_attributes= True)
-
+class ScanResponseSchema(BaseModel):
+    id: str
+    scan_date: datetime
     status: str
-    patient_name: str
-    scan_id: str
-    analysis_timestamp: datetime
-    result: Any
+    img_file_path: str
+    results: Optional[Dict] = None
+
+    class Config:
+        from_attributes = True

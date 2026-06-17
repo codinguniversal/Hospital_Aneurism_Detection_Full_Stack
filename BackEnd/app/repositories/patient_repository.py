@@ -12,7 +12,6 @@ class PatientRepository:
         """Convert a Scan Domain Entity into a MongoDB dict"""
         return {
             "id": scan.id,
-            "patient_id": scan.patient_id,
             "scan_date": scan.scan_date,
             "status": scan.status,
             "img_file_path": scan.img_file_path,
@@ -37,7 +36,6 @@ class PatientRepository:
             scans_entities.append(
                 ScanEntity(
                     id=s["id"],
-                    patient_id=s["patient_id"],
                     scan_date=s["scan_date"],
                     status=s["status"],
                     img_file_path=s["img_file_path"],
