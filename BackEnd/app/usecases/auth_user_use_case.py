@@ -22,5 +22,7 @@ class AuthenticateUserUseCase:
 
 def get_user_repository(data_layer: NoSQLDataLayer = Depends(get_data_layer))-> UserRepository:
     return MockUserRepository(data_layer)
-def get_authenticate_user_use_case(user_repo: UserRepository = Depends(get_user_repository)) -> AuthenticateUserUseCase:
+def get_authenticate_user_use_case(
+        user_repo: UserRepository = Depends(get_user_repository)
+) -> AuthenticateUserUseCase:
     return AuthenticateUserUseCase(user_repo=user_repo)

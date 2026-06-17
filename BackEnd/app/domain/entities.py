@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel
 
@@ -10,7 +10,13 @@ class UserEntity(BaseModel):
 
 class ScanEntity(BaseModel):
     id: str
-    patient_name: str
+    patient_id: str
+    scan_date: str
     status: str
-    binary_data: str
-    results: Dict
+    binary_data: bytes
+    results: Optional[Dict] = None
+
+class PatientEntity(BaseModel):
+    id: str
+    patient_name: str
+    scans: List[ScanEntity] = []

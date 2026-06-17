@@ -4,7 +4,7 @@ from datetime import datetime
 from app.config import settings
 from app.services.data_layer import get_data_layer
 from app.services.ai_service import get_ai_service
-from app.usecases.scan_use_case import ScanAnalysisUseCase 
+from BackEnd.app.usecases.scan_analysis_use_case import ScanAnalysisUseCase 
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()

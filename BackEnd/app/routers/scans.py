@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.scan_schema import ScanAnalysisRequest
 from app.services.ai_service import  AIServiceError 
-from app.usecases.scan_use_case import ScanAnalysisUseCase, get_scan_analysis_use_case
+from BackEnd.app.usecases.scan_analysis_use_case import ScanAnalysisUseCase, get_scan_analysis_use_case
 
 router = APIRouter(
     prefix="/scans",
