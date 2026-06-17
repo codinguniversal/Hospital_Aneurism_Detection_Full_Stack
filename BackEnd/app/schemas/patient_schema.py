@@ -1,8 +1,20 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional, List
 
-from pydantic import BaseModel,ConfigDict
+from pydantic import BaseModel,ConfigDict,Field
 
+
+from app.schemas.scan_schema import ScanResponseSchema
+
+
+
+
+class PatientCreateSchema(BaseModel):
+    id: str
+    patient_name: str
+    birth_date: str
+    assigned_doc: str
+    medical_history: List[str] = Field(default_factory=list)
 
 
 
@@ -16,6 +28,3 @@ class PatientRecordResponse(BaseModel):
     analyzed: bool
     timestamp: Optional[datetime] = None
     urgency: Optional[str] = None
-class PatientRecordsListResponse(BaseModel):
-    model_config = ConfigDict(from_attributes= True)
-    records: List[PatientRecordResponse]
