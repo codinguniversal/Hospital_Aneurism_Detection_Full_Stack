@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.schemas.auth_schema import LoginRequest, RegisterRequest
+
+from app.domain.entities import UserEntity
+from app.schemas.auth_schema import LoginRequest, UserResponse, RegisterRequest
 
 from app.usecases.auth_user_use_case import AuthenticateUserUseCase
 from app.usecases.register_user_use_case import RegisterUserUseCase
@@ -8,7 +10,7 @@ from app.dependencies import get_authenticate_user_use_case, get_register_user_u
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/login")
+@router.post("/login" ,response_model= UserResponse, status_code= status.HTTP_200_OK)
 async def login(
     login_request: LoginRequest,
     use_case: AuthenticateUserUseCase = Depends(get_authenticate_user_use_case)
@@ -24,7 +26,7 @@ async def login(
         )
     return user
 
-@router.post("/register", status_code= status.HTTP_201_CREATED)
+@router.post("/register", response_model= UserResponse,status_code= status.HTTP_201_CREATED)
 async def Register(
     register_request : RegisterRequest,
     use_case: RegisterUserUseCase = Depends(get_register_user_use_case)

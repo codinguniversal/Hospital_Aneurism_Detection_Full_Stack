@@ -17,6 +17,10 @@ class PatientRepository(ABC):
     async def get_all_patients(self) ->List[PatientEntity]:
         """returns all patients"""
         pass
+    @abstractmethod
+    async def get_patient_by_id(self, patiend_id : str)-> Optional[PatientEntity]:
+        """Fetch details of a specific paitient and their nested scans and if analyzed their results"""
+        pass
     # Scan Functions
     @abstractmethod
     async def get_scan_binary_data(self, scan_id: str)-> bytes | None:

@@ -10,17 +10,18 @@ from app.usecases.get_patient_records_use_case import GetPatientRecordsUseCase
 from app.usecases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.usecases.auth_user_use_case import AuthenticateUserUseCase
 from app.usecases.register_user_use_case import RegisterUserUseCase
+from app.usecases.get_patient_results_use_case import GetPatientResultsUseCase
 
 
 def get_patient_repository(data_layer: NoSQLDataLayer = Depends(get_data_layer)) -> PatientRepository:
     return MockPatientRepository(data_layer)
 def get_user_repository(data_layer: NoSQLDataLayer = Depends(get_data_layer))-> UserRepository:
     return MockUserRepository(data_layer)
+
 def get_patient_records_use_case(
     patient_repo: PatientRepository = Depends(get_patient_repository)
 ) -> GetPatientRecordsUseCase:
     return GetPatientRecordsUseCase(patient_repo=patient_repo)
-
 def get_scan_analysis_use_case(
     patient_repo: PatientRepository = Depends(get_patient_repository),
     ai_service: AIService = Depends(get_ai_service)
@@ -34,4 +35,7 @@ def get_register_user_use_case(
         user_repo: UserRepository = Depends(get_user_repository)
 ) -> RegisterUserUseCase:
     return RegisterUserUseCase(user_repo= user_repo)
-    
+def get_patient_results_use_case(
+    patient_repo: PatientRepository = Depends(get_patient_repository)
+) -> GetPatientResultsUseCase:
+    return GetPatientResultsUseCase(patient_repo=patient_repo)

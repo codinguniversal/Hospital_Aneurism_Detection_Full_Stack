@@ -1,8 +1,8 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
-from BackEnd.app.schemas.patient_schema import ScanAnalysisRequest
+from app.schemas.scan_schema import ScanAnalysisRequest, ScanAnalysisResponse
 from app.services.ai_service import  AIServiceError 
-from BackEnd.app.usecases.scan_analysis_use_case import ScanAnalysisUseCase
+from app.usecases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.dependencies import get_scan_analysis_use_case
 
 router = APIRouter(
@@ -23,13 +23,13 @@ async def run_manual_analysis(
     try:
         analysis_results = await use_case.execute(analysis_request.scan_id)
 
-        return {
-            "status": "completed",
-            "patient_name": analysis_request.patient_name,
-            "scan_id": analysis_request.scan_id,
-            "analysis_timestamp": datetime.now().isoformat(),
-            "result": analysis_results
-        }
+        return ScanAnalysisResponse(
+            status="completed",
+            patient_name=analysis_request.patient_name,
+            scan_id=analysis_request.scan_id,
+            analysis_timestamp=datetime.now(),
+            result=analysis_results
+        )
     except ValueError as exc:
         raise HTTPException(
             status_code= status.HTTP_404_NOT_FOUND,

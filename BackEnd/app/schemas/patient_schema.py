@@ -1,21 +1,18 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 
 
-class ScanAnalysisRequest(BaseModel):
-    patient_name: str
-    patient_id: str
-    scan_id: str
+
+
 
 class PatientRecordResponse(BaseModel):
+    model_config = ConfigDict(from_attributes= True)
+
     id: str
     name: str
-    imageDate: datetime
+    image_date: datetime
     analyzed: bool
     timestamp: Optional[datetime] = None
     urgency: Optional[str] = None
-
-    class config:
-        from_attributes= True
