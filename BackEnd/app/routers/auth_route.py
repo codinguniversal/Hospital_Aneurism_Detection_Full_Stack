@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.usecases.auth_user_use_case import AuthenticateUserUseCase, get_authenticate_user_use_case
+from app.usecases.auth_user_use_case import AuthenticateUserUseCase
 from app.schemas.auth_schema import LoginRequest
+from app.dependencies import get_authenticate_user_use_case
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 

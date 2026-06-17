@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class UserEntity(BaseModel):
     employee_id: str
@@ -19,4 +19,4 @@ class ScanEntity(BaseModel):
 class PatientEntity(BaseModel):
     id: str
     patient_name: str
-    scans: List[ScanEntity] = []
+    scans: List[ScanEntity] = Field(default_factory=list)

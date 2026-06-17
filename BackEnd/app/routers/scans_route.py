@@ -1,21 +1,23 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.schemas.scan_schema import ScanAnalysisRequest
+from BackEnd.app.schemas.patient_schema import ScanAnalysisRequest
 from app.services.ai_service import  AIServiceError 
-from BackEnd.app.usecases.scan_analysis_use_case import ScanAnalysisUseCase, get_scan_analysis_use_case
+from BackEnd.app.usecases.scan_analysis_use_case import ScanAnalysisUseCase
+from app.dependencies import get_scan_analysis_use_case
 
 router = APIRouter(
-    prefix="/scans",
+    prefix="/api/scans",
     tags = ["AI Scanning"]
 )
 
-@router.post("/analyze-manual", status_code= status.HTTP_200_OK)
+@router.post("/{scan_id}/analyze", status_code= status.HTTP_200_OK)
 async def run_manual_analysis(
+    scan_id: str,
     analysis_request : ScanAnalysisRequest,
     use_case: ScanAnalysisUseCase = Depends(get_scan_analysis_use_case)
 ):
     """
-    endpoint triggered when Run Analysis button in front end table is pressed
+    Endpoint triggered when Run Analysis button in front end table is pressed
     calls backend for the scans, then we call the ai service via network call  for results
     """
     try:

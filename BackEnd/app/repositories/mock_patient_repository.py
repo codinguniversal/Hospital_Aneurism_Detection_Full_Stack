@@ -2,11 +2,16 @@ from typing import List, Optional
 
 from app.domain.entities import PatientEntity, ScanEntity
 from app.domain.repositories import PatientRepository
-from app.services.data_layer import  NoSQLDataLayer
+from BackEnd.app.services.mock_data_layer import  NoSQLDataLayer
 
 class MockPatientRepository(PatientRepository):
     def __init__(self, data_layer: NoSQLDataLayer):
         self.data_layer = data_layer
+    async def get_all_patients(self) -> List[PatientEntity]:
+        return [
+            PatientEntity.model_validate(patient)
+            for patient in self.data_layer._patients_collection.values()
+        ]
     async def get_scan_binary_data(self, scan_id: str) -> Optional[bytes]:
         for patient in self.data_layer._patients_collection.values():
             for scan in patient["scans"]:

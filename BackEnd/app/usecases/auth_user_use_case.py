@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import Depends
 from BackEnd.app.repositories.mock_user_repository import MockUserRepository
-from BackEnd.app.services.data_layer import NoSQLDataLayer, get_data_layer
+from BackEnd.app.services.mock_data_layer import NoSQLDataLayer, get_data_layer
 from app.domain.repositories import UserRepository
 from app.domain.entities import UserEntity
 class AuthenticateUserUseCase:
@@ -20,9 +20,5 @@ class AuthenticateUserUseCase:
         
         return user
 
-def get_user_repository(data_layer: NoSQLDataLayer = Depends(get_data_layer))-> UserRepository:
-    return MockUserRepository(data_layer)
-def get_authenticate_user_use_case(
-        user_repo: UserRepository = Depends(get_user_repository)
-) -> AuthenticateUserUseCase:
-    return AuthenticateUserUseCase(user_repo=user_repo)
+
+
