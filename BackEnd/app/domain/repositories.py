@@ -7,6 +7,10 @@ class UserRepository(ABC):
     async def get_by_identifer(self, identifer:str) -> Optional[UserEntity]:
         """fetch complete userEntity or return None"""
         pass
+    @abstractmethod
+    async def add_user(self, user: UserEntity)-> None:
+        """Persist a new user in the data layer"""
+        pass
 class PatientRepository(ABC):
     # Patient Functiosn
     @abstractmethod
