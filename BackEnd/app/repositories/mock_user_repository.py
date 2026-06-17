@@ -20,3 +20,10 @@ class MockUserRepository(UserRepository):
             password=raw_user["password"],
             role=raw_user["role"]
         )
+    async def add_user(self, user: UserEntity) -> None:
+        self.data_layer._users_collection[user.email] = {
+            "employeeId": user.employee_id,
+            "email": user.email,
+            "password": user.password,
+            "role": user.role
+        }

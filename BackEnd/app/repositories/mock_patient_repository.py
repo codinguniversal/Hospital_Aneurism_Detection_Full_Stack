@@ -43,3 +43,10 @@ class MockPatientRepository(PatientRepository):
                     scan["status"] = "Completed"
                     scan["results"] = results
                     return
+    async def get_patient_by_id(self, patient_id: str) -> Optional[PatientEntity]:
+        patient = self.data_layer._patients_collection.get(patient_id)
+
+        if not patient:
+            return None
+
+        return PatientEntity.model_validate(patient)
