@@ -44,8 +44,8 @@ class LocationPredictions(BaseModel):
 
 
 class AneurysmAnalysisResult(BaseModel):
-    overall: OverAllAneurysmPrediction
-    locations: LocationPredictions
+    overall: Optional[OverAllAneurysmPrediction] = None
+    locations: Optional[LocationPredictions] = None
 
 class ScanEntity(BaseModel):
     id: str
@@ -60,8 +60,13 @@ class ScanEntity(BaseModel):
         Domain Rule calculate the urgency based on
         the AI Overall Results and configurable thresholds
         """
-        if not self.results or not self.results.overall.probability:
-            return  ScanUrgency.UNKOWN.value
+        if (
+            not self.results 
+            or self.results.overall is None 
+            or getattr(self.results.overall, "probability", None) is None
+        ):
+            return ScanUrgency.UNKOWN.value
+        
         probability = self.results.overall.probability
         if probability >= Settings.aneurysm_high_risk_threshold:
             return  ScanUrgency.HIGH.value

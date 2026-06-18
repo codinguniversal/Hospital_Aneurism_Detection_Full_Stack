@@ -1,5 +1,6 @@
-from fastapi import Depends
-from app.domain.repositories import PatientRepository, UserRepository
+from fastapi import Depends, Request
+from app.domain.repositories import PatientRepository, UserRepository 
+from app.repositories.Mongo_patient_repository import PatientRepository as MongoPatientRepository
 from app.repositories.mock_patient_repository import MockPatientRepository
 from app.repositories.mock_user_repository import MockUserRepository
 from app.services.mock_data_layer import NoSQLDataLayer, get_data_layer
@@ -12,12 +13,16 @@ from app.usecases.auth_user_use_case import AuthenticateUserUseCase
 from app.usecases.register_user_use_case import RegisterUserUseCase
 from app.usecases.get_patient_results_use_case import GetPatientResultsUseCase
 
+# --- database session extractor --
+def get_db(request: Request):
+    """Extracts the live MongoDB connection session from FastAPI's request state"""
+    return request.app.state.db
+    
 # --- Repository Factories ---
-
 def get_patient_repository(
-    data_layer: NoSQLDataLayer = Depends(get_data_layer)
+    db = Depends(get_db) # Inject your live MongoDB connection session here
 ) -> PatientRepository:
-    return MockPatientRepository(data_layer=data_layer)
+    return MongoPatientRepository(db=db) # Returns the real repository!
 
 def get_user_repository(
     data_layer: NoSQLDataLayer = Depends(get_data_layer)

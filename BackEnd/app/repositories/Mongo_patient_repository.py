@@ -1,6 +1,6 @@
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from domain.entities import PatientEntity, ScanEntity
+from app.domain.entities import PatientEntity, ScanEntity
 
 class PatientRepository:
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -52,16 +52,13 @@ class PatientRepository:
             scans=scans_entities
         )
     
-    async def save_patient(self,patient:PatientEntity) -> bool:
-        # insert new patient or update existing one
-        document = self._entity_to_document(patient)
-
-        result = await self.collection.replace_one(
-            {'_id':patient.id},
-            document,
-            upsert=True
-        )
-        return result.acknowledged
+    async def get_all_patients(self) -> List[PatientEntity]:
+        """Fetch all patient documents from MongoDB and map them to Domain Entities"""
+        patients_entities = []
+        cursor = self.collection.find({})
+        async for doc in cursor:
+            patients_entities.append(self._document_to_entity(doc))
+        return patients_entities
     
     async def get_patient_by_id(self, patient_id:str) -> Optional[PatientEntity]:
         doc = await self.collection.find_one({"_id" : patient_id})
@@ -69,15 +66,6 @@ class PatientRepository:
             return None
         return self._document_to_entity(doc)
     
-
-    async def add_scan_to_patient(self, patient_id: str, scan: ScanEntity) -> bool:
-        scan_doc = self._scan_to_document(scan)
-        
-        result = await self.collection.update_one(
-            {"_id" : patient_id},
-            {"$push" : {"scans" : scan_doc}}
-        )
-        return result.modified_count > 0
     
     async def update_scan_results(self,patient_id: str, scan_id: str, status: str, ai_results: dict) -> bool:
 

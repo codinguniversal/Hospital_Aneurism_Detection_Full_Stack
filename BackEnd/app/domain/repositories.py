@@ -1,41 +1,36 @@
+# Inside backend/app/domain/repositories.py
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from app.domain.entities import AneurysmAnalysisResult, ScanEntity, UserEntity, PatientEntity
+from app.domain.entities import UserEntity, PatientEntity
 
 class UserRepository(ABC):
     @abstractmethod
-    async def get_by_identifer(self, identifer:str) -> Optional[UserEntity]:
-        """fetch complete userEntity or return None"""
-        pass
-    @abstractmethod
-    async def add_user(self, user: UserEntity)-> None:
-        """Persist a new user in the data layer"""
-        pass
-class PatientRepository(ABC):
-    # Patient Functiosn
-    @abstractmethod
-    async def get_all_patients(self) ->List[PatientEntity]:
-        """returns all patients"""
-        pass
-    @abstractmethod
-    async def get_patient_by_id(self, patiend_id : str)-> Optional[PatientEntity]:
-        """Fetch details of a specific paitient and their nested scans and if analyzed their results"""
-        pass
-    @abstractmethod
-    async def get_by_email(self, email: str) -> Optional[UserEntity]:
-        """Fetch details of a specific patient based on their email"""
-        pass
-    # Scan Functions
-    @abstractmethod
-    async def get_scan_binary_data(self, scan_id: str)-> bytes | None:
-        """returns the dicom images  or None"""
-        pass
-    @abstractmethod
-    async def get_all_pending_scans(self) -> List[ScanEntity]:
-        """returns all scans that haven't been analysed yet"""
-        pass
-    @abstractmethod
-    async def update_scan_results(self, scan_id: str, results: AneurysmAnalysisResult) -> None:
-        """adds results to scan and updates its status"""
+    async def get_by_identifier(self, identifier: str) -> Optional[UserEntity]:
+        """Fetch complete UserEntity by employee_id or return None"""
         pass
 
+    @abstractmethod
+    async def get_by_email(self, email: str) -> Optional[UserEntity]:
+        """Fetch details of a specific staff user based on their login email"""
+        pass
+
+    @abstractmethod
+    async def add_user(self, user: UserEntity) -> None:
+        """Persist a new user (admin/doctor) in the data layer"""
+        pass
+
+class PatientRepository(ABC):
+    @abstractmethod
+    async def get_all_patients(self) -> List[PatientEntity]:
+        """Returns all patients in the hospital system (including pre-existing scans)"""
+        pass
+
+    @abstractmethod
+    async def get_patient_by_id(self, patient_id: str) -> Optional[PatientEntity]:
+        """Fetch details of a specific patient along with their pre-existing scans"""
+        pass
+
+    @abstractmethod
+    async def update_scan_results(self, patient_id: str, scan_id: str, status: str, ai_results: dict) -> bool:
+        """Atomically updates the pre-existing scan state and diagnostic probability values"""
+        pass
