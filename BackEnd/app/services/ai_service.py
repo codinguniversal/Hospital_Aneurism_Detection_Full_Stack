@@ -1,5 +1,12 @@
 import httpx
+from pydantic import BaseModel
+from app.domain.entities import AneurysmAnalysisResult, OverAllAneurysmPrediction, LocationPredictions
 from app.config import settings
+
+class AIResponseDTO(BaseModel):
+    status: str
+    overall_prediction: dict[str, float]
+    detailed_locations: dict[str, float]
 
 class AIServiceError(Exception):
     def __init__(self, message: str, status_code: int = 500):
@@ -7,11 +14,20 @@ class AIServiceError(Exception):
         self.status_code = status_code
 
 class AIService:
-    def __init__(self, client: httpx.AsyncClient, base_url : str = settings.ai_api_url, timeout: int = settings.ai_timeout_limit):
+    def __init__(
+            self,
+            client: httpx.AsyncClient,
+            base_url : str = settings.ai_api_url,
+            timeout: int = settings.ai_timeout_limit
+        ):
         self.client = client
         self.base_url = base_url
         self.timeout = timeout
-    async def request_scan_analysis( self, scan_id: str, binary_data: bytes) -> dict :
+    async def request_scan_analysis(
+            self,
+            scan_id: str,
+            binary_data: bytes
+        ) -> AneurysmAnalysisResult :
         files = {"file": (f"{scan_id}.zip", binary_data, "application/zip")}
         try:
             response = await self.client.post(
@@ -19,13 +35,32 @@ class AIService:
                 files=files,
                 timeout= self.timeout
             )
-
-            if response.status_code != 200:
+            dto = AIResponseDTO.model_validate(response.json())
+            if response.status_code != 200 or dto.status != "success":
                 raise AIServiceError(
                     message = f"AI engine returned an unexpected error status: {response.status_code}",
                     status_code = 502,
                 )
-            return response.json()
+            return AneurysmAnalysisResult(
+                overall= OverAllAneurysmPrediction(
+                    probability= dto.overall_prediction["Aneurysm Present"]
+                    ),
+                    locations= LocationPredictions(
+                        LeftInfraclinoidInternalCarotidArtery=dto.detailed_locations["Left Infraclinoid Internal Carotid Artery"],
+                        RightInfraclinoidInternalCarotidArtery=dto.detailed_locations["Right Infraclinoid Internal Carotid Artery"],
+                        LeftSupraclinoidInternalCarotidArtery=dto.detailed_locations["Left Supraclinoid Internal Carotid Artery"],
+                        RightSupraclinoidInternalCarotidArtery=dto.detailed_locations["Right Supraclinoid Internal Carotid Artery"],
+                        LeftMiddleCerebralArtery=dto.detailed_locations["Left Middle Cerebral Artery"],
+                        RightMiddleCerebralArtery=dto.detailed_locations["Right Middle Cerebral Artery"],
+                        AnteriorCommunicatingArtery=dto.detailed_locations["Anterior Communicating Artery"],
+                        LeftAnteriorCerebralArtery=dto.detailed_locations["Left Anterior Cerebral Artery"],
+                        RightAnteriorCerebralArtery=dto.detailed_locations["Right Anterior Cerebral Artery"],
+                        LeftPosteriorCommunicatingArtery=dto.detailed_locations["Left Posterior Communicating Artery"],
+                        RightPosteriorCommunicatingArtery=dto.detailed_locations["Right Posterior Communicating Artery"],
+                        BasilarTip=dto.detailed_locations["Basilar Tip"],
+                        OtherPosteriorCirculation=dto.detailed_locations["Other Posterior Circulation"],
+                    )
+            )
         
         except httpx.TimeoutException:
             raise AIServiceError(

@@ -10,4 +10,6 @@ class GetPatientResultsUseCase:
         if not patient_id:
             return None
         patient = await self.patient_repo.get_patient_by_id(patient_id)
+        if not patient:
+            return None
         return patient

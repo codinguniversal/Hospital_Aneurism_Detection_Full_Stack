@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Optional
-from app.domain.entities import ScanEntity, UserEntity, PatientEntity
+from app.domain.entities import AneurysmAnalysisResult, ScanEntity, UserEntity, PatientEntity
 
 class UserRepository(ABC):
     @abstractmethod
@@ -21,6 +21,10 @@ class PatientRepository(ABC):
     async def get_patient_by_id(self, patiend_id : str)-> Optional[PatientEntity]:
         """Fetch details of a specific paitient and their nested scans and if analyzed their results"""
         pass
+    @abstractmethod
+    async def get_by_email(self, email: str) -> Optional[UserEntity]:
+        """Fetch details of a specific patient based on their email"""
+        pass
     # Scan Functions
     @abstractmethod
     async def get_scan_binary_data(self, scan_id: str)-> bytes | None:
@@ -31,7 +35,7 @@ class PatientRepository(ABC):
         """returns all scans that haven't been analysed yet"""
         pass
     @abstractmethod
-    async def update_scan_results(self, scan_id: str, results: dict) -> None:
+    async def update_scan_results(self, scan_id: str, results: AneurysmAnalysisResult) -> None:
         """adds results to scan and updates its status"""
         pass
 

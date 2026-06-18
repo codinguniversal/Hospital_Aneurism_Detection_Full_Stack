@@ -6,7 +6,7 @@ class RegisterUserUseCase:
     def __init__(self, user_repo: UserRepository):
         self.user_repo = user_repo
     async def execute(self, request: RegisterRequest)-> UserEntity:
-        existing_user = await self.user_repo.get_by_identifer(request.username)
+        existing_user = await self.user_repo.get_by_identifer(request.email) #this code needs to be cleaned up, we have email, emp id, and username.
         if existing_user:
             raise ValueError(f"User with identifier: {request.username} already exists in the data layer")
         new_user = UserEntity(

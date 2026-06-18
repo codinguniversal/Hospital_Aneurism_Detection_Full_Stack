@@ -1,3 +1,4 @@
+from app.domain.entities import AneurysmAnalysisResult
 from app.services.ai_service import AIService
 from app.domain.repositories import PatientRepository
 
@@ -7,7 +8,7 @@ class ScanAnalysisUseCase:
         self.patient_repo = patient_repo
         self.ai_service = ai_service
 
-    async def execute(self, scan_id: str) -> dict:
+    async def execute(self, scan_id: str) -> AneurysmAnalysisResult:
         binary_data = await self.patient_repo.get_scan_binary_data(scan_id)
         if not binary_data:
             raise ValueError(f"Scan record with id {scan_id} not found in DB")

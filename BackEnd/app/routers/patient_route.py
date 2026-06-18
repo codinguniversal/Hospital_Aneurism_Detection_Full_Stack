@@ -20,13 +20,13 @@ async def get_records(
             PatientRecordResponse(
                 id=patient.id,
                 name=patient.patient_name,
-                image_date=patient.image_date,
+                image_date=patient.scans[0].scan_date,
                 analyzed=patient.scans[0].status == "Completed",
-                # urgency = 
+                urgency= patient.scans[0].urgency
             )
             for  patient in patients
         ]
-@router.get("/{patiend_id}", response_model= PatientEntity, status_code= status.HTTP_200_OK)
+@router.get("/{patient_id}", response_model= PatientEntity, status_code= status.HTTP_200_OK)
 async def get_patient_results(
     patient_id: str,
     use_case: GetPatientResultsUseCase = Depends(get_patient_results_use_case)
