@@ -1,9 +1,12 @@
 # mock data layer service for development
 from typing import Any, Dict, Optional
+from functools import lru_cache
+
 
 
 class NoSQLDataLayer:
     def __init__(self):
+        print("Initalizing Mock Database...")
         self._patients_collection = {
             "pat_001": {
                 "id": "pat_001",
@@ -51,7 +54,6 @@ class NoSQLDataLayer:
         }
     async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:
         return self._users_collection.get(identifier)
- 
-_db_service = NoSQLDataLayer()
-def get_data_layer():
-    return _db_service
+@lru_cache()
+def get_data_layer()->NoSQLDataLayer:
+    return NoSQLDataLayer()

@@ -27,3 +27,4 @@ class MockUserRepository(UserRepository):
             "password": user.password,
             "role": user.role
         }
+        # print(self.data_layer._users_collection)

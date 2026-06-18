@@ -10,14 +10,35 @@ class UserEntity(BaseModel):
     password: str
     role: str
 
+class AneurysmPrediction(BaseModel):
+    present: float
+
+
+class LocationPredictions(BaseModel):
+    LeftInfraclinoidInternalCarotidArtery: float
+    RightInfraclinoidInternalCarotidArtery: float
+    LeftSupraclinoidInternalCarotidArtery: float
+    RightSupraclinoidInternalCarotidArtery: float
+    LeftMiddleCerebralArtery: float
+    RightMiddleCerebralArtery: float
+    AnteriorCommunicatingArtery: float
+    LeftAnteriorCerebralArtery: float
+    RightAnteriorCerebralArtery: float
+    LeftPosteriorCommunicatingArtery: float
+    RightPosteriorCommunicatingArtery: float
+    BasilarTip: float
+    OtherPosteriorCirculation: float
+
+
+class AneurysmAnalysisResult(BaseModel):
+    overall: AneurysmPrediction
+    locations: LocationPredictions
 
 class ScanEntity(BaseModel):
     id: str
-    patient_id: str
     scan_date: datetime
     status: str 
-    binary_data: bytes
-    results: Optional[Dict] = None
+    results: Optional[AneurysmAnalysisResult] = None
 
 class PatientEntity(BaseModel):
     id: str
@@ -25,8 +46,8 @@ class PatientEntity(BaseModel):
     image_date: datetime
     scans: List[ScanEntity] = Field(default_factory=list)
 
-    def add_scan(self, scan: ScanEntity):
+    def add_scan(self, scan: ScanEntity) -> None:
         """Domain Rule: Ensure duplicate scan IDs aren't allowed"""
-        if any(s.id == scan.id for s in self.scans):
+        if scan.id in {s.id for s in self.scans}:
             raise ValueError("Scan ID already exists for this patient")
         self.scans.append(scan)
