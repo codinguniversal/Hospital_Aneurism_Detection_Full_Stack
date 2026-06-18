@@ -3,12 +3,6 @@ from typing import Optional, List
 
 from pydantic import BaseModel,ConfigDict,Field
 
-
-from app.schemas.scan_schema import ScanResponseSchema
-
-
-
-
 class PatientCreateSchema(BaseModel):
     id: str
     patient_name: str

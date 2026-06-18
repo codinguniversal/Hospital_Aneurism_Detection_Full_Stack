@@ -1,8 +1,5 @@
 from typing import Optional
 
-from fastapi import Depends
-from app.repositories.mock_user_repository import MockUserRepository
-from app.services.mock_data_layer import NoSQLDataLayer, get_data_layer
 from app.domain.repositories import UserRepository
 from app.domain.entities import UserEntity
 class AuthenticateUserUseCase:

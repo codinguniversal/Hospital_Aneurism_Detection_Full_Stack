@@ -1,11 +1,6 @@
-from fastapi import Depends
-
-from app.repositories.mock_patient_repository import MockPatientRepository
-from app.services.mock_data_layer import NoSQLDataLayer
 from app.services.ai_service import AIService
 from app.domain.repositories import PatientRepository
-from app.services.mock_data_layer import get_data_layer
-from app.services.ai_service import get_ai_service
+
 
 class ScanAnalysisUseCase:
     def __init__(self, patient_repo: PatientRepository, ai_service: AIService):

@@ -1,13 +1,9 @@
 import logging
 from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
 from app.dependencies import get_patient_repository, get_scan_analysis_use_case
 from app.config import settings
-from app.services.mock_data_layer import get_data_layer
-from app.services.ai_service import get_ai_service
-from app.usecases.scan_analysis_use_case import ScanAnalysisUseCase 
-from app.repositories.mock_patient_repository import MockPatientRepository
+
 
 logger = logging.getLogger(__name__)
 scheduler = AsyncIOScheduler()

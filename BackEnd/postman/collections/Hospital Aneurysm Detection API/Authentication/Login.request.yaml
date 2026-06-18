@@ -1,11 +1,10 @@
 $kind: http-request
-name: Login
 method: POST
-url: '{{baseUrl}}/auth/login'
+url: "{{baseUrl}}/auth/login"
+examples: .resources/Login.resources/examples
 order: 1000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
@@ -14,4 +13,4 @@ body:
       "password": "password123",
       "isAdmin": false
     }
-description: 'Authenticate a user. Returns employee_id, email, and role on success. Returns 401 on invalid credentials.'
+description: Authenticate a user. Returns employee_id, email, and role on success. Returns 401 on invalid credentials.

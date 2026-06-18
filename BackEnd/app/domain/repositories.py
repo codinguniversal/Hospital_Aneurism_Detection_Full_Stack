@@ -34,3 +34,4 @@ class PatientRepository(ABC):
     async def update_scan_results(self, scan_id: str, results: dict) -> None:
         """adds results to scan and updates its status"""
         pass
+

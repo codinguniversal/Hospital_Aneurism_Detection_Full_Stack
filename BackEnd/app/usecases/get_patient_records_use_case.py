@@ -1,6 +1,5 @@
 from app.domain.repositories import PatientRepository
 from app.domain.entities import PatientEntity
-from app.schemas.patient_schema import PatientRecordResponse
 from typing import List
 
 class GetPatientRecordsUseCase:
