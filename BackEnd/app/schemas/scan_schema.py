@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any 
 
 from pydantic import BaseModel, ConfigDict
+from typing import Optional
 
 from app.domain.entities import AneurysmAnalysisResult
 
@@ -16,7 +17,7 @@ class ScanCreateSchema(BaseModel):
 
 class ScanAnalysisRequest(BaseModel):
     patient_name: str
-    patient_id: str
+    patient_id: Optional[str] = None
     scan_id: str
 
 class ScanAnalysisResponse(BaseModel):

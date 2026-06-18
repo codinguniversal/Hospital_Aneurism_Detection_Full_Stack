@@ -1,13 +1,14 @@
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.domain.entities import PatientEntity, ScanEntity
+from app.domain.repositories import PatientRepository as IPatientRepository
 
-class PatientRepository:
+class MongoPatientRepository(IPatientRepository):
     def __init__(self, db: AsyncIOMotorDatabase):
-        # We pass the database instance (CAD_DB) initialized in main.py
+        # Pass the database instance (CAD_DB) initialized in main.py
         self.collection = db["patients"]
 
-    #Helpers for data translation
+    # Helpers for data translation
     def _scan_to_document(self, scan: ScanEntity) -> dict:
         """Convert a Scan Domain Entity into a MongoDB dict"""
         return {
@@ -60,22 +61,39 @@ class PatientRepository:
             patients_entities.append(self._document_to_entity(doc))
         return patients_entities
     
-    async def get_patient_by_id(self, patient_id:str) -> Optional[PatientEntity]:
-        doc = await self.collection.find_one({"_id" : patient_id})
+    async def get_patient_by_id(self, patient_id: str) -> Optional[PatientEntity]:
+        doc = await self.collection.find_one({"_id": patient_id})
         if not doc:
             return None
         return self._document_to_entity(doc)
-    
-    
-    async def update_scan_results(self,patient_id: str, scan_id: str, status: str, ai_results: dict) -> bool:
 
-        results = await self.collection.update_one(
-            {"_id": patient_id, "scans.id" : scan_id},
+    async def get_scan_file_path(self, scan_id: str) -> Optional[str]:
+        """
+        Locates the scan within the nested array by its unique scan_id 
+        and extracts the storage file path string ('img_file_path').
+        """
+        doc = await self.collection.find_one({"scans.id": scan_id})
+        if not doc:
+            return None
+            
+        for s in doc.get("scans", []):
+            if s.get("id") == scan_id:
+                return s.get("img_file_path")
+                
+        return None
+    
+    async def update_scan_results(self, scan_id: str, results: dict) -> bool:
+        """
+        Atomically updates the target scan record status to 'Completed' 
+        and stores the structural AI output probabilities dictionary.
+        """
+        update_result = await self.collection.update_one(
+            {"scans.id": scan_id},
             {
-                "$set" : {
-                    "scans.$status" : status, # '$' operator tells MongoDb to modify only matching item
-                    "scans.$.results": ai_results
+                "$set": {
+                    "scans.$.status": "Completed", 
+                    "scans.$.results": results
                 }
             }
         )
-        return results.modified_count > 0
+        return update_result.modified_count > 0

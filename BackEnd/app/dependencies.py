@@ -1,6 +1,6 @@
 from fastapi import Depends, Request
 from app.domain.repositories import PatientRepository, UserRepository 
-from app.repositories.Mongo_patient_repository import PatientRepository as MongoPatientRepository
+from app.repositories.Mongo_patient_repository import MongoPatientRepository
 from app.repositories.mock_patient_repository import MockPatientRepository
 from app.repositories.mock_user_repository import MockUserRepository
 from app.services.mock_data_layer import NoSQLDataLayer, get_data_layer

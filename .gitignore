@@ -1,1 +1,33 @@
+# Python virtual environments
 BackEnd/.venv/
+
+# Bytecode cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# IDE/editor settings
+.vscode/
+.idea/
+
+# Local environment files
+.env
+.env.*
+
+# Log files
+*.log
+
+# Database files
+*.sqlite3
+*.db
+*.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db

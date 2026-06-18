@@ -1,42 +1,55 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.schemas.scan_schema import ScanAnalysisRequest, ScanAnalysisResponse
-from app.services.ai_service import  AIServiceError 
+from app.services.ai_service import AIServiceError 
 from app.usecases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.dependencies import get_scan_analysis_use_case
 
 router = APIRouter(
     prefix="/api/scans",
-    tags = ["AI Scanning"]
+    tags=["AI Scanning"]
 )
 
-@router.post("/{scan_id}/analyze", status_code= status.HTTP_200_OK)
+@router.post("/{scan_id}/analyze", response_model=ScanAnalysisResponse, status_code=status.HTTP_200_OK)
 async def run_manual_analysis(
     scan_id: str,
-    analysis_request : ScanAnalysisRequest,
+    analysis_request: ScanAnalysisRequest,
     use_case: ScanAnalysisUseCase = Depends(get_scan_analysis_use_case)
 ):
     """
-    Endpoint triggered when Run Analysis button in front end table is pressed
-    calls backend for the scans, then we call the ai service via network call  for results
+    Endpoint triggered when the Run Analysis button in the frontend table is pressed.
+    Loads the image filepath, reads the binary data from disk, routes it to the AI microservice,
+    and returns the structured payload instantly.
     """
     try:
-        analysis_results = await use_case.execute(analysis_request.scan_id)
+        # Note: Always pass the clean URL string parameter (scan_id) over the request body object
+        # to ensure the path parameter and the body stay completely synchronized.
+        analysis_results = await use_case.execute(scan_id=scan_id)
 
+        # Map back to your frontend validation response schema
         return ScanAnalysisResponse(
             status="completed",
             patient_name=analysis_request.patient_name,
-            scan_id=analysis_request.scan_id,
+            scan_id=scan_id,
             analysis_timestamp=datetime.now(),
-            result=analysis_results
+            result=analysis_results  # This matches the AneurysmAnalysisResult entity
         )
+        
     except ValueError as exc:
+        # Triggered if the scan_id isn't found in MongoDB
         raise HTTPException(
-            status_code= status.HTTP_404_NOT_FOUND,
-            detail= str(exc)
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc)
+        )
+    except FileNotFoundError as exc:
+        # Triggered if the zip file was deleted or cannot be found on the server volume
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Storage error: {str(exc)}"
         )
     except AIServiceError as exc:
+        # Triggered if the AI container fails or turns up a network connection issue
         raise HTTPException(
-            status_code = exc.status_code,
-            detail = str(exc)
+            status_code=exc.status_code if hasattr(exc, 'status_code') else 502,
+            detail=str(exc)
         )
