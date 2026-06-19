@@ -1,5 +1,5 @@
 from fastapi import Depends, Request
-from BackEnd.app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
+from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
 from app.config import settings
 from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository 
 from app.repositories.Mongo_patient_repository import MongoPatientRepository

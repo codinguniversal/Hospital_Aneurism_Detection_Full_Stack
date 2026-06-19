@@ -26,12 +26,16 @@ async def get_records(
             )
             for  patient in patients
         ]
-@router.get("/{patient_id}", response_model= PatientEntity, status_code= status.HTTP_200_OK)
+
+@router.get("/{patient_id}", response_model=PatientEntity, status_code=status.HTTP_200_OK)
 async def get_patient_results(
     patient_id: str,
     use_case: GetPatientResultsUseCase = Depends(get_patient_results_use_case)
 ):
     patient = await use_case.execute(patient_id)
     if not patient:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="The Patient was not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="The Patient was not found"
+        )
     return patient

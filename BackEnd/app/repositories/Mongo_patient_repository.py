@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+from datetime import datetime, date
 import os
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -32,26 +33,53 @@ class MongoPatientRepository(IPatientRepository):
             "scans": [self._scan_to_document(s) for s in patient.scans]
         }
 
+   
+
     def _document_to_entity(self, doc: dict) -> PatientEntity:
-        """Convert a MongoDB dict back into a pure Patient Domain Entity"""
+        """Convert a MongoDB dict safely into a pure Patient Domain Entity"""
         scans_entities = []
+        
         for s in doc.get("scans", []):
             results_dict = s.get("results")
-            results_obj = AneurysmAnalysisResultEntity(**results_dict) if results_dict else None
+            
+            # Guard: If results is empty dict {}, treat it cleanly as None or parse safely
+            if results_dict == {}:
+                results_obj = None
+            else:
+                results_obj = AneurysmAnalysisResultEntity(**results_dict) if results_dict else None
+            
+            # Guard: Fix Case Sensitivity for ScanStatus Enum ("Pending" -> "pending")
+            raw_status = s.get("status", "pending").lower()
+
+            # Guard: Ensure scan_date is a true Python datetime object (MongoDB ISODate is already datetime)
+            raw_scan_date = s.get("scan_date")
+            if isinstance(raw_scan_date, str):
+                scan_date_obj = datetime.fromisoformat(raw_scan_date.replace("Z", "+00:00"))
+            else:
+                scan_date_obj = raw_scan_date
+
             scans_entities.append(
                 ScanEntity(
                     id=s["id"],
-                    scan_date=s["scan_date"],
-                    status=s["status"],
+                    scan_date=scan_date_obj, 
+                    status=raw_status,  # Now perfectly matches enum "pending" | "completed"
                     img_file_path=s["img_file_path"],
-                    results= results_obj
+                    scan_analysis_date=s.get("scan_analysis_date"),
+                    results=results_obj
                 )
             )
         
+        # Guard: Parse birth_date string safely into a python datetime.date instance
+        raw_birth_date = doc["birth_date"]
+        if isinstance(raw_birth_date, str):
+            birth_date_obj = date.fromisoformat(raw_birth_date)
+        else:
+            birth_date_obj = raw_birth_date
+
         return PatientEntity(
             id=doc["_id"], 
             patient_name=doc["patient_name"],
-            birth_date=doc["birth_date"],
+            birth_date=birth_date_obj, # Validated object
             assigned_doc=doc["assigned_doc"],
             medical_history=doc.get("medical_history", []),
             scans=scans_entities
@@ -67,10 +95,12 @@ class MongoPatientRepository(IPatientRepository):
     
     async def get_patient_by_id(self, patient_id: str) -> Optional[PatientEntity]:
         doc = await self.collection.find_one({"_id": patient_id})
+        
         if not doc:
             return None
+            
         return self._document_to_entity(doc)
-
+    
     async def get_scan_file(self, scan_id: str) -> Optional[bytes]:
         """
         Queries MongoDB to find the path string, reads the entire file, 
