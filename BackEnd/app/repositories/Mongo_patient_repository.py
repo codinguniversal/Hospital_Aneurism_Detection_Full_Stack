@@ -1,6 +1,6 @@
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from app.domain.entities import PatientEntity, ScanEntity
+from app.domain.entities import AneurysmAnalysisResult, PatientEntity, ScanEntity
 from app.domain.repositories import PatientRepository as IPatientRepository
 
 class MongoPatientRepository(IPatientRepository):
@@ -16,7 +16,7 @@ class MongoPatientRepository(IPatientRepository):
             "scan_date": scan.scan_date,
             "status": scan.status,
             "img_file_path": scan.img_file_path,
-            "results": scan.results
+            "results": scan.results.model_dump() if scan.results else None
         }
 
     def _entity_to_document(self, patient: PatientEntity) -> dict:
@@ -34,13 +34,15 @@ class MongoPatientRepository(IPatientRepository):
         """Convert a MongoDB dict back into a pure Patient Domain Entity"""
         scans_entities = []
         for s in doc.get("scans", []):
+            results_dict = s.get("results")
+            results_obj = AneurysmAnalysisResult(**results_dict) if results_dict else None
             scans_entities.append(
                 ScanEntity(
                     id=s["id"],
                     scan_date=s["scan_date"],
                     status=s["status"],
                     img_file_path=s["img_file_path"],
-                    results=s.get("results")
+                    results= results_obj
                 )
             )
         

@@ -10,7 +10,7 @@ class AuthenticateUserUseCase:
         
         clean_identifer = identifier.strip()
 
-        user = await self.user_repo.get_by_identifer(clean_identifer)
+        user = await self.user_repo.get_by_identifier(clean_identifer)
 
         if not user or user.password != password :
             return None

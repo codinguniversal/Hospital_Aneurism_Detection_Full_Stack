@@ -3,7 +3,7 @@ import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.dependencies import get_patient_records_use_case
-from app.domain.entities import PatientEntity, ScanEntity
+from app.domain.entities import PatientEntity, ScanEntity, ScanStatus
 
 client = TestClient(app)
 
@@ -30,12 +30,18 @@ class TestPatientRoutes:
         mock_scan = ScanEntity(
             id="scan_001",
             scan_date=datetime.now(),
-            status="Completed",
+            img_file_path="/data/scans/scan_001.dcm",
+            status=ScanStatus.COMPLETED,  # Use the enum for clarity
             results=None  # Our entities handle empty results gracefully now!
         )
         
         stub_use_case.mock_patients = [
-            PatientEntity(id="pat_001", patient_name="Alice Smith", scans=[mock_scan])
+            PatientEntity(
+                id="pat_001",
+                patient_name="Alice Smith",
+                birth_date=datetime(1990, 5, 20),
+                assigned_doc="Dr. Johnson",
+                scans=[mock_scan])
         ]
         
         # Act

@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import datetime, date
 from typing import  List, Optional
 from app.config import  Settings
 
@@ -50,7 +50,8 @@ class AneurysmAnalysisResult(BaseModel):
 class ScanEntity(BaseModel):
     id: str
     scan_date: datetime
-    status: str  # Pending | Processing | Completed | Failed
+    status: ScanStatus  # Pending | Processing | Completed | Failed
+    img_file_path: str
     scan_analysis_date: Optional[datetime] = None
     results: Optional[AneurysmAnalysisResult] = None
     
@@ -77,6 +78,9 @@ class ScanEntity(BaseModel):
 class PatientEntity(BaseModel):
     id: str
     patient_name: str
+    birth_date: date
+    assigned_doc: str
+    medical_history: List[str] = Field(default_factory=list)
     scans: List[ScanEntity] = Field(default_factory=list)
 
     def add_scan(self, scan: ScanEntity) -> None:

@@ -1,15 +1,18 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from motor.motor_asyncio import AsyncIOMotorClient
+
+from app.config import settings
 from app.routers import scans_route, auth_route, patient_route
 from app.tasks.scheduler import start_apscheduler
-from motor.motor_asyncio import AsyncIOMotorClient
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Handles startup and shutdown"""
 
-    client = AsyncIOMotorClient("mongodb://localhost:27017")
-    app.state.db = client["CAD_DB"] # Connect to CAD_DB database
+    client = AsyncIOMotorClient(settings.mongodb_uri) # Connect to MongoDB
+    app.state.db = client[settings.mongodb_db_name] # Connect to CAD_DB database
     #before server is live
     start_apscheduler()
     yield #server is live

@@ -4,34 +4,38 @@ from functools import lru_cache
 
 
 
-class NoSQLDataLayer:
+class MockNoSQLDataLayer:
     def __init__(self):
         print("Initalizing Mock Database...")
         self._patients_collection = {
             "pat_001": {
                 "id": "pat_001",
                 "patient_name": "Alice Smith",
+                "birth_date": "1990-05-15",
+                "assigned_doc": "Dr. House",
                 "scans": [
                     {
                         "id": "scan_001",
                         "patient_id": "pat_001",
-                        "scan_date": "2026-06-17",
-                        "status": "Pending",
-                        "binary_data": b"mock-dicom-bytes-for-alice",
+                        "scan_date": "2026-06-17T10:00:00",
+                        "status": "pending",
+                        "img_file_path": "/data/scans/scan_001.dcm",
                         "results": None
                     }
                 ]
-            },
+                },
             "pat_002": {
                 "id": "pat_002",
                 "patient_name": "Bob Jones",
+                "birth_date": "1985-11-23",
+                "assigned_doc": "Dr. Wilson",
                 "scans": [
                     {
                         "id": "scan_002",
                         "patient_id": "pat_002",
-                        "scan_date": "2026-06-17",
-                        "status": "Pending",
-                        "binary_data": b"mock-dicom-bytes-for-bob",
+                        "scan_date": "2026-06-17T11:30:00",
+                        "status": "pending",
+                        "img_file_path": "/data/scans/scan_002.dcm",
                         "results": None
                     }
                 ]
@@ -55,5 +59,5 @@ class NoSQLDataLayer:
     async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:
         return self._users_collection.get(identifier)
 @lru_cache()
-def get_data_layer()->NoSQLDataLayer:
-    return NoSQLDataLayer()
+def get_data_layer()->MockNoSQLDataLayer:
+    return MockNoSQLDataLayer()

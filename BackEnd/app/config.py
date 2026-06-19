@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # urgency definition
     aneurysm_high_risk_threshold: float = 0.8
     aneurysm_medium_risk_threshold: float = 0.4
+
+    #Database configuration
+    database_mode: str = "mock"  # Options: "mock" or "mongodb
+    mongodb_uri: str = "mongodb://localhost:27017"
+    mongodb_db_name: str = "CAD_DB"
     class Config:
         env_file = ".env"
 
