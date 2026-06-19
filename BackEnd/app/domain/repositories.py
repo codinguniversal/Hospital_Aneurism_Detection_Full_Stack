@@ -1,6 +1,6 @@
 # Inside backend/app/domain/repositories.py
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, AsyncIterator
 from app.domain.entities import UserEntity, PatientEntity
 
 class UserRepository(ABC):
@@ -36,6 +36,19 @@ class PatientRepository(ABC):
         Traverses patient documents to retrieve the absolute disk storage file path 
         pointing to the patient's raw or compressed (.zip/.dcm) scan archive.
         """
+        pass
+    @abstractmethod
+    async def get_scan_file(self, scan_id: str) -> AsyncIterator[bytes]:
+        """
+        returns the asynchronous binary data of the scan file (raw or compressed) for a given scan_id.(how its done is dependent on the data layer implementation)
+        This is used for sending the scan data to the AI service for analysis without exposing file paths.
+        
+        Raises:
+            ScanNotFoundError: If no scan with the given ID exists in the database.
+            ScanFileAccessError: If there is an issue accessing the scan file (e.g., file not found, permission issues).
+
+        """
+        
         pass
 
     @abstractmethod
