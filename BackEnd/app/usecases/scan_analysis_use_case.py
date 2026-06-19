@@ -18,5 +18,8 @@ class ScanAnalysisUseCase:
             binary_data=binary_data
         )
         
-        await self.patient_repo.update_scan_results(scan_id, results=analysis_results)
+        await self.patient_repo.update_scan_results(
+            scan_id=scan_id,
+            ai_results=analysis_results
+        )
         return analysis_results

@@ -1,7 +1,7 @@
 # Inside backend/app/domain/repositories.py
 from abc import ABC, abstractmethod
 from typing import List, Optional, AsyncIterator
-from app.domain.entities import UserEntity, PatientEntity
+from app.domain.entities import UserEntity, PatientEntity, AneurysmAnalysisResult
 
 class UserRepository(ABC):
     @abstractmethod
@@ -37,6 +37,6 @@ class PatientRepository(ABC):
         """
         pass
     @abstractmethod
-    async def update_scan_results(self, patient_id: str, scan_id: str, status: str, ai_results: dict) -> bool:
+    async def update_scan_results(self,  scan_id: str, ai_results:AneurysmAnalysisResult) -> bool:
         """Atomically updates the pre-existing scan state and diagnostic probability values"""
         pass
