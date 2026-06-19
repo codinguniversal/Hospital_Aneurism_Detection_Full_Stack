@@ -2,7 +2,7 @@ from collections.abc import AsyncIterator
 import os
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from app.domain.entities import AneurysmAnalysisResult, PatientEntity, ScanEntity
+from app.domain.entities import AneurysmAnalysisResultEntity, PatientEntity, ScanEntity
 from app.domain.repositories import PatientRepository as IPatientRepository
 
 class MongoPatientRepository(IPatientRepository):
@@ -37,7 +37,7 @@ class MongoPatientRepository(IPatientRepository):
         scans_entities = []
         for s in doc.get("scans", []):
             results_dict = s.get("results")
-            results_obj = AneurysmAnalysisResult(**results_dict) if results_dict else None
+            results_obj = AneurysmAnalysisResultEntity(**results_dict) if results_dict else None
             scans_entities.append(
                 ScanEntity(
                     id=s["id"],

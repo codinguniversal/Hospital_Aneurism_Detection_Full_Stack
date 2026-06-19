@@ -1,7 +1,7 @@
 # Inside backend/app/domain/repositories.py
 from abc import ABC, abstractmethod
 from typing import List, Optional, AsyncIterator
-from app.domain.entities import UserEntity, PatientEntity, AneurysmAnalysisResult
+from app.domain.entities import SettingsEntity, UserEntity, PatientEntity, AneurysmAnalysisResultEntity
 
 class UserRepository(ABC):
     @abstractmethod
@@ -37,6 +37,19 @@ class PatientRepository(ABC):
         """
         pass
     @abstractmethod
-    async def update_scan_results(self,  scan_id: str, ai_results:AneurysmAnalysisResult) -> bool:
+    async def update_scan_results(self,  scan_id: str, ai_results:AneurysmAnalysisResultEntity) -> bool:
         """Atomically updates the pre-existing scan state and diagnostic probability values"""
+        pass
+
+class SettingsRepository(ABC):
+    @abstractmethod
+    async def get_settings(self) -> SettingsEntity:
+        """Fetches the current system settings (e.g., AI thresholds)
+        This method should implement caching to minimize data layer calls, as settings are read frequently but updated rarely."""
+        pass
+    @abstractmethod
+    async def update_settings(self, settings: SettingsEntity) -> None:
+        """Updates the system settings (e.g., AI thresholds)
+        This method should ensure that the cache is updated accordingly after persisting changes to the data layer.
+        """
         pass

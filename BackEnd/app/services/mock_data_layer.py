@@ -56,6 +56,17 @@ class MockNoSQLDataLayer:
                 "role": "Doctor"
             }
         }
+        self._settings_collection = {
+            "current_config": {
+                "ai_api_url": "http://127.0.0.1:8001/analyze",
+                "ai_timeout_limit": 60,
+                "automatic_scan_start_hour": 8,
+                "automatic_scan_end_hour": 17,
+                "automatic_scan_interval": 60,
+                "aneurysm_high_risk_threshold": 0.8,
+                "aneurysm_medium_risk_threshold": 0.4
+            }
+        }
     async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:
         return self._users_collection.get(identifier)
 @lru_cache()

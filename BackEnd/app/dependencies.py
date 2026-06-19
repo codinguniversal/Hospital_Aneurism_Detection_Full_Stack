@@ -1,18 +1,20 @@
 from fastapi import Depends, Request
+from BackEnd.app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
 from app.config import settings
-from app.domain.repositories import PatientRepository, UserRepository 
+from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository 
 from app.repositories.Mongo_patient_repository import MongoPatientRepository
 from app.repositories.mock_patient_repository import MockPatientRepository
+from app.repositories.mock_settings_repository import MockSettingsRepository
 from app.repositories.mock_user_repository import MockUserRepository
-from app.services.mock_data_layer import MockNoSQLDataLayer, get_data_layer
+from app.services.mock_data_layer import  get_data_layer
 from app.services.ai_service import AIService, get_ai_service
 
 # Use Case Imports
-from app.usecases.get_patient_records_use_case import GetPatientRecordsUseCase
-from app.usecases.scan_analysis_use_case import ScanAnalysisUseCase
-from app.usecases.auth_user_use_case import AuthenticateUserUseCase
-from app.usecases.register_user_use_case import RegisterUserUseCase
-from app.usecases.get_patient_results_use_case import GetPatientResultsUseCase
+from app.usecases.patient_use_cases.get_patient_records_use_case import GetPatientRecordsUseCase
+from app.usecases.scan_use_cases.scan_analysis_use_case import ScanAnalysisUseCase
+from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
+from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCase
+from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
 
 # --- database session extractor ---
 def get_db(request: Request):
@@ -33,14 +35,32 @@ def get_patient_repository(
     return MockPatientRepository(data_layer=db)
 
 def get_user_repository(
-    mock_data = Depends(get_data_layer)
+    request: Request,
+    db = Depends(get_data_layer)
 ) -> UserRepository:
+    if settings.database_mode == "mongodb":
+        # Reconstitutes the Mongo repository using the live DB session [1]
+        # return MongoUserRepository(db=request.app.state.db)
+        pass
     # Currently returns Mock; can be easily updated for Mongo similarly to above
-    return MockUserRepository(data_layer=mock_data)
+    return MockUserRepository(data_layer=db)
 
+def get_settings_repository(
+    mock_data = Depends(get_data_layer)
+) -> SettingsRepository:
+    if settings.database_mode == "mongodb":
+        # Reconstitutes the Mongo repository using the live DB session [1]
+        # return MongoSettingsRepository(db=request.app.state.db)
+        pass
+    # Currently returns Mock; can be easily updated for Mongo similarly to above
+    return MockSettingsRepository(db=mock_data)
 
 # --- Use Case Factories ---
 
+def get_update_settings_use_case(
+    settings_repo: SettingsRepository = Depends(get_settings_repository)
+) -> UpdateSettingsUseCase:
+    return UpdateSettingsUseCase(settings_repo=settings_repo)
 def get_patient_records_use_case(
     patient_repo: PatientRepository = Depends(get_patient_repository)
 ) -> GetPatientRecordsUseCase:

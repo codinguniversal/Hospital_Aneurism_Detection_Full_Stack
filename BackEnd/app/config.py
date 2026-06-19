@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     aneurysm_medium_risk_threshold: float = 0.4
 
     #Database configuration
-    database_mode: str = "mongodb"  # Options: "mock" or "mongodb
+    database_mode: str = "mock"  # Options: "mock" or "mongodb
     mongodb_uri: str = "mongodb://127.0.0.1:27017"
     mongodb_db_name: str = "CAD_DB"
     

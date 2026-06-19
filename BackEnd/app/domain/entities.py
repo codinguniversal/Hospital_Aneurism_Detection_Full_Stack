@@ -1,9 +1,9 @@
 
 from datetime import datetime, date
-from typing import  List, Optional
+from typing import  List, Optional, Self
 from app.config import  Settings
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, HttpUrl, model_validator
 
 from enum import Enum
 class ScanStatus(str, Enum):
@@ -17,17 +17,37 @@ class ScanUrgency(str, Enum):
     MEDIUM = "Medium"
     HIGH = "High"
 
+class SettingsEntity(BaseModel):
+    # AI and Analysis
+    ai_api_url: HttpUrl
+    ai_timeout_limit: int = Field(gt=0, description="AI timeout limit must be a positive integer.")
+    # automatic scan scheduling
+    automatic_scan_start_hour:  int = Field(ge=0, le=23, description="Start hour must be between 0 and 23.")
+    automatic_scan_end_hour: int = Field(ge=0, le=23, description="End hour must be between 0 and 23.")
+    automatic_scan_interval: int = Field(gt=0, description="Scan interval must be a positive integer.")
+    # urgency definition
+    aneurysm_high_risk_threshold: float = Field(gt=0, lt=1, description="High risk threshold must be between 0 and 1.")
+    aneurysm_medium_risk_threshold: float = Field(gt=0, lt=1, description="Medium risk threshold must be between 0 and 1.")
+    @model_validator(mode="after")
+    def validate_business_invariants(self) -> Self:
+        """ Ensures cross-field business rules are met (e.g., high risk threshold > medium risk threshold)"""
+        if self.aneurysm_high_risk_threshold <= self.aneurysm_medium_risk_threshold:
+            raise ValueError("High risk threshold must be greater than medium risk threshold.")
+        if self.automatic_scan_start_hour >= self.automatic_scan_end_hour:
+            raise ValueError("Start hour must be less than end hour.")
+        return self
+
 class UserEntity(BaseModel):
     employee_id: str
     email: str
     password: str
     role: str
 
-class OverAllAneurysmPrediction(BaseModel):
+class OverAllAneurysmPredictionEntity(BaseModel):
     probability: float
 
 
-class LocationPredictions(BaseModel):
+class LocationPredictionsEntity(BaseModel):
     LeftInfraclinoidInternalCarotidArtery: float
     RightInfraclinoidInternalCarotidArtery: float
     LeftSupraclinoidInternalCarotidArtery: float
@@ -43,9 +63,10 @@ class LocationPredictions(BaseModel):
     OtherPosteriorCirculation: float
 
 
-class AneurysmAnalysisResult(BaseModel):
-    overall: Optional[OverAllAneurysmPrediction] = None
-    locations: Optional[LocationPredictions] = None
+
+class AneurysmAnalysisResultEntity(BaseModel):
+    overall: Optional[OverAllAneurysmPredictionEntity] = None
+    locations: Optional[LocationPredictionsEntity] = None
 
 class ScanEntity(BaseModel):
     id: str
@@ -53,7 +74,7 @@ class ScanEntity(BaseModel):
     status: ScanStatus  # Pending | Processing | Completed | Failed
     img_file_path: str
     scan_analysis_date: Optional[datetime] = None
-    results: Optional[AneurysmAnalysisResult] = None
+    results: Optional[AneurysmAnalysisResultEntity] = None
     
     @property
     def urgency(self)-> str:

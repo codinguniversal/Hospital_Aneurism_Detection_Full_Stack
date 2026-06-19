@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from app.domain.entities import PatientEntity
-from app.usecases.get_patient_results_use_case import GetPatientResultsUseCase
+from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
 from app.schemas.patient_schema import PatientRecordResponse
-from app.usecases.get_patient_records_use_case import GetPatientRecordsUseCase
+from app.usecases.patient_use_cases.get_patient_records_use_case import GetPatientRecordsUseCase
 from app.dependencies import get_patient_records_use_case, get_patient_results_use_case
 
 

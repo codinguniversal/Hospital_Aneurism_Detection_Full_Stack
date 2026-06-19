@@ -1,6 +1,6 @@
 import httpx
 from pydantic import BaseModel
-from app.domain.entities import AneurysmAnalysisResult, OverAllAneurysmPrediction, LocationPredictions
+from app.domain.entities import AneurysmAnalysisResultEntity, OverAllAneurysmPredictionEntity, LocationPredictionsEntity
 from app.config import settings
 
 class AIResponseDTO(BaseModel):
@@ -28,7 +28,7 @@ class AIService:
             self,
             scan_id: str,
             binary_data: bytes
-        ) -> AneurysmAnalysisResult :
+        ) -> AneurysmAnalysisResultEntity :
         files = {"file": (f"{scan_id}.zip", binary_data, "application/zip")}
         try:
             target_url = "http://127.0.0.1:8001/predict"
@@ -55,11 +55,11 @@ class AIService:
                     status_code=502,
                 )
                 
-            return AneurysmAnalysisResult(
-                overall=OverAllAneurysmPrediction(
+            return AneurysmAnalysisResultEntity(
+                overall=OverAllAneurysmPredictionEntity(
                     probability=dto.overall_prediction["Aneurysm Present"]
                 ),
-                locations=LocationPredictions(
+                locations=LocationPredictionsEntity(
                     LeftInfraclinoidInternalCarotidArtery=dto.detailed_locations["Left Infraclinoid Internal Carotid Artery"],
                     RightInfraclinoidInternalCarotidArtery=dto.detailed_locations["Right Infraclinoid Internal Carotid Artery"],
                     LeftSupraclinoidInternalCarotidArtery=dto.detailed_locations["Left Supraclinoid Internal Carotid Artery"],
