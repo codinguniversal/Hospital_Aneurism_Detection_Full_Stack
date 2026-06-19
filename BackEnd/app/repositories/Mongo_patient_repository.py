@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+import os
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.domain.entities import AneurysmAnalysisResult, PatientEntity, ScanEntity
@@ -69,21 +71,29 @@ class MongoPatientRepository(IPatientRepository):
             return None
         return self._document_to_entity(doc)
 
-    async def get_scan_file_path(self, scan_id: str) -> Optional[str]:
+    async def get_scan_file(self, scan_id: str) -> Optional[bytes]:
         """
-        Locates the scan within the nested array by its unique scan_id 
-        and extracts the storage file path string ('img_file_path').
+        Queries MongoDB to find the path string, reads the entire file, 
+        and returns its raw bytes directly.
         """
         doc = await self.collection.find_one({"scans.id": scan_id})
         if not doc:
             return None
             
+        file_path = None
         for s in doc.get("scans", []):
             if s.get("id") == scan_id:
-                return s.get("img_file_path")
+                file_path = s.get("img_file_path")
+                break
                 
-        return None
-    
+        if not file_path or not os.path.exists(file_path):
+            print(f"[REPO ERROR] File missing on storage disk at: {file_path}")
+            return None
+
+        # Read the entire file as a flat binary object block 
+        with open(file_path, "rb") as archive_file:
+            return archive_file.read()
+        
     async def update_scan_results(self, scan_id: str, results: dict) -> bool:
         """
         Atomically updates the target scan record status to 'Completed' 

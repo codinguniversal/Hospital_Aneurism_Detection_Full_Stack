@@ -5,7 +5,7 @@ class Settings(BaseSettings):
     holds default values incase no environmental variables are found
     """
     # AI and Analysis
-    ai_api_url: str = "http://127.0.0.1:8000/analyze"
+    ai_api_url: str = "http://127.0.0.1:8001/analyze"
     ai_timeout_limit: int = 60
 
     automatic_scan_start_hour:  int = 8
@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     aneurysm_medium_risk_threshold: float = 0.4
 
     #Database configuration
-    database_mode: str = "mock"  # Options: "mock" or "mongodb
-    mongodb_uri: str = "mongodb://localhost:27017"
+    database_mode: str = "mongodb"  # Options: "mock" or "mongodb
+    mongodb_uri: str = "mongodb://127.0.0.1:27017"
     mongodb_db_name: str = "CAD_DB"
     
     class Config:

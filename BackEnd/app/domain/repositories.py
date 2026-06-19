@@ -31,26 +31,11 @@ class PatientRepository(ABC):
         pass
 
     @abstractmethod
-    async def get_scan_file_path(self, scan_id: str) -> Optional[str]:
+    async def get_scan_file(self, scan_id: str) -> Optional[bytes]:
         """
-        Traverses patient documents to retrieve the absolute disk storage file path 
-        pointing to the patient's raw or compressed (.zip/.dcm) scan archive.
+        Returns the raw binary bytes data of the scan file for a given scan_id.
         """
         pass
-    @abstractmethod
-    async def get_scan_file(self, scan_id: str) -> AsyncIterator[bytes]:
-        """
-        returns the asynchronous binary data of the scan file (raw or compressed) for a given scan_id.(how its done is dependent on the data layer implementation)
-        This is used for sending the scan data to the AI service for analysis without exposing file paths.
-        
-        Raises:
-            ScanNotFoundError: If no scan with the given ID exists in the database.
-            ScanFileAccessError: If there is an issue accessing the scan file (e.g., file not found, permission issues).
-
-        """
-        
-        pass
-
     @abstractmethod
     async def update_scan_results(self, patient_id: str, scan_id: str, status: str, ai_results: dict) -> bool:
         """Atomically updates the pre-existing scan state and diagnostic probability values"""
