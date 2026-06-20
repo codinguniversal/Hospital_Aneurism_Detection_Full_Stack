@@ -1,6 +1,8 @@
 # Inside backend/app/domain/repositories.py
 from abc import ABC, abstractmethod
 from typing import List, Optional, AsyncIterator
+
+from pydantic import HttpUrl
 from app.domain.entities import SettingsEntity, UserEntity, PatientEntity, AneurysmAnalysisResultEntity
 
 class UserRepository(ABC):
@@ -55,7 +57,7 @@ class SettingsRepository(ABC):
         pass
     @property
     @abstractmethod
-    async def ai_api_url(self) -> str:
+    async def ai_api_url(self) -> HttpUrl:
         """Returns the current AI API URL from the settings"""
         pass
 

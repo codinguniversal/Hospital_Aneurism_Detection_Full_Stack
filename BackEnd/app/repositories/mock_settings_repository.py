@@ -1,3 +1,5 @@
+from pydantic import HttpUrl
+
 from app.services.mock_data_layer import MockNoSQLDataLayer
 from app.domain.entities import SettingsEntity
 from app.domain.repositories import SettingsRepository
@@ -10,7 +12,7 @@ class MockSettingsRepository(SettingsRepository):
     # --- Implement Required Abstract Properties ---
 
     @property
-    def ai_api_url(self) -> str:
+    def ai_api_url(self) -> HttpUrl:
         return self._cached_settings.ai_api_url if self._cached_settings else "http://localhost:5000/predict"
 
     @property
