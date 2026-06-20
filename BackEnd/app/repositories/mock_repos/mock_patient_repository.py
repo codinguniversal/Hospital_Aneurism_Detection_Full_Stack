@@ -4,6 +4,7 @@ from typing import List, Optional
 from app.domain.entities import AneurysmAnalysisResultEntity, PatientEntity, ScanEntity
 from app.domain.repositories import PatientRepository
 from app.services.mock_data_layer import MockNoSQLDataLayer
+from app.domain.entities import ScanStatus
 
 class MockPatientRepository(PatientRepository):
     def __init__(self, db: MockNoSQLDataLayer):
@@ -59,7 +60,7 @@ class MockPatientRepository(PatientRepository):
         for patient in self.db._patients_collection.values():
             for scan in patient.get("scans", []):
                 if scan["id"] == scan_id:
-                    scan["status"] = "Completed"
+                    scan["status"] = ScanStatus.COMPLETED.value
                     scan["results"] = results_dict
                     scan["scan_analysis_date"] = datetime.now(timezone.utc).isoformat()
                     return True

@@ -1,7 +1,7 @@
 import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from app.dependencies import build_patient_repository, build_scan_analysis_use_case
-from app.config import settings
+from app.dependencies import build_patient_repository, build_scan_analysis_use_case, build_settings_repository
+
 
 
 logger = logging.getLogger(__name__)
@@ -9,6 +9,9 @@ scheduler = AsyncIOScheduler()
 
 async def run_timeframe_scan_analysis():
     """called when within the timeframe"""
+    settings_repo = build_settings_repository()
+    settings = await settings_repo.get_settings()  #called to refresh the settings
+
     patient_repo = build_patient_repository()
     scan_analysis_use_case = await build_scan_analysis_use_case()
 
@@ -25,10 +28,12 @@ async def run_timeframe_scan_analysis():
             logger.error(f"Failed processing automatic scan {scan.id}: {exc}")
             continue
 
-def start_apscheduler():
+async def start_apscheduler():
     """defines the time frame for the scan execution
     using cron rules: minute hour dayOfTheMonth month dayOfTheWeek
     """
+    settings_repo = build_settings_repository()
+    settings = await settings_repo.get_settings()
     scheduler.add_job(
         run_timeframe_scan_analysis,
         trigger="cron",

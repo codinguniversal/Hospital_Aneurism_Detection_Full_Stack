@@ -2,7 +2,7 @@ import httpx
 from pydantic import BaseModel
 from app.domain.entities import AneurysmAnalysisResultEntity, OverAllAneurysmPredictionEntity, LocationPredictionsEntity
 from app.domain.services import ScanAnalysisService
-from app.config import settings
+from app.config import static_settings
 
 class AIResponseDTO(BaseModel):
     status: str

@@ -4,7 +4,7 @@ import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.dependencies import build_settings_repository, _ai_http_client
-from app.config import settings
+from app.config import static_settings
 from app.routers import scans_route, auth_route, patient_route
 from app.tasks.scheduler import start_apscheduler
 
@@ -15,9 +15,9 @@ async def lifespan(app: FastAPI):
     #before server is live
 
     # connect to DB
-    if settings.database_mode == "mongodb":
-        db_client = AsyncIOMotorClient(settings.mongodb_uri) # Connect to MongoDB
-        db = db_client[settings.mongodb_db_name] # Select the specific database
+    if static_settings.database_mode == "mongodb":
+        db_client = AsyncIOMotorClient(static_settings.mongodb_uri) # Connect to MongoDB
+        db = db_client[static_settings.mongodb_db_name] # Select the specific database
         app.state.db = db # Connect to CAD_DB database
         app.state.http_client = httpx.AsyncClient()
     else:
@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
     
     await _ai_http_client.aclose()
     #server is closed
-    if settings.database_mode == "mongodb":
+    if static_settings.database_mode == "mongodb":
         db_client.close()
     
     print("Stoping application services")

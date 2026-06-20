@@ -5,13 +5,14 @@ import httpx
 from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
 from app.repositories.mongo_repos.mongo_settings_repository import MongoSettingsRepository
 from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
-from app.config import settings
+from app.config import static_settings
 from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository 
 from app.repositories.mongo_repos.Mongo_patient_repository import MongoPatientRepository
 from app.repositories.mock_repos.mock_patient_repository import MockPatientRepository
 from app.repositories.mock_repos.mock_settings_repository import MockSettingsRepository
 from app.repositories.mock_repos.mock_user_repository import MockUserRepository
 from app.services.mock_data_layer import  MockNoSQLDataLayer
+from app.services.mock_ai_service import MockScanAnalysisService
 from app.services.ai_service import HTTPXScanAnalysisService
 from motor.motor_asyncio import AsyncIOMotorDatabase
 # Use Case Imports
@@ -40,30 +41,33 @@ _settings_repo_instance = None
 # --- db and service helpers---
 def _get_db_connection():
     """Helper to retrieve teh current DB connection"""
-    if settings.database_mode == "mongodb":
+    if static_settings.database_mode == "mongodb":
         from app.main import app
         return app.state.db
     
     return _mock_db_service 
 async def build_ai_service():
+    if static_settings.use_mock_ai:
+        return MockScanAnalysisService(fixed_overall_probability= 0.85)
+
     settings_repo = build_settings_repository()
-    settings = await settings_repo.get_settings()
+    dynamic_settings = await settings_repo.get_settings()
     return HTTPXScanAnalysisService(
         client = get_ai_http_client(),
-        base_url= str(settings.ai_api_url),
-        timeout= settings.ai_timeout_limit
+        base_url= str(dynamic_settings.ai_api_url),
+        timeout= dynamic_settings.ai_timeout_limit
         )
 
 #--- Repository Builders ---
 def build_patient_repository()-> PatientRepository:
     db = _get_db_connection()
-    if settings.database_mode == "mongodb":
+    if static_settings.database_mode == "mongodb":
         return MongoPatientRepository(db=cast(AsyncIOMotorDatabase,db))
     return MockPatientRepository(db = cast(MockNoSQLDataLayer,db))
 
 def build_user_repository()-> UserRepository:
     db = _get_db_connection()
-    if settings.database_mode == "mongodb":
+    if static_settings.database_mode == "mongodb":
         return MongoUserRepository(db =cast(AsyncIOMotorDatabase, db)) # implement when ready
     return MockUserRepository(db= cast(MockNoSQLDataLayer, db))
 
@@ -71,7 +75,7 @@ def build_settings_repository()->SettingsRepository:
     global _settings_repo_instance
     if _settings_repo_instance is None:
         db = _get_db_connection()
-        if settings.database_mode == "mongodb":
+        if static_settings.database_mode == "mongodb":
             return MongoSettingsRepository(db=cast(AsyncIOMotorDatabase,db))   # implement when ready
         else:
             _settings_repo_instance = MockSettingsRepository(db= cast(MockNoSQLDataLayer,db))

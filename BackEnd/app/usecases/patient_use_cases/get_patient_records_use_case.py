@@ -23,8 +23,9 @@ class GetPatientRecordsUseCase:
 
     async def execute(self) -> List[PatientRecordSnapshot] | None:
         patients = await self.patient_repo.get_all_patients()
-        high_threshold = await self.settings_repo.aneurysm_high_risk_threshold
-        mid_threshold = await self.settings_repo.aneurysm_medium_risk_threshold
+        settings = await self.settings_repo.get_settings()
+        high_threshold = settings.aneurysm_high_risk_threshold
+        mid_threshold = settings.aneurysm_medium_risk_threshold
         results = []
         for patient in patients:
             if not patient.scans:
