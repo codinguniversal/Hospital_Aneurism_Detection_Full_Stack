@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
+from BackEnd.app.repositories.mongo_user_repository import MongoUserRepository
 from app.schemas.auth_schema import LoginRequestSchema, UserResponseSchema, RegisterRequestSchema
 
 from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
@@ -25,12 +26,21 @@ async def login(
         )
     return user
 
-@router.post("/register", response_model= UserResponseSchema,status_code= status.HTTP_201_CREATED)
-async def Register(
-    register_request : RegisterRequestSchema,
-    use_case: RegisterUserUseCase = Depends(get_register_user_use_case)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register(
+    request: RegisterRequestSchema, 
+    user_repo: MongoUserRepository = Depends(get_register_user_use_case)
 ):
+    """Router layer: Manages the HTTP schema and maps values into the pure Use Case"""
+    use_case = RegisterUserUseCase(user_repo)
+    
     try:
-        return await use_case.execute(register_request)
-    except ValueError as e:
-        raise HTTPException(status_code= status.HTTP_400_BAD_REQUEST, detail=str(e))
+        user_entity = await use_case.execute(
+            email=request.email,
+            employee_id=request.username,
+            password=request.password
+        )
+        return {"status": "success", "user_id": user_entity.employee_id}
+        
+    except ValueError as err:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
