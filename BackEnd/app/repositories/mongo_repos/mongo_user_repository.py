@@ -1,15 +1,64 @@
+from typing import Optional
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.domain.entities import UserEntity
 from app.domain.repositories import UserRepository
-from motor.motor_asyncio import AsyncIOMotorDatabase
+
 class MongoUserRepository(UserRepository):
     def __init__(self, db: AsyncIOMotorDatabase):
-        self.collection = db["Users"]
-    
-    async def get_by_identifier(self, identifier: str) -> UserEntity | None:
-        raise NotImplementedError
+        """
+        Initializes the repository with a live Motor database instance.
+        Targeting the 'users' collection.
+        """
+        self.collection = db["users"]
 
-    async def get_by_email(self, email: str) -> UserEntity | None:
-        raise NotImplementedError
+    async def get_by_identifier(self, employee_id: str) -> Optional[UserEntity]:
+        """
+        Finds a user if the identifier matches either their email, 
+        their employeeId, or an explicit username field.
+        """
+        raw_user = await self.collection.find_one({"employeeId": employee_id.strip()})
+        
+        if not raw_user:
+            return None
+            
+        return UserEntity(
+            employee_id=raw_user["employeeId"],
+            email=raw_user["email"],
+            password=raw_user["password"],
+            role=raw_user["role"]
+        )
+    
+    async def get_by_employee_id(self, employee_id: str) -> Optional[UserEntity]:
+        """Looks up a user strictly by their unique employeeId using identifier logic."""
+        return await self.get_by_identifier(employee_id)
+    
+    async def get_by_email(self, email: str) -> Optional[UserEntity]:
+        """Looks up a user strictly by their email string."""
+        raw_user = await self.collection.find_one({"email": email.strip()})
+        
+        if not raw_user:
+            return None
+            
+        return UserEntity(
+            employee_id=raw_user["employeeId"],
+            email=raw_user["email"],
+            password=raw_user["password"],
+            role=raw_user["role"]
+        )
 
     async def add_user(self, user: UserEntity) -> None:
-        raise NotImplementedError
+        """
+        Persists a new user record into the live MongoDB collection.
+        """
+        user_document = {
+            "employeeId": user.employee_id,
+            "email": user.email,
+            "password": user.password,
+            "role": user.role
+        }
+        
+        await self.collection.update_one(
+            {"email": user.email},
+            {"$set": user_document},
+            upsert=True
+        )

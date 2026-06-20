@@ -15,17 +15,24 @@ async def get_records(
 ):
     results = await use_case.execute()
     if not results:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="No Patient Records  were  found")
-    return [
-            PatientRecordResponseSchema(
-                id=r.id,
-                name=r.name,
-                image_date=r.image_date,
-                analyzed=r.analyzed,
-                urgency= r.urgency
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No Patient Records were found")
+   
+    flat_records = []
+    for r in results:
+       
+        for scan in r.scans:
+            flat_records.append(
+                PatientRecordResponseSchema(
+                    id=scan.id,                     
+                    name=r.patient_name,            
+                    image_date=scan.scan_date,     
+                    file_path=scan.img_file_path,   
+                    analyzed=(scan.status == "completed"),
+                    urgency="normal"               
+                )
             )
-            for  r in results
-        ]
+            
+    return flat_records
 
 @router.get("/{patient_id}", response_model=PatientEntity, status_code=status.HTTP_200_OK)
 async def get_patient_results(

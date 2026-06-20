@@ -3,6 +3,7 @@ from fastapi import FastAPI
 import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
+from app.routers import admin_settings_route
 from app.dependencies import build_settings_repository, _ai_http_client
 from app.config import static_settings
 from app.routers import scans_route, auth_route, patient_route
@@ -27,11 +28,12 @@ async def lifespan(app: FastAPI):
     settings_repo = build_settings_repository()
     await settings_repo.get_settings() # cache's settings
     
-    start_apscheduler()
+    await start_apscheduler()
 
     yield #server is live
     
-    await _ai_http_client.aclose()
+    if _ai_http_client is not None:
+        await _ai_http_client.aclose()
     #server is closed
     if static_settings.database_mode == "mongodb":
         db_client.close()
@@ -46,5 +48,6 @@ app = FastAPI(
 app.include_router(scans_route.router)
 app.include_router(auth_route.router)
 app.include_router(patient_route.router)
+app.include_router(admin_settings_route.router)
 
 

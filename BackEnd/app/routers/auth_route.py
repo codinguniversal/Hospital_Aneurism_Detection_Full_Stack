@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from BackEnd.app.repositories.mongo_user_repository import MongoUserRepository
+from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
 from app.schemas.auth_schema import LoginRequestSchema, UserResponseSchema, RegisterRequestSchema
 
 from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
@@ -29,12 +29,11 @@ async def login(
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     request: RegisterRequestSchema, 
-    user_repo: MongoUserRepository = Depends(get_register_user_use_case)
+    use_case: RegisterUserUseCase = Depends(get_register_user_use_case) 
 ):
     """Router layer: Manages the HTTP schema and maps values into the pure Use Case"""
-    use_case = RegisterUserUseCase(user_repo)
-    
     try:
+        # Pass fields matching your exact UseCase execute signature cleanly:
         user_entity = await use_case.execute(
             email=request.email,
             employee_id=request.username,
