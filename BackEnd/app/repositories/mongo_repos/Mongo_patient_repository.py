@@ -33,7 +33,6 @@ class MongoPatientRepository(IPatientRepository):
             "scans": [self._scan_to_document(s) for s in patient.scans]
         }
 
-   
 
     def _document_to_entity(self, doc: dict) -> PatientEntity:
         """Convert a MongoDB dict safely into a pure Patient Domain Entity"""
@@ -139,3 +138,6 @@ class MongoPatientRepository(IPatientRepository):
             }
         )
         return update_result.modified_count > 0
+
+    async def get_all_pending_scans(self) -> List[ScanEntity]:
+        raise NotImplementedError

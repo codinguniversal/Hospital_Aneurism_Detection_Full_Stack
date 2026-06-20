@@ -58,39 +58,3 @@ class SettingsRepository(ABC):
         This method should ensure that the cache is updated accordingly after persisting changes to the data layer.
         """
         pass
-    @property
-    @abstractmethod
-    async def ai_api_url(self) -> HttpUrl:
-        """Returns the current AI API URL from the settings"""
-        pass
-
-    @property
-    @abstractmethod
-    async def ai_timeout_limit(self) -> int:
-        """Returns the current AI timeout limit from the settings"""
-        pass
-    @property
-    @abstractmethod
-    async def automatic_scan_start_hour(self) -> int:
-        """Returns the current automatic scan start hour from the settings"""
-        pass
-    @property
-    @abstractmethod
-    async def automatic_scan_end_hour(self) -> int:
-        """Returns the current automatic scan end hour from the settings"""
-        pass
-    @property
-    @abstractmethod
-    async def automatic_scan_interval(self) -> int:
-        """Returns the current automatic scan interval from the settings"""
-        pass
-    @property
-    @abstractmethod
-    async def aneurysm_high_risk_threshold(self) -> float:
-        """Returns the current high risk threshold for aneurysm detection from the settings"""
-        pass
-    @property
-    @abstractmethod
-    async def aneurysm_medium_risk_threshold(self) -> float:
-        """Returns the current medium risk threshold for aneurysm detection from the settings"""
-        pass
