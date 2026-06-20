@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, HttpUrl
 
-class SettingsUpdateRequest(BaseModel):
+class SettingsUpdateRequestSchema(BaseModel):
     ai_api_url: HttpUrl
     ai_timeout_limit: int = Field(gt=0)
     automatic_scan_start_hour: int = Field(ge=0, le=23)
@@ -9,7 +9,7 @@ class SettingsUpdateRequest(BaseModel):
     aneurysm_high_risk_threshold: float = Field(ge=0, le=1)
     aneurysm_medium_risk_threshold: float = Field(ge=0, le=1)
 
-class SettingsResponse(BaseModel):
+class SettingsResponseSchema(BaseModel):
     ai_api_url: HttpUrl
     ai_timeout_limit: int
     automatic_scan_start_hour: int

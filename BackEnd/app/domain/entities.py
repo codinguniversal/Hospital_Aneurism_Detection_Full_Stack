@@ -1,7 +1,6 @@
 
 from datetime import datetime, date
 from typing import  List, Optional, Self
-from app.config import  Settings
 
 from pydantic import BaseModel, Field, HttpUrl, model_validator
 
@@ -76,8 +75,7 @@ class ScanEntity(BaseModel):
     scan_analysis_date: Optional[datetime] = None
     results: Optional[AneurysmAnalysisResultEntity] = None
     
-    @property
-    def urgency(self)-> str:
+    def urgency(self, high_threshold: float, mid_threshold: float)-> str:
         """
         Domain Rule calculate the urgency based on
         the AI Overall Results and configurable thresholds
@@ -90,9 +88,9 @@ class ScanEntity(BaseModel):
             return ScanUrgency.UNKOWN.value
         
         probability = self.results.overall.probability
-        if probability >= Settings.aneurysm_high_risk_threshold:
+        if probability >= high_threshold:
             return  ScanUrgency.HIGH.value
-        if probability >= Settings.aneurysm_medium_risk_threshold:
+        if probability >= mid_threshold:
             return  ScanUrgency.MEDIUM.value
         return  ScanUrgency.LOW.value
 

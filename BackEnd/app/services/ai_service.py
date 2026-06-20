@@ -87,6 +87,11 @@ class AIService:
                 status_code=503 
             )
 
-_client = httpx.AsyncClient()
+_ai_client = httpx.AsyncClient()
+def get_ai_client()->httpx.AsyncClient:
+    global _ai_client
+    if _ai_client is None:
+        _ai_client = httpx.AsyncClient()
+    return _ai_client
 def get_ai_service() -> AIService:
-    return AIService(client=_client)
+    return AIService(client=get_ai_client())

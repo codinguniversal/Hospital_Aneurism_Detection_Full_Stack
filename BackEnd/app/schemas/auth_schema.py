@@ -1,15 +1,15 @@
 from pydantic import BaseModel, EmailStr
 
-class LoginRequest(BaseModel):
+class LoginRequestSchema(BaseModel):
     loginIdentifier: str
     password: str
     isAdmin: bool
-class UserResponse(BaseModel):
+class UserResponseSchema(BaseModel):
     employee_id: str
     email:EmailStr
     role: str
 
-class RegisterRequest(BaseModel):
+class RegisterRequestSchema(BaseModel):
     username:str
     email: EmailStr
     password: str

@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.schemas.scan_schema import ScanAnalysisRequest, ScanAnalysisResponse
+from app.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
 from app.services.ai_service import AIServiceError 
 from app.usecases.scan_use_cases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.dependencies import get_scan_analysis_use_case
@@ -10,10 +10,10 @@ router = APIRouter(
     tags=["AI Scanning"]
 )
 
-@router.post("/{scan_id}/analyze", response_model=ScanAnalysisResponse, status_code=status.HTTP_200_OK)
+@router.post("/{scan_id}/analyze", response_model=ScanAnalysisResponseSchema, status_code=status.HTTP_200_OK)
 async def run_manual_analysis(
     scan_id: str,
-    analysis_request: ScanAnalysisRequest,
+    analysis_request: ScanAnalysisRequestSchema,
     use_case: ScanAnalysisUseCase = Depends(get_scan_analysis_use_case)
 ):
     """
@@ -27,7 +27,7 @@ async def run_manual_analysis(
         analysis_results = await use_case.execute(scan_id=scan_id)
 
         # Map back to your frontend validation response schema
-        return ScanAnalysisResponse(
+        return ScanAnalysisResponseSchema(
             status="completed",
             patient_name=analysis_request.patient_name,
             scan_id=scan_id,

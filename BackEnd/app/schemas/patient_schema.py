@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel,ConfigDict,Field
 
-class PatientCreateSchema(BaseModel):
+class PatientCreateRequestSchema(BaseModel):
     id: str
     patient_name: str
     birth_date: str
@@ -13,7 +13,7 @@ class PatientCreateSchema(BaseModel):
 
 
 
-class PatientRecordResponse(BaseModel):
+class PatientRecordResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes= True)
 
     id: str

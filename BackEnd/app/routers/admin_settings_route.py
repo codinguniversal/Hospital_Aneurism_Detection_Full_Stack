@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.dependencies import get_update_settings_use_case
 from app.domain.entities import SettingsEntity
 from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
-from app.schemas.setting_schema import SettingsResponse, SettingsUpdateRequest
+from app.schemas.setting_schema import SettingsResponseSchema, SettingsUpdateRequestSchema
 
 router = APIRouter(prefix="/admin/settings", tags=["Admin Settings"])
 
-@router.put("",response_model= SettingsResponse, status_code= status.HTTP_200_OK)
+@router.put("",response_model= SettingsResponseSchema, status_code= status.HTTP_200_OK)
 async def update_settings(
-    settings_update_request: SettingsUpdateRequest,
+    settings_update_request: SettingsUpdateRequestSchema,
     use_case: UpdateSettingsUseCase = Depends(get_update_settings_use_case)
 ):
     try:
@@ -16,6 +16,6 @@ async def update_settings(
 
         await use_case.execute(new_settings)
 
-        return SettingsResponse(**new_settings.model_dump())
+        return SettingsResponseSchema(**new_settings.model_dump())
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

@@ -6,11 +6,11 @@ from app.services.mock_data_layer import MockNoSQLDataLayer
 
 
 class MockUserRepository(UserRepository):
-    def __init__(self, data_layer: MockNoSQLDataLayer):
-        self.data_layer = data_layer
+    def __init__(self, db: MockNoSQLDataLayer):
+        self.db = db
 
     async def get_by_identifier(self, identifier: str) -> Optional[UserEntity]:
-        raw_user = await self.data_layer.get_user_credentials(identifier, is_admin=False)
+        raw_user = await self.db.get_user_credentials(identifier, is_admin=False)
         if not raw_user:
             return None
         # MUST MATCH UserEntity
@@ -21,7 +21,7 @@ class MockUserRepository(UserRepository):
             role=raw_user["role"]
         )
     async def get_by_email(self, email: str) -> Optional[UserEntity]:
-        raw_user = await self.data_layer.get_user_credentials(email, is_admin=False)
+        raw_user = await self.db.get_user_credentials(email, is_admin=False)
         if not raw_user:
             return None
         return UserEntity(
@@ -31,7 +31,7 @@ class MockUserRepository(UserRepository):
             role=raw_user["role"]
         )
     async def add_user(self, user: UserEntity) -> None:
-        self.data_layer._users_collection[user.email] = {
+        self.db._users_collection[user.email] = {
             "employeeId": user.employee_id,
             "email": user.email,
             "password": user.password,

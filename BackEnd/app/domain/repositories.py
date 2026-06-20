@@ -1,6 +1,5 @@
-# Inside backend/app/domain/repositories.py
 from abc import ABC, abstractmethod
-from typing import List, Optional, AsyncIterator
+from typing import List, Optional
 
 from pydantic import HttpUrl
 from app.domain.entities import SettingsEntity, UserEntity, PatientEntity, AneurysmAnalysisResultEntity

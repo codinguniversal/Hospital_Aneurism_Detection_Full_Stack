@@ -69,6 +69,3 @@ class MockNoSQLDataLayer:
         }
     async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:
         return self._users_collection.get(identifier)
-@lru_cache()
-def get_data_layer()->MockNoSQLDataLayer:
-    return MockNoSQLDataLayer()

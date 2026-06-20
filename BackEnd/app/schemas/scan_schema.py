@@ -9,18 +9,18 @@ from app.domain.entities import AneurysmAnalysisResultEntity
 
 
 
-class ScanCreateSchema(BaseModel):
+class ScanCreateRequestSchema(BaseModel):
     id: str
     img_file_path: str  # Frontend tells API where the raw zip/DICOM file was saved on E:
 
 
 
-class ScanAnalysisRequest(BaseModel):
+class ScanAnalysisRequestSchema(BaseModel):
     patient_name: str
     patient_id: Optional[str] = None
     scan_id: str
 
-class ScanAnalysisResponse(BaseModel):
+class ScanAnalysisResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes= True)
 
     status: str
