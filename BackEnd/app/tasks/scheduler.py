@@ -1,7 +1,6 @@
 import logging
-from datetime import datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from app.dependencies import get_patient_repository, get_scan_analysis_use_case
+from app.dependencies import build_patient_repository, build_scan_analysis_use_case
 from app.config import settings
 
 
@@ -10,8 +9,8 @@ scheduler = AsyncIOScheduler()
 
 async def run_timeframe_scan_analysis():
     """called when within the timeframe"""
-    patient_repo = get_patient_repository()
-    scan_analysis_use_case = get_scan_analysis_use_case()
+    patient_repo = build_patient_repository()
+    scan_analysis_use_case = await build_scan_analysis_use_case()
 
     try:
         pending_scans = await patient_repo.get_all_pending_scans()

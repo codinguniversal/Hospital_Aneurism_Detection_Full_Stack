@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import List, Optional
 
 from pydantic import HttpUrl
-from app.domain.entities import SettingsEntity, UserEntity, PatientEntity, AneurysmAnalysisResultEntity
+from app.domain.entities import ScanEntity, SettingsEntity, UserEntity, PatientEntity, AneurysmAnalysisResultEntity
 
 class UserRepository(ABC):
     @abstractmethod
@@ -40,6 +40,10 @@ class PatientRepository(ABC):
     @abstractmethod
     async def update_scan_results(self,  scan_id: str, ai_results:AneurysmAnalysisResultEntity) -> bool:
         """Atomically updates the pre-existing scan state and diagnostic probability values"""
+        pass
+    @abstractmethod
+    async def get_all_pending_scans(self) -> List[ScanEntity]:
+        """retrieves all scans that have not been analyzed yet"""
         pass
 
 class SettingsRepository(ABC):

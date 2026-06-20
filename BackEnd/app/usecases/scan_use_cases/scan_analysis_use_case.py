@@ -1,10 +1,11 @@
 from app.domain.entities import AneurysmAnalysisResultEntity
-from app.services.ai_service import AIService
+from app.domain.services import ScanAnalysisService
+from app.services.ai_service import HTTPXScanAnalysisService
 from app.domain.repositories import PatientRepository
 
 
 class ScanAnalysisUseCase:
-    def __init__(self, patient_repo: PatientRepository, ai_service: AIService):
+    def __init__(self, patient_repo: PatientRepository, ai_service: ScanAnalysisService):
         self.patient_repo = patient_repo
         self.ai_service = ai_service
 
@@ -13,7 +14,7 @@ class ScanAnalysisUseCase:
         if not binary_data:
             raise ValueError(f"Scan record with id {scan_id} not found in DB")
             
-        analysis_results = await self.ai_service.request_scan_analysis(
+        analysis_results = await self.ai_service.analyze_scan(
             scan_id=scan_id, 
             binary_data=binary_data
         )
