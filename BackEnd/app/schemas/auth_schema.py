@@ -10,7 +10,6 @@ class UserResponseSchema(BaseModel):
     role: str
 
 class RegisterRequestSchema(BaseModel):
-    username:str
     email: EmailStr
     password: str
     gender: str

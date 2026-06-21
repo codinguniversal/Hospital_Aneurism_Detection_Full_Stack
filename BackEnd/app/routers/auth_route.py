@@ -36,7 +36,6 @@ async def register(
         # Pass fields matching your exact UseCase execute signature cleanly:
         user_entity = await use_case.execute(
             email=request.email,
-            employee_id=request.username,
             password=request.password
         )
         return {"status": "success", "user_id": user_entity.employee_id}

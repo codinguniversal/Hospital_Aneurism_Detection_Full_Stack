@@ -20,7 +20,6 @@ async def lifespan(app: FastAPI):
         db_client = AsyncIOMotorClient(static_settings.mongodb_uri) # Connect to MongoDB
         db = db_client[static_settings.mongodb_db_name] # Select the specific database
         app.state.db = db # Connect to CAD_DB database
-        app.state.http_client = httpx.AsyncClient()
     else:
         pass
 
