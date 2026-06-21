@@ -18,7 +18,7 @@ class PatientRecordResponseSchema(BaseModel):
 
     id: str
     name: str
-    image_date: datetime
+    scan_date: datetime
     analyzed: bool
-    timestamp: Optional[datetime] = None
+    scan_analysis_date: Optional[datetime] = None
     urgency: Optional[str] = None

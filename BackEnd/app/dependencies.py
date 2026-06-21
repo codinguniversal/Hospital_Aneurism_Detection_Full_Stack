@@ -16,7 +16,7 @@ from app.services.mock_ai_service import MockScanAnalysisService
 from app.services.ai_service import HTTPXScanAnalysisService
 from motor.motor_asyncio import AsyncIOMotorDatabase
 # Use Case Imports
-from app.usecases.patient_use_cases.get_patient_records_use_case import GetPatientRecordsUseCase
+from app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatientsUseCase
 from app.usecases.scan_use_cases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
 from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCase
@@ -82,10 +82,10 @@ def build_settings_repository()->SettingsRepository:
     return _settings_repo_instance
 
 #--- Use Case Builders ---
-def build_get_patient_records_use_case() -> GetPatientRecordsUseCase:
+def build_get_patient_records_use_case() -> GetAllPatientsUseCase:
     patient_repo = build_patient_repository()
     settings_repo = build_settings_repository()
-    return GetPatientRecordsUseCase(
+    return GetAllPatientsUseCase(
         patient_repo=patient_repo,
         settings_repo=settings_repo
     )
@@ -116,8 +116,8 @@ def build_update_settings_use_case() -> UpdateSettingsUseCase:
 
 # --- Fast API Wrapeprs for Use Cases ---
 async def get_patient_records_use_case(
-    use_case: GetPatientRecordsUseCase = Depends(build_get_patient_records_use_case)
-) -> GetPatientRecordsUseCase:
+    use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case)
+) -> GetAllPatientsUseCase:
     return use_case
 
 async def get_patient_results_use_case(

@@ -93,14 +93,13 @@ class ScanEntity(BaseModel):
         if probability >= mid_threshold:
             return  ScanUrgency.MEDIUM.value
         return  ScanUrgency.LOW.value
-
 class PatientEntity(BaseModel):
     id: str
     patient_name: str
     birth_date: date
     assigned_doc: str
     medical_history: List[str] = Field(default_factory=list)
-    scans: List[ScanEntity] = Field(default_factory=list)
+    scans: List[ScanEntity] = Field(default_factory=list) # scan 0 should be the most recent scan
 
     def add_scan(self, scan: ScanEntity) -> None:
         """Domain Rule: Ensure duplicate scan IDs aren't allowed"""
