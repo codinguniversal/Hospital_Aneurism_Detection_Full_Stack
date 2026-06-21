@@ -11,3 +11,9 @@ class ScanAnalysisService(ABC):
     )->AneurysmAnalysisResultEntity:
         """Analyze medical scans and returns Domain expected result entity"""
         pass
+
+class IdGenerator(ABC):
+    @abstractmethod
+    async def generate_6_digit_id(self)->str:
+        """atomic generation of unique 6-digit ID."""
+        pass
