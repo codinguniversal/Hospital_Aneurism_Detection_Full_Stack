@@ -4,7 +4,7 @@ from app.domain.repositories import SettingsRepository
 from app.domain.entities import PatientEntity
 from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
 from app.schemas.patient_schema import PatientRecordResponseSchema
-from BackEnd.app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatientsUseCase
+from app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatientsUseCase
 from app.dependencies import get_patient_records_use_case, get_patient_results_use_case, build_settings_repository
 from app.routers.patient_mappers import patient_entitities_to_records
 
@@ -25,7 +25,7 @@ async def get_records(
     
     high_threshold = settings.aneurysm_high_risk_threshold
     mid_threshold = settings.aneurysm_medium_risk_threshold
-    patient_records =  patient_entitities_to_records(high_threshold= high_threshold, mid_threshold= mid_threshold, patients= results)
+    patient_records = await patient_entitities_to_records(high_threshold= high_threshold, mid_threshold= mid_threshold, patients= results)
     return patient_records
 
 @router.get("/{patient_id}", response_model=PatientEntity, status_code=status.HTTP_200_OK)

@@ -3,15 +3,32 @@ import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
-from app.dependencies import get_patient_records_use_case, get_patient_results_use_case
-from app.domain.entities import PatientEntity, ScanEntity, ScanStatus
+from app.dependencies import get_patient_records_use_case, get_patient_results_use_case, build_settings_repository
+from app.domain.entities import PatientEntity, ScanEntity, ScanStatus, SettingsEntity
 
 client = TestClient(app)
+
+
+class StubSettingsRepository:
+    def __init__(self):
+        self.settings = SettingsEntity(
+            ai_api_url="http://localhost:5000/predict",
+            ai_timeout_limit=30,
+            automatic_scan_start_hour=1,
+            automatic_scan_end_hour=5,
+            automatic_scan_interval=60,
+            aneurysm_high_risk_threshold=0.8,
+            aneurysm_medium_risk_threshold=0.5
+        )
+
+    async def get_settings(self):
+        return self.settings
 
 # --- STUBS FOR DEPENDENCIES ---
 
 class StubGetPatientRecordsUseCase:
     def __init__(self):
+        # Keeps naming aligned with what the use case actually yields (PatientEntity)
         self.mock_patients = []
 
     async def execute(self):
@@ -37,6 +54,7 @@ def setup_use_case_overrides():
     # Bind stubs to their respective dependency injection containers
     app.dependency_overrides[get_patient_records_use_case] = lambda: stub_records_use_case
     app.dependency_overrides[get_patient_results_use_case] = lambda: stub_results_use_case
+    app.dependency_overrides[build_settings_repository] = lambda: StubSettingsRepository()
     yield
     app.dependency_overrides.clear()
 
@@ -48,22 +66,23 @@ class TestPatientRoutes:
     # ==========================================
 
     def test_get_records_success(self):
-        # Arrange
-        mock_scan = ScanEntity(
-            id="scan_001",
-            scan_date=datetime.now(),
-            img_file_path="/data/scans/scan_001.dcm",
-            status=ScanStatus.COMPLETED,
-            results=None
-        )
-        
+        # Arrange - Pass entity records to let the router and mapper do their jobs
         stub_records_use_case.mock_patients = [
             PatientEntity(
                 id="pat_001",
                 patient_name="Alice Smith",
-                birth_date=date(1990, 5, 20),
-                assigned_doc="Dr. Johnson",
-                scans=[mock_scan]
+                birth_date=date(1985, 4, 12),
+                assigned_doc="dr_smith",
+                medical_history=["Hypertension"],
+                scans=[
+                    ScanEntity(
+                        id="SCN-1001",
+                        scan_date=datetime.now(),
+                        status=ScanStatus.COMPLETED,
+                        img_file_path="E:/for database/Have Ane/1.zip",
+                        results=None
+                    )
+                ]
             )
         ]
         
@@ -75,6 +94,7 @@ class TestPatientRoutes:
         data = response.json()
         assert len(data) == 1
         assert data[0]["name"] == "Alice Smith"
+        assert data[0]["analyzed"] is True
 
     def test_get_records_empty_state(self):
         # Arrange

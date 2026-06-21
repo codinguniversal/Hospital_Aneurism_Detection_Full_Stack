@@ -20,6 +20,7 @@ from app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatie
 from app.usecases.scan_use_cases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
 from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCase
+from app.usecases.auth_use_cases.check_email_use_case import CheckEmailUseCase
 from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
 
  
@@ -110,6 +111,10 @@ def build_register_user_use_case() -> RegisterUserUseCase:
     user_repo = build_user_repository()
     return RegisterUserUseCase(user_repo=user_repo)
 
+def build_check_email_use_case() -> CheckEmailUseCase:
+    user_repo = build_user_repository()
+    return CheckEmailUseCase(user_repo=user_repo)
+
 def build_update_settings_use_case() -> UpdateSettingsUseCase:
     settings_repo = build_settings_repository()
     return UpdateSettingsUseCase(settings_repo=settings_repo)
@@ -138,6 +143,11 @@ async def get_authenticate_user_use_case(
 async def get_register_user_use_case(
     use_case: RegisterUserUseCase = Depends(build_register_user_use_case)
 ) -> RegisterUserUseCase:
+    return use_case
+
+async def get_check_email_use_case(
+    use_case: CheckEmailUseCase = Depends(build_check_email_use_case)
+) -> CheckEmailUseCase:
     return use_case
 
 async def get_update_settings_use_case(
