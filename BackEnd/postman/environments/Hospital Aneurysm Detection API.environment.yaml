@@ -1,0 +1,4 @@
+name: Hospital Aneurysm Detection API
+values:
+  - key: baseUrl
+    value: ''

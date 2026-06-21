@@ -10,9 +10,8 @@ body:
   type: json
   content: |-
     {
-      "username": "johndoe",
       "email": "johndoe@example.com",
       "password": "securepassword",
       "gender": "male"
     }
-description: 'Register a new user. Returns 201 on success, 400 on validation error.'
+description: 'Register a new user (email, password, gender). Returns 201 with user_id on success, 400 on validation error.'

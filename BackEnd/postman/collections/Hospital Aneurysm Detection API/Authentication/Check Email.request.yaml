@@ -1,0 +1,10 @@
+$kind: http-request
+name: Check Email
+method: GET
+url: '{{baseUrl}}/auth/check-email'
+order: 3000
+params:
+  - key: email
+    value: 'user@example.com'
+    description: 'Email address to check for existence in the system'
+description: 'Check if an email is already registered. Returns { exists: true/false }. Returns 500 on server error.'
