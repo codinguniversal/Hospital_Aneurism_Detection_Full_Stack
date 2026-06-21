@@ -1,73 +1,16 @@
 from datetime import datetime, date
 import pytest
 from fastapi import status
-from fastapi.testclient import TestClient
-from app.main import app
-from app.dependencies import get_patient_records_use_case, get_patient_results_use_case, build_settings_repository
-from app.domain.entities import PatientEntity, ScanEntity, ScanStatus, SettingsEntity
-
-client = TestClient(app)
+from app.domain.entities import PatientEntity, ScanEntity, ScanStatus
 
 
-class StubSettingsRepository:
-    def __init__(self):
-        self.settings = SettingsEntity(
-            ai_api_url="http://localhost:5000/predict",
-            ai_timeout_limit=30,
-            automatic_scan_start_hour=1,
-            automatic_scan_end_hour=5,
-            automatic_scan_interval=60,
-            aneurysm_high_risk_threshold=0.8,
-            aneurysm_medium_risk_threshold=0.5
-        )
+class TestPatientRecordsRoute:
+    """Tests for GET /patients/records endpoint."""
 
-    async def get_settings(self):
-        return self.settings
-
-# --- STUBS FOR DEPENDENCIES ---
-
-class StubGetPatientRecordsUseCase:
-    def __init__(self):
-        # Keeps naming aligned with what the use case actually yields (PatientEntity)
-        self.mock_patients = []
-
-    async def execute(self):
-        return self.mock_patients
-
-
-class StubGetPatientResultsUseCase:
-    def __init__(self):
-        self.mock_patient = None
-
-    async def execute(self, patient_id: str):
-        if self.mock_patient and self.mock_patient.id == patient_id:
-            return self.mock_patient
-        return None
-
-
-stub_records_use_case = StubGetPatientRecordsUseCase()
-stub_results_use_case = StubGetPatientResultsUseCase()
-
-
-@pytest.fixture(autouse=True)
-def setup_use_case_overrides():
-    # Bind stubs to their respective dependency injection containers
-    app.dependency_overrides[get_patient_records_use_case] = lambda: stub_records_use_case
-    app.dependency_overrides[get_patient_results_use_case] = lambda: stub_results_use_case
-    app.dependency_overrides[build_settings_repository] = lambda: StubSettingsRepository()
-    yield
-    app.dependency_overrides.clear()
-
-
-class TestPatientRoutes:
-
-    # ==========================================
-    # TESTS FOR: GET /patients/records
-    # ==========================================
-
-    def test_get_records_success(self):
-        # Arrange - Pass entity records to let the router and mapper do their jobs
-        stub_records_use_case.mock_patients = [
+    def test_get_records_success(self, client, stub_records):
+        """Should return 200 with list of patient records when data exists."""
+        # Arrange
+        stub_records.mock_patients = [
             PatientEntity(
                 id="pat_001",
                 patient_name="Alice Smith",
@@ -86,31 +29,33 @@ class TestPatientRoutes:
             )
         ]
         
-        # Act - Query cleanly without the /api layer
+        # Act
         response = client.get("/patients/records")
         
         # Assert
-        assert response.status_code == 200
+        assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert len(data) == 1
         assert data[0]["name"] == "Alice Smith"
         assert data[0]["analyzed"] is True
 
-    def test_get_records_empty_state(self):
+    def test_get_records_empty_state(self, client, stub_records):
+        """Should return 404 when no patient records exist."""
         # Arrange
-        stub_records_use_case.mock_patients = []
+        stub_records.mock_patients = []
         
         # Act
         response = client.get("/patients/records")
         
         # Assert
-        assert response.status_code == 404
+        assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    # ==========================================
-    # TESTS FOR: GET /patients/{patient_id}
-    # ==========================================
 
-    def test_get_patient_results_success(self):
+class TestPatientResultsRoute:
+    """Tests for GET /patients/{patient_id} endpoint."""
+
+    def test_get_patient_results_success(self, client, stub_results):
+        """Should return 200 with patient details including scans."""
         # Arrange
         mock_scan = ScanEntity(
             id="SCN-2026-e6905722",
@@ -120,7 +65,7 @@ class TestPatientRoutes:
             results=None
         )
 
-        stub_results_use_case.mock_patient = PatientEntity(
+        stub_results.mock_patient = PatientEntity(
             id="PT-66457",
             patient_name="Brandi Gallagher",
             birth_date=date(1959, 8, 25),
@@ -129,7 +74,7 @@ class TestPatientRoutes:
             scans=[mock_scan]
         )
 
-        # Act - Query the singular patient route cleanly
+        # Act
         response = client.get("/patients/PT-66457")
 
         # Assert
@@ -140,9 +85,10 @@ class TestPatientRoutes:
         assert len(data["scans"]) == 1
         assert data["scans"][0]["status"] == "completed"
 
-    def test_get_patient_results_not_found(self):
+    def test_get_patient_results_not_found(self, client, stub_results):
+        """Should return 404 when patient ID doesn't exist."""
         # Arrange
-        stub_results_use_case.mock_patient = None
+        stub_results.mock_patient = None
 
         # Act
         response = client.get("/patients/PT-NONEXISTENT")

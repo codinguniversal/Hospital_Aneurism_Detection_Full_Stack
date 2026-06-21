@@ -19,8 +19,19 @@
           <label>Email Address</label>
           <div class="input-wrapper">
             <i class="fa fa-envelope"></i>
-            <input type="email" v-model="email" placeholder="Enter your email" required />
+            <input 
+              type="email" 
+              v-model="email" 
+              @blur="checkEmailExists"
+              placeholder="Enter your email" 
+              required 
+            />
+            <span v-if="emailChecking" class="input-spinner">
+              <i class="fa fa-spinner fa-spin"></i>
+            </span>
           </div>
+          <p v-if="emailError" class="error-message">{{ emailError }}</p>
+          <p v-if="emailValid && email" class="success-message">✓ Email available</p>
         </div>
 
         <div class="form-group">
@@ -64,6 +75,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
+import { emailApi } from '../services/api.js'
 
 const router = useRouter()
 const username = ref('')
@@ -71,8 +83,44 @@ const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
 const gender = ref('')
+const emailChecking = ref(false)
+const emailError = ref('')
+const emailValid = ref(false)
+
+const checkEmailExists = async () => {
+  if (!email.value) {
+    emailError.value = ''
+    emailValid.value = false
+    return
+  }
+
+  emailChecking.value = true
+  emailError.value = ''
+  emailValid.value = false
+
+  try {
+    const exists = await emailApi.checkEmailExists(email.value)
+    if (exists) {
+      emailError.value = 'Email already in use'
+      emailValid.value = false
+    } else {
+      emailError.value = ''
+      emailValid.value = true
+    }
+  } catch (error) {
+    emailError.value = 'Error checking email. Please try again.'
+    emailValid.value = false
+  } finally {
+    emailChecking.value = false
+  }
+}
 
 const handleRegister = () => {
+  if (!emailValid.value) {
+    alert("Please verify your email address first!")
+    return
+  }
+
   if (password.value !== confirmPassword.value) {
     alert("Passwords do not match!")
     return
@@ -111,4 +159,11 @@ const handleRegister = () => {
 .auth-footer { text-align: center; margin-top: 25px; font-size: 14px; color: #7f8c8d; }
 .auth-footer a { color: #0aa159; text-decoration: none; font-weight: 600; margin-left: 5px; }
 .auth-footer a:hover { text-decoration: underline; }
+
+/* Email validation feedback */
+.error-message { font-size: 13px; color: #e74c3c; margin-top: 4px; display: block; }
+.success-message { font-size: 13px; color: #27ae60; margin-top: 4px; display: block; }
+.input-spinner { position: absolute; right: 15px; color: #3498db; font-size: 14px; }
+.fa-spin { animation: spin 1s linear infinite; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 </style>
