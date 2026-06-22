@@ -2,6 +2,7 @@ from typing import Optional, cast
 from fastapi import Depends
 import httpx
 
+
 from app.config import static_settings
 from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository
 from app.domain.services import IdGenerator 
@@ -21,6 +22,7 @@ from app.services.mock_id_generator import FakeIdGenerator
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 # Use Case Imports
+from app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
 from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
 from app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatientsUseCase
 from app.usecases.scan_use_cases.scan_analysis_use_case import ScanAnalysisUseCase

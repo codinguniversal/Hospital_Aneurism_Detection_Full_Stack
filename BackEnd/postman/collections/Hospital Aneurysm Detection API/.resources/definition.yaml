@@ -1,6 +1,5 @@
 $kind: collection
 name: Hospital Aneurysm Detection API
 variables:
-  - key: baseUrl
-    value: 'http://localhost:8000'
-    type: default
+  baseUrl: http://localhost:8000
+  scan_id: ""

@@ -2,3 +2,7 @@ name: Hospital Aneurysm Detection API
 values:
   - key: baseUrl
     value: ''
+  - key: email
+    value: ''
+  - key: patient_id
+    value: ''
