@@ -49,13 +49,14 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
+import { authApi } from '../services/authService.js'
 
 const router = useRouter()
 const loginIdentifier = ref('')
 const password = ref('')
 const isAdmin = ref(false) 
 
-const handleLogin = () => {
+const handleLogin = async () => {
   const isSixDigitId = /^\d{6}$/.test(loginIdentifier.value.trim())
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentifier.value.trim())
 
@@ -64,11 +65,19 @@ const handleLogin = () => {
     return
   }
 
-  const role = isAdmin.value ? 'admin' : 'doctor'
-  authStore.login(loginIdentifier.value.trim(), role)
-  
-  if (role === 'admin') router.push('/admin')
-  else router.push('/records')
+  try {
+    const user = await authApi.login(
+      loginIdentifier.value.trim(),
+      password.value,
+      isAdmin.value
+    )
+
+    authStore.login(user.employee_id, user.role)
+    router.push(isAdmin.value ? '/admin' : '/records')
+  } catch (error) {
+    alert('Login failed. Please check your credentials.')
+    console.error('Login error:', error)
+  }
 }
 </script>
 

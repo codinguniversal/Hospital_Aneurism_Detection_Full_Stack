@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.dependencies import get_update_settings_use_case
+from app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
+from app.dependencies import get_settings_use_case, get_update_settings_use_case
 from app.domain.entities import SettingsEntity
 from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
 from app.schemas.setting_schema import SettingsResponseSchema, SettingsUpdateRequestSchema
@@ -19,3 +20,10 @@ async def update_settings(
         return SettingsResponseSchema(**new_settings.model_dump())
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    
+@router.get("", response_model=SettingsResponseSchema, status_code=status.HTTP_200_OK)
+async def get_settings(
+    use_case: GetSettingsUseCase = Depends(get_settings_use_case)
+):
+    settings = await use_case.execute()
+    return SettingsResponseSchema(**settings.model_dump())

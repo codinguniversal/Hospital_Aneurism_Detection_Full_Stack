@@ -1,4 +1,4 @@
-import { API_BASE_URL } from './config.js'
+export const API_BASE_URL = 'http://localhost:8000'
 
 async function apiRequest(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -11,15 +11,8 @@ async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     const errorText = await response.text()
-    throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`)
+    throw new Error(errorText || `HTTP ${response.status}`)
   }
 
   return response.json()
-}
-
-export const emailApi = {
-  async checkEmailExists(email) {
-    return apiRequest(`/email/check?email=${encodeURIComponent(email)}`)
-      .then(data => data.exists)
-  }
 }

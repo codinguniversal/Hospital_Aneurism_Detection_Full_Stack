@@ -127,6 +127,10 @@ def build_update_settings_use_case() -> UpdateSettingsUseCase:
     settings_repo = build_settings_repository()
     return UpdateSettingsUseCase(settings_repo=settings_repo)
 
+def build_get_settings_use_case() -> GetSettingsUseCase:
+    settings_repo = build_settings_repository()
+    return GetSettingsUseCase(settings_repo=settings_repo)
+
 # --- Fast API Wrapeprs for Use Cases ---
 async def get_patient_records_use_case(
     use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case)
@@ -161,4 +165,9 @@ async def get_check_email_use_case(
 async def get_update_settings_use_case(
     use_case: UpdateSettingsUseCase = Depends(build_update_settings_use_case)
 ) -> UpdateSettingsUseCase:
+    return use_case
+
+async def get_settings_use_case(
+    use_case: GetSettingsUseCase = Depends(build_get_settings_use_case)
+) -> GetSettingsUseCase:
     return use_case
