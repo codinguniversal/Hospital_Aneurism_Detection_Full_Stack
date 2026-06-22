@@ -76,6 +76,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
 import { emailApi } from '../services/api.js'
+import { authApi } from '../services/authService.js'
 
 const router = useRouter()
 const username = ref('')
@@ -115,7 +116,7 @@ const checkEmailExists = async () => {
   }
 }
 
-const handleRegister = () => {
+const handleRegister = async () => {
   if (!emailValid.value) {
     alert("Please verify your email address first!")
     return
@@ -125,12 +126,21 @@ const handleRegister = () => {
     alert("Passwords do not match!")
     return
   }
-  
-  // 1. Tell the store we are logged in with their new username
-  authStore.login(username.value)
-  
-  // 2. Automatically redirect to the records page!
-  router.push('/records')
+
+  try {
+    const result = await authApi.register(
+      username.value,
+      email.value,
+      password.value,
+      gender.value
+    )
+
+    authStore.login(email.value, 'doctor')
+    router.push('/records')
+  } catch (error) {
+    alert(error.message || 'Registration failed. Please try again.')
+    console.error('Register error:', error)
+  }
 }
 </script>
 

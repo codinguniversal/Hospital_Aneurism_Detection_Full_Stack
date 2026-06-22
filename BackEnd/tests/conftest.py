@@ -19,7 +19,6 @@ from app.dependencies import (
 from app.domain.entities import (
     SettingsEntity,
     UserEntity,
-    AneurysmAnalysisResultEntity
 )
 
 # ============================================================================

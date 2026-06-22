@@ -2,6 +2,7 @@ from typing import cast
 
 from fastapi import Depends
 import httpx
+from BackEnd.app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
 from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
 from app.repositories.mongo_repos.mongo_settings_repository import MongoSettingsRepository
 from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
@@ -128,6 +129,10 @@ def build_update_settings_use_case() -> UpdateSettingsUseCase:
     settings_repo = build_settings_repository()
     return UpdateSettingsUseCase(settings_repo=settings_repo)
 
+def build_get_settings_use_case() -> GetSettingsUseCase:
+    settings_repo = build_settings_repository()
+    return GetSettingsUseCase(settings_repo=settings_repo)
+
 # --- Fast API Wrapeprs for Use Cases ---
 async def get_patient_records_use_case(
     use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case)
@@ -162,4 +167,9 @@ async def get_check_email_use_case(
 async def get_update_settings_use_case(
     use_case: UpdateSettingsUseCase = Depends(build_update_settings_use_case)
 ) -> UpdateSettingsUseCase:
+    return use_case
+
+async def get_settings_use_case(
+    use_case: GetSettingsUseCase = Depends(build_get_settings_use_case)
+) -> GetSettingsUseCase:
     return use_case
