@@ -37,7 +37,6 @@ class MongoInfrastructureFactory(InfrastructureFactory):
         return self._settings_repo
     
     def get_id_generator(self) -> IdGenerator:
-        # once real implementation craeted replace here
         self._id_generator = MongoIdGenerator(db=self._db)
         return self._id_generator
     

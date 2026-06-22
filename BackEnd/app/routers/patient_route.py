@@ -1,31 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+from app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
 from app.domain.repositories import SettingsRepository
 from app.domain.entities import PatientEntity
 from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
 from app.schemas.patient_schema import PatientRecordResponseSchema
 from app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatientsUseCase
-from app.dependencies import get_patient_records_use_case, get_patient_results_use_case, build_settings_repository
-from app.routers.patient_mappers import patient_entitities_to_records
+from app.dependencies import get_patient_records_use_case, get_patient_results_use_case, build_settings_repository, get_settings_use_case
+from app.routers.mappers import patient_entities_to_records
 
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
 
 @router.get("/records", response_model=List[PatientRecordResponseSchema], status_code=status.HTTP_200_OK)
 async def get_records(
-    use_case: GetAllPatientsUseCase = Depends(get_patient_records_use_case),
-    settings_repo: SettingsRepository= Depends(build_settings_repository)
+    get_all_patients_use_case: GetAllPatientsUseCase = Depends(get_patient_records_use_case),
+    get_settings_use_case: GetSettingsUseCase= Depends(get_settings_use_case)
 ):
-    results = await use_case.execute()
+    results = await get_all_patients_use_case.execute()
     if not results:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No Patient Records were found")
-    settings = await settings_repo.get_settings()
+    settings = await get_settings_use_case.execute()
     if not settings:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No Settings were found") 
     
     high_threshold = settings.aneurysm_high_risk_threshold
     mid_threshold = settings.aneurysm_medium_risk_threshold
-    patient_records = await patient_entitities_to_records(high_threshold= high_threshold, mid_threshold= mid_threshold, patients= results)
+    patient_records = patient_entities_to_records(high_threshold= high_threshold, mid_threshold= mid_threshold, patients= results)
     return patient_records
 
 @router.get("/{patient_id}", response_model=PatientEntity, status_code=status.HTTP_200_OK)

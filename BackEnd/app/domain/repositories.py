@@ -19,7 +19,10 @@ class UserRepository(ABC):
     async def add_user(self, user: UserEntity) -> None:
         """Persist a new user (admin/doctor) in the data layer"""
         pass
-
+    @abstractmethod
+    async def get_all_users(self)->List[UserEntity]:
+        """Fetches all users"""
+        pass
 class PatientRepository(ABC):
     @abstractmethod
     async def get_all_patients(self) -> List[PatientEntity]:

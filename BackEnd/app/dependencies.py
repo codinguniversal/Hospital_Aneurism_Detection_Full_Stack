@@ -2,23 +2,16 @@ from typing import Optional, cast
 from fastapi import Depends
 import httpx
 
-
+from app.usecases.user_use_cases.get_all_users_use_case import GetAllUsersUseCase
 from app.config import static_settings
 from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository
 from app.domain.services import IdGenerator 
 from app.domain.factories import InfrastructureFactory
 
-from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
-from app.repositories.mongo_repos.mongo_settings_repository import MongoSettingsRepository
-from app.repositories.mongo_repos.Mongo_patient_repository import MongoPatientRepository
-from app.repositories.mock_repos.mock_patient_repository import MockPatientRepository
-from app.repositories.mock_repos.mock_settings_repository import MockSettingsRepository
-from app.repositories.mock_repos.mock_user_repository import MockUserRepository
-
 from app.services.mock_data_layer import  MockNoSQLDataLayer
 from app.services.mock_ai_service import MockScanAnalysisService
 from app.services.ai_service import HTTPXScanAnalysisService
-from app.services.mock_id_generator import FakeIdGenerator
+
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 # Use Case Imports
@@ -130,6 +123,10 @@ def build_get_settings_use_case() -> GetSettingsUseCase:
     settings_repo = build_settings_repository()
     return GetSettingsUseCase(settings_repo=settings_repo)
 
+def build_get_all_users_use_case()->GetAllUsersUseCase:
+    user_repo = build_user_repository()
+    return GetAllUsersUseCase(user_repo= user_repo)
+
 # --- Fast API Wrapeprs for Use Cases ---
 async def get_patient_records_use_case(
     use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case)
@@ -169,4 +166,9 @@ async def get_update_settings_use_case(
 async def get_settings_use_case(
     use_case: GetSettingsUseCase = Depends(build_get_settings_use_case)
 ) -> GetSettingsUseCase:
+    return use_case
+
+async def get_all_users_use_case(
+        use_case: GetAllUsersUseCase = Depends(build_get_all_users_use_case)
+)->GetAllUsersUseCase:
     return use_case

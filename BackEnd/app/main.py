@@ -6,7 +6,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.routers import admin_settings_route
 from app.dependencies import build_settings_repository, _ai_http_client, initialize_infrastructure
 from app.config import static_settings
-from app.routers import scans_route, auth_route, patient_route, email_check_route
+from app.routers import scans_route, auth_route, patient_route, email_check_route, users_route
 from app.tasks.scheduler import start_apscheduler
 
 
@@ -51,5 +51,6 @@ app.include_router(auth_route.router)
 app.include_router(email_check_route.router)
 app.include_router(patient_route.router)
 app.include_router(admin_settings_route.router)
+app.include_router(users_route.router)
 
 

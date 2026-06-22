@@ -8,7 +8,7 @@ class UserCreateSchema(BaseModel):
     role: str
 
 class UserResponseSchema(BaseModel):
-    employee_id: str
+    id: str
     email: EmailStr
     role: str
 

@@ -1,12 +1,12 @@
 
 from typing import List
 
-from app.domain.repositories import SettingsRepository
 from app.schemas.patient_schema import PatientRecordResponseSchema
-from app.domain.entities import PatientEntity, ScanStatus
+from app.schemas.user_schema import UserResponseSchema
+from app.domain.entities import PatientEntity, ScanStatus, UserEntity
 
 
-async def patient_entitities_to_records(high_threshold: float, mid_threshold: float ,patients: List[PatientEntity])-> List[PatientRecordResponseSchema] :
+def patient_entities_to_records(high_threshold: float, mid_threshold: float ,patients: List[PatientEntity])-> List[PatientRecordResponseSchema] :
         results = []
         for patient in patients:
             if not patient.scans:
@@ -25,3 +25,11 @@ async def patient_entitities_to_records(high_threshold: float, mid_threshold: fl
             )
                 
         return results
+def user_entities_to_user_response(users: List[UserEntity])->List[UserResponseSchema]:
+    return [
+        UserResponseSchema(
+            id= user.employee_id,
+            email= user.email,
+            role = user.role
+        )for user in users
+    ] 

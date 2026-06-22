@@ -1,13 +1,32 @@
-# mock data layer service for development
-from typing import Any, Dict, Optional
-from functools import lru_cache
-
-
+# app/services/mock_data_layer.py
+from typing import Dict, Any
 
 class MockNoSQLDataLayer:
+    """
+    A dumb, in‑memory data container that mimics a NoSQL database.
+    It holds only raw dictionaries. All query logic is implemented in the repositories.
+    """
     def __init__(self):
-        print("Initalizing Mock Database...")
-        self._patients_collection = {
+        print("Initializing Mock Database...")
+
+        # -------------------- Users --------------------
+        self.users: Dict[str, Dict[str, Any]] = {
+            "admin@hospital.org": {
+                "employeeId": "ADMIN-01",
+                "email": "admin@hospital.org",
+                "password": "admin123",
+                "role": "admin"
+            },
+            "user@example.com": {
+                "employeeId": "USER-01",
+                "email": "user@example.com",
+                "password": "password123",
+                "role": "Doctor"
+            }
+        }
+
+        # -------------------- Patients --------------------
+        self.patients: Dict[str, Dict[str, Any]] = {
             "pat_001": {
                 "id": "pat_001",
                 "patient_name": "Alice Smith",
@@ -23,7 +42,7 @@ class MockNoSQLDataLayer:
                         "results": None
                     }
                 ]
-                },
+            },
             "pat_002": {
                 "id": "pat_002",
                 "patient_name": "Bob Jones",
@@ -42,21 +61,8 @@ class MockNoSQLDataLayer:
             }
         }
 
-        self._users_collection = {
-            "admin@hospital.org": {
-                "employeeId": "ADMIN-01",
-                "email": "admin@hospital.org",
-                "password": "admin123",
-                "role": "admin"
-            },
-            "user@example.com": {
-                "employeeId": "USER-01",
-                "email": "user@example.com",
-                "password": "password123",
-                "role": "Doctor"
-            }
-        }
-        self._settings_collection = {
+        # -------------------- Settings --------------------
+        self.settings: Dict[str, Dict[str, Any]] = {
             "current_config": {
                 "ai_api_url": "http://127.0.0.1:8001/analyze",
                 "ai_timeout_limit": 60,
@@ -67,5 +73,3 @@ class MockNoSQLDataLayer:
                 "aneurysm_medium_risk_threshold": 0.4
             }
         }
-    async def get_user_credentials(self, identifier: str, is_admin: bool) -> Optional[Dict[str, Any]]:
-        return self._users_collection.get(identifier)
