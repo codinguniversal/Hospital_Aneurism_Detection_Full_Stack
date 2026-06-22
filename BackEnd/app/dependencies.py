@@ -1,23 +1,27 @@
-from typing import cast
-
+from typing import Optional, cast
 from fastapi import Depends
 import httpx
-from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
-from app.repositories.mongo_repos.mongo_settings_repository import MongoSettingsRepository
-from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
+
 from app.config import static_settings
 from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository
 from app.domain.services import IdGenerator 
+from app.domain.factories import InfrastructureFactory
+
+from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
+from app.repositories.mongo_repos.mongo_settings_repository import MongoSettingsRepository
 from app.repositories.mongo_repos.Mongo_patient_repository import MongoPatientRepository
 from app.repositories.mock_repos.mock_patient_repository import MockPatientRepository
 from app.repositories.mock_repos.mock_settings_repository import MockSettingsRepository
 from app.repositories.mock_repos.mock_user_repository import MockUserRepository
+
 from app.services.mock_data_layer import  MockNoSQLDataLayer
 from app.services.mock_ai_service import MockScanAnalysisService
 from app.services.ai_service import HTTPXScanAnalysisService
 from app.services.mock_id_generator import FakeIdGenerator
 from motor.motor_asyncio import AsyncIOMotorDatabase
+
 # Use Case Imports
+from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
 from app.usecases.patient_use_cases.get_all_patients_use_case import GetAllPatientsUseCase
 from app.usecases.scan_use_cases.scan_analysis_use_case import ScanAnalysisUseCase
 from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
@@ -25,10 +29,24 @@ from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCa
 from app.usecases.auth_use_cases.check_email_use_case import CheckEmailUseCase
 from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
 
- 
+from app.factories.concrete_factories import MongoInfrastructureFactory, MockInfrastructureFactory
+
+
+
 # Singleton HTTP client for the whole app
+_factory: Optional[InfrastructureFactory] = None
 _ai_http_client = None
 _id_generator = None
+
+def initialize_infrastructure(db: Optional[AsyncIOMotorDatabase] = None):
+    global _factory
+    if static_settings.database_mode == "mongodb":
+        if db is None:
+            raise ValueError("Mongodb mode requires a db connection")
+        _factory = MongoInfrastructureFactory(db=db)
+    else:
+        mock_db = MockNoSQLDataLayer()
+        _factory = MockInfrastructureFactory(mock_db= mock_db)
 
 def get_ai_http_client() -> httpx.AsyncClient:
     global _ai_http_client
@@ -36,20 +54,7 @@ def get_ai_http_client() -> httpx.AsyncClient:
         _ai_http_client = httpx.AsyncClient()
     return _ai_http_client
 
-# Single instance of the mock data layer for development/testing
-_mock_db_service = MockNoSQLDataLayer() 
 
-# Singleton settings repository instance (the cache lives inside)
-_settings_repo_instance = None
-
-# --- db and service helpers---
-def _get_db_connection():
-    """Helper to retrieve teh current DB connection"""
-    if static_settings.database_mode == "mongodb":
-        from app.main import app
-        return app.state.db
-    
-    return _mock_db_service 
 
 async def build_ai_service():
     if static_settings.use_mock_ai:
@@ -67,28 +72,22 @@ async def build_id_generator() -> IdGenerator:
     if _id_generator is None:
         _id_generator = FakeIdGenerator() 
     return _id_generator  
+
 #--- Repository Builders ---
 def build_patient_repository()-> PatientRepository:
-    db = _get_db_connection()
-    if static_settings.database_mode == "mongodb":
-        return MongoPatientRepository(db=cast(AsyncIOMotorDatabase,db))
-    return MockPatientRepository(db = cast(MockNoSQLDataLayer,db))
+    if _factory is None:
+        raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
+    return _factory.get_patient_repository()
 
 def build_user_repository()-> UserRepository:
-    db = _get_db_connection()
-    if static_settings.database_mode == "mongodb":
-        return MongoUserRepository(db =cast(AsyncIOMotorDatabase, db)) # implement when ready
-    return MockUserRepository(db= cast(MockNoSQLDataLayer, db))
+    if _factory is None:
+        raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
+    return _factory.get_user_repository()
 
 def build_settings_repository()->SettingsRepository:
-    global _settings_repo_instance
-    if _settings_repo_instance is None:
-        db = _get_db_connection()
-        if static_settings.database_mode == "mongodb":
-            return MongoSettingsRepository(db=cast(AsyncIOMotorDatabase,db))   # implement when ready
-        else:
-            _settings_repo_instance = MockSettingsRepository(db= cast(MockNoSQLDataLayer,db))
-    return _settings_repo_instance
+    if _factory is None:
+        raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
+    return _factory.get_settings_repository()
 
 #--- Use Case Builders ---
 def build_get_patient_records_use_case() -> GetAllPatientsUseCase:

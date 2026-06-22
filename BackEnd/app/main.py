@@ -4,7 +4,7 @@ import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.routers import admin_settings_route
-from app.dependencies import build_settings_repository, _ai_http_client
+from app.dependencies import build_settings_repository, _ai_http_client, initialize_infrastructure
 from app.config import static_settings
 from app.routers import scans_route, auth_route, patient_route, email_check_route
 from app.tasks.scheduler import start_apscheduler
@@ -21,7 +21,9 @@ async def lifespan(app: FastAPI):
         db = db_client[static_settings.mongodb_db_name] # Select the specific database
         app.state.db = db # Connect to CAD_DB database
     else:
-        pass
+        db = None
+
+    initialize_infrastructure(db)
 
     # pull initial settings from DB and cache in memory for quick access across the app:
     settings_repo = build_settings_repository()
