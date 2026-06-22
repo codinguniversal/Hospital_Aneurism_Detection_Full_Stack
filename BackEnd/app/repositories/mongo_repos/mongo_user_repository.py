@@ -27,7 +27,15 @@ class MongoUserRepository(UserRepository):
             password=raw_user["password"],
             role=raw_user["role"]
         )
-    
+
+    async def get_all_users(self) -> list:
+        """Retrieves all user documents from the MongoDB collection."""
+        users_cursor = self._collection.find({})
+        users_list = await users_cursor.to_list(length=100)
+        
+        # Map them back to your domain entities
+        return [UserEntity(**user) for user in users_list]
+
     async def get_by_employee_id(self, employee_id: str) -> Optional[UserEntity]:
         """Looks up a user strictly by their unique employeeId using identifier logic."""
         return await self.get_by_identifier(employee_id)
