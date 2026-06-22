@@ -2,7 +2,7 @@ from typing import cast
 
 from fastapi import Depends
 import httpx
-from BackEnd.app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
+from app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
 from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
 from app.repositories.mongo_repos.mongo_settings_repository import MongoSettingsRepository
 from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
