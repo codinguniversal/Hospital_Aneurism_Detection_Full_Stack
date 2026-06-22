@@ -10,7 +10,7 @@ class DeleteUserByIdUseCase:
 
         if not user:
             raise ValueError(f"user with ID {user_id} not found")
-
+        
         if user.role.lower() == "admin":
             all_users = await self.user_repo.get_all_users()
             admin_count = await self.user_repo.count_admins()
