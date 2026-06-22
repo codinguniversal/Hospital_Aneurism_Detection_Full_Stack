@@ -29,11 +29,10 @@ class MongoUserRepository(UserRepository):
         )
 
     async def get_all_users(self) -> list:
-        """Retrieves all user documents from the MongoDB collection."""
+        """Retrieves all user documents"""
         users_cursor = self._collection.find({})
         users_list = await users_cursor.to_list(length=100)
-        
-        # Map them back to your domain entities
+
         return [UserEntity(**user) for user in users_list]
 
     async def get_by_employee_id(self, employee_id: str) -> Optional[UserEntity]:
@@ -70,5 +69,15 @@ class MongoUserRepository(UserRepository):
             {"$set": user_document},
             upsert=True
         )
-    async def count_admins(self) -> int:
-        return await self.collection.count_documents({"role": "admin"})
+
+    async def delete_user_by_id(self, user_id: str) -> None:
+        """
+        Delete a user by their Employee ID from the MongoDB collection.
+        Raises ValueError if the user is not found.
+        """
+        result = await self._collection.delete_one({"employeeId": user_id})
+
+        if result.deleted_count == 0:
+            raise ValueError(f"User with employee ID '{user_id}' not found")
+            
+        return None

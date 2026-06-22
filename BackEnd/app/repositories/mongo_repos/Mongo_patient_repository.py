@@ -8,7 +8,7 @@ from app.domain.repositories import PatientRepository as IPatientRepository
 
 class MongoPatientRepository(IPatientRepository):
     def __init__(self, db: AsyncIOMotorDatabase):
-        # Pass the database instance (CAD_DB) initialized in main.py
+        
         self.collection = db["patients"]
 
     # Helpers for data translation
@@ -139,5 +139,23 @@ class MongoPatientRepository(IPatientRepository):
         )
         return update_result.modified_count > 0
 
-    async def get_all_pending_scans(self) -> List[ScanEntity]:
-        raise NotImplementedError
+async def get_all_pending_scans(self) -> List[ScanEntity]:
+        """
+        Retrieves all scans across all patients that have a status of 'pending'
+        using an efficient MongoDB aggregation pipeline.
+        """
+        pipeline = [
+            {"$unwind": "$scans"},
+            
+            {"$match": {"scans.status": "pending"}},
+            
+            {"$replaceRoot": {"newRoot": "$scans"}}
+        ]
+        
+        pending_scans = []
+        cursor = self._collection.aggregate(pipeline)
+    
+        async for scan_data in cursor:
+            pending_scans.append(ScanEntity.model_validate(scan_data))
+            
+        return pending_scans
