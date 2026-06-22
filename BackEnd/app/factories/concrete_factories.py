@@ -1,5 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.services.mongo_id_generator import MongoIdGenerator
 from app.domain.services import IdGenerator
 from app.services.mock_id_generator import FakeIdGenerator
 from app.domain.factories import InfrastructureFactory
@@ -31,12 +32,13 @@ class MongoInfrastructureFactory(InfrastructureFactory):
         return MongoUserRepository(db=self._db)
 
     def get_settings_repository(self) -> SettingsRepository:
-        if self.settings_repo is None:
-            self.settings_repo =MongoSettingsRepository(db=self._db)
-        return self.settings_repo
+        if self._settings_repo is None:
+            self._settings_repo =MongoSettingsRepository(db=self._db)
+        return self._settings_repo
+    
     def get_id_generator(self) -> IdGenerator:
         # once real implementation craeted replace here
-        self._id_generator = FakeIdGenerator()
+        self._id_generator = MongoIdGenerator(db=self._db)
         return self._id_generator
     
 class MockInfrastructureFactory(InfrastructureFactory):

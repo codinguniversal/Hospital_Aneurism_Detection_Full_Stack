@@ -3,7 +3,7 @@ import { API_BASE_URL , apiRequest } from './config.js'
 
 
 export const authApi = {
-  async register(username, email, password, gender) {
+  async register(email, password, gender) {
     return apiRequest('/auth/register', {
       method: 'POST',
       body: JSON.stringify({ email, password, gender })
@@ -11,10 +11,15 @@ export const authApi = {
   },
 
   async login(loginIdentifier, password, isAdmin) {
-    return apiRequest('/auth/login', {
+    const responseData = await apiRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ loginIdentifier, password, isAdmin })
     })
+
+    return {
+      status: responseData.status,
+      employeeId: responseData.user_id // Maps "user_id"  to "employeeId"
+    }
   }
 }
 
