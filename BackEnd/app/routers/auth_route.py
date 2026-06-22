@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
-from app.schemas.auth_schema import LoginRequestSchema, UserResponseSchema, RegisterRequestSchema
+from app.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
 
 from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
 from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCase
@@ -10,7 +10,7 @@ from app.dependencies import get_authenticate_user_use_case, get_register_user_u
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/login" ,response_model= UserResponseSchema, status_code= status.HTTP_200_OK)
+@router.post("/login" ,response_model= LoginResponseSchema, status_code= status.HTTP_200_OK)
 async def login(
     login_request: LoginRequestSchema,
     use_case: AuthenticateUserUseCase = Depends(get_authenticate_user_use_case)

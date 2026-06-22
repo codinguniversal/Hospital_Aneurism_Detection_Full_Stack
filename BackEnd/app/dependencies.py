@@ -23,6 +23,7 @@ from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCa
 from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCase
 from app.usecases.auth_use_cases.check_email_use_case import CheckEmailUseCase
 from app.usecases.patient_use_cases.get_patient_results_use_case import GetPatientResultsUseCase
+from app.usecases.user_use_cases.delete_user_use_case import DeleteUserByIdUseCase
 
 from app.factories.concrete_factories import MongoInfrastructureFactory, MockInfrastructureFactory
 
@@ -127,6 +128,11 @@ def build_get_all_users_use_case()->GetAllUsersUseCase:
     user_repo = build_user_repository()
     return GetAllUsersUseCase(user_repo= user_repo)
 
+def build_delete_user_by_id_use_case()-> DeleteUserByIdUseCase:
+    user_repo = build_user_repository()
+    return DeleteUserByIdUseCase(user_repo= user_repo)
+
+
 # --- Fast API Wrapeprs for Use Cases ---
 async def get_patient_records_use_case(
     use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case)
@@ -171,4 +177,9 @@ async def get_settings_use_case(
 async def get_all_users_use_case(
         use_case: GetAllUsersUseCase = Depends(build_get_all_users_use_case)
 )->GetAllUsersUseCase:
+    return use_case
+
+async def delete_user_by_id_use_case(
+        use_case: DeleteUserByIdUseCase = Depends(build_delete_user_by_id_use_case)
+)-> DeleteUserByIdUseCase:
     return use_case

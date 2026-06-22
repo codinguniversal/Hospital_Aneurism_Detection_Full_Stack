@@ -1,4 +1,5 @@
 $kind: http-request
-url: ""
+name: Get Admin Settings
+url: "{{baseUrl}}/admin/settings"
 method: GET
 order: 1850291893830220

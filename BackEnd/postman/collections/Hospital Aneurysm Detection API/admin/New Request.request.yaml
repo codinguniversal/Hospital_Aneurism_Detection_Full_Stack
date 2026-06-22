@@ -1,21 +1,20 @@
 $kind: http-request
 name: Update Admin Settings
 method: PUT
-url: '{{baseUrl}}/admin/settings'
+url: "{{baseUrl}}/admin/settings"
 order: 1000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
     {
       "ai_api_url": "http://localhost:8001/analyze",
-      "ai_timeout_limit": 30,
+      "ai_timeout_limit": 3,
       "automatic_scan_start_hour": 8,
       "automatic_scan_end_hour": 18,
       "automatic_scan_interval": 60,
       "aneurysm_high_risk_threshold": 0.85,
       "aneurysm_medium_risk_threshold": 0.60
     }
-description: 'Update admin settings. Fields: ai_api_url, ai_timeout_limit, automatic_scan_start_hour (0-23), automatic_scan_end_hour (0-23), automatic_scan_interval, aneurysm_high_risk_threshold (0-1), aneurysm_medium_risk_threshold (0-1). High threshold must be > medium threshold. Start hour must be < end hour.'
+description: "Update admin settings. Fields: ai_api_url, ai_timeout_limit, automatic_scan_start_hour (0-23), automatic_scan_end_hour (0-23), automatic_scan_interval, aneurysm_high_risk_threshold (0-1), aneurysm_medium_risk_threshold (0-1). High threshold must be > medium threshold. Start hour must be < end hour."

@@ -4,7 +4,7 @@ class LoginRequestSchema(BaseModel):
     loginIdentifier: str
     password: str
     isAdmin: bool
-class UserResponseSchema(BaseModel):
+class LoginResponseSchema(BaseModel):
     employee_id: str
     email:EmailStr
     role: str

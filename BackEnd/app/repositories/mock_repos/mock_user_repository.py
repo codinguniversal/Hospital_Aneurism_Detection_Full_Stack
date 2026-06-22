@@ -54,3 +54,21 @@ class MockUserRepository(UserRepository):
                     role=raw_user["role"]
                 )
         return None
+    
+    async def count_admins(self) -> int:
+        return sum(1 for user in self.db.users.values() if user.get("role", "").lower() == "admin")
+    async def delete_user_by_id(self, user_id: str) -> None:
+        """
+        Delete a user by their Employee ID (e.g., 'USER-01' or 'ADMIN-01').
+        Raises ValueError if the user is not found.
+        """
+        email_to_delete = None
+        for email, user_data in self.db.users.items():
+            if user_data.get("employeeId") == user_id:
+                email_to_delete = email
+                break
+
+        if email_to_delete is None:
+            raise ValueError(f"User with employee ID '{user_id}' not found")
+
+        del self.db.users[email_to_delete]

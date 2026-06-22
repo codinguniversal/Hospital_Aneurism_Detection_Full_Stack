@@ -62,3 +62,5 @@ class MongoUserRepository(UserRepository):
             {"$set": user_document},
             upsert=True
         )
+    async def count_admins(self) -> int:
+        return await self.collection.count_documents({"role": "admin"})
