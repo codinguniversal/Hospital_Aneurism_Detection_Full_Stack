@@ -1,5 +1,6 @@
 from abc import ABC , abstractmethod
 
+from app.domain.services import IdGenerator
 from app.domain.repositories import PatientRepository, SettingsRepository, UserRepository
 
 class InfrastructureFactory(ABC):
@@ -13,4 +14,8 @@ class InfrastructureFactory(ABC):
 
     @abstractmethod
     def get_settings_repository(self)-> SettingsRepository:
+        pass
+
+    @abstractmethod
+    def get_id_generator(self)-> IdGenerator:
         pass

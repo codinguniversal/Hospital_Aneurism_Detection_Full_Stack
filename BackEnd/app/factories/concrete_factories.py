@@ -1,5 +1,7 @@
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.domain.services import IdGenerator
+from app.services.mock_id_generator import FakeIdGenerator
 from app.domain.factories import InfrastructureFactory
 from app.domain.repositories import PatientRepository, UserRepository, SettingsRepository
 
@@ -20,6 +22,7 @@ class MongoInfrastructureFactory(InfrastructureFactory):
     def __init__(self, db: AsyncIOMotorDatabase):
         self._db = db
         self._settings_repo = None
+        self._id_generator = None
 
     def get_patient_repository(self) -> PatientRepository:
         return MongoPatientRepository(db = self._db)
@@ -31,6 +34,10 @@ class MongoInfrastructureFactory(InfrastructureFactory):
         if self.settings_repo is None:
             self.settings_repo =MongoSettingsRepository(db=self._db)
         return self.settings_repo
+    def get_id_generator(self) -> IdGenerator:
+        # once real implementation craeted replace here
+        self._id_generator = FakeIdGenerator()
+        return self._id_generator
     
 class MockInfrastructureFactory(InfrastructureFactory):
     def __init__(self, mock_db: MockNoSQLDataLayer):
@@ -47,3 +54,6 @@ class MockInfrastructureFactory(InfrastructureFactory):
         if self._settings_repo is None:
             self._settings_repo = MockSettingsRepository(db=self._mock_db)
         return self._settings_repo
+    def get_id_generator(self) -> IdGenerator:
+        return FakeIdGenerator()
+    

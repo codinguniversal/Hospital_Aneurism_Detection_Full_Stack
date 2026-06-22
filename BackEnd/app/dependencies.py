@@ -56,8 +56,6 @@ def get_ai_http_client() -> httpx.AsyncClient:
         _ai_http_client = httpx.AsyncClient()
     return _ai_http_client
 
-
-
 async def build_ai_service():
     if static_settings.use_mock_ai:
         return MockScanAnalysisService(fixed_overall_probability= 0.85)
@@ -70,10 +68,9 @@ async def build_ai_service():
         timeout= dynamic_settings.ai_timeout_limit
         )
 async def build_id_generator() -> IdGenerator:
-    global _id_generator
-    if _id_generator is None:
-        _id_generator = FakeIdGenerator() 
-    return _id_generator  
+    if _factory is None:
+        raise RuntimeError("Infrastructure not initialized.")
+    return _factory.get_id_generator()
 
 #--- Repository Builders ---
 def build_patient_repository()-> PatientRepository:
