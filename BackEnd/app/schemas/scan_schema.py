@@ -5,7 +5,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
-from app.domain.entities import AneurysmAnalysisResultEntity
+from app.core.patient_management.entities import AneurysmAnalysisResultEntity
 
 
 

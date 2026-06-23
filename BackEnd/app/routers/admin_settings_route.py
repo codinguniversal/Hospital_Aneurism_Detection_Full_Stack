@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.usecases.settings_use_cases.get_settings_use_case import GetSettingsUseCase
 from app.dependencies import get_settings_use_case, get_update_settings_use_case
-from app.domain.entities import SettingsEntity
-from app.usecases.settings_use_cases.update_setings_use_case import UpdateSettingsUseCase
+from app.modules.system_settings.entities import SettingsEntity
+from app.modules.system_settings.use_cases import GetSettingsUseCase, UpdateSettingsUseCase
 from app.schemas.setting_schema import SettingsResponseSchema, SettingsUpdateRequestSchema
 
 router = APIRouter(prefix="/admin/settings", tags=["Admin Settings"])

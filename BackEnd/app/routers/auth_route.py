@@ -1,10 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from app.repositories.mongo_repos.mongo_user_repository import MongoUserRepository
+from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
 from app.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
-
-from app.usecases.auth_use_cases.auth_user_use_case import AuthenticateUserUseCase
-from app.usecases.auth_use_cases.register_user_use_case import RegisterUserUseCase
 
 from app.dependencies import get_authenticate_user_use_case, get_register_user_use_case
 

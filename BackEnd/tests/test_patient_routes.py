@@ -1,7 +1,7 @@
 from datetime import datetime, date
 import pytest
 from fastapi import status
-from app.domain.entities import PatientEntity, ScanEntity, ScanStatus
+from app.core.patient_management.entities import PatientEntity, ScanEntity, ScanStatus
 
 
 class TestPatientRecordsRoute:

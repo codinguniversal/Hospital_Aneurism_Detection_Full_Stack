@@ -3,7 +3,7 @@ Tests for authentication routes: POST /auth/login, POST /auth/register, GET /aut
 """
 import pytest
 from fastapi import status
-from app.domain.entities import UserEntity
+from app.modules.identity_access.entities import UserEntity
 
 
 class TestEmailCheckRoute:

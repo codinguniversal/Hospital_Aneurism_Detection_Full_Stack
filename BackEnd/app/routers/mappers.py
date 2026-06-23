@@ -3,7 +3,8 @@ from typing import List
 
 from app.schemas.patient_schema import PatientRecordResponseSchema
 from app.schemas.user_schema import UserResponseSchema
-from app.domain.entities import PatientEntity, ScanStatus, UserEntity
+from app.core.patient_management.entities import PatientEntity, ScanStatus
+from app.modules.identity_access.entities import UserEntity
 
 
 def patient_entities_to_records(high_threshold: float, mid_threshold: float ,patients: List[PatientEntity])-> List[PatientRecordResponseSchema] :
