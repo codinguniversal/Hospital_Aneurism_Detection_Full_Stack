@@ -1,18 +1,16 @@
-import {apiRequest } from './config.js'
-
+import apiClient from './apiClient';
 
 export const settingsApi = {
     async getSettings() {
-        return apiRequest('/admin/settings',{
-            method: 'GET'
-        })
+        return apiClient.get('/admin/settings');
     },
 
     async updateSettings(newSettings){
-        return apiRequest('/admin/settings',{
-            method: 'PUT',
-            body: JSON.stringify(newSettings)
-        })
+        return apiClient.put('/admin/settings', newSettings);
     }
 }
+     
+
+
+
 

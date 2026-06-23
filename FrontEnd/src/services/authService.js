@@ -1,32 +1,54 @@
-import { API_BASE_URL , apiRequest } from './config.js'
+import apiClient from './apiClient'; 
 
+export const authService = {
 
-
-export const authApi = {
   async register(email, password, gender) {
-    return apiRequest('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, gender })
-    })
+    // Axios automatically handles JSON stringification and content headers
+    return apiClient.post('/auth/register', { 
+      email, 
+      password, 
+      gender 
+    });
   },
 
   async login(loginIdentifier, password, isAdmin) {
-    const responseData = await apiRequest('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ loginIdentifier, password, isAdmin })
-    })
+    const data = await apiClient.post('/auth/login', {
+      loginIdentifier,
+      password,
+      isAdmin
+    });
 
-    return {
-      status: responseData.status,
-      employeeId: responseData.user_id // Maps "user_id"  to "employeeId"
+    //  Capture and store the JWT and user properties returned by your successful backend response
+    if (data.access_token) {
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('user_role', data.role);
+      localStorage.setItem('employee_id', data.employee_id);
     }
+
+    // Return the clean entity mapping to your frontend views
+    return {
+      employeeId: data.employee_id,
+      email: data.email,
+      role: data.role
+    };
+  },
+
+  /**
+   * Destroys session signatures to cleanly terminate application state.
+   */
+  logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_role');
+    localStorage.removeItem('employee_id');
+    window.location.href = '/login';
   }
-}
+};
 
-
-export const emailApi = {
+export const emailService = {
   async checkEmailExists(email) {
-    return apiRequest(`/email/check?email=${encodeURIComponent(email)}`)
-      .then(data => data.exists)
+    const data = await apiClient.get('/email/check', {
+      params: { email } 
+    });
+    return data.exists;
   }
-}
+};

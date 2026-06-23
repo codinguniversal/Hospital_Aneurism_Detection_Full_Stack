@@ -75,7 +75,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
-import { emailApi } from '../services/api.js'
+import { emailApi } from '../services/apiClient.js'
 import { authApi } from '../services/authService.js'
 
 const router = useRouter()

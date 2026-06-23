@@ -1,18 +1,12 @@
-
-import { apiRequest } from './api.js' // Assuming apiRequest is exported from api.js
+import apiClient from './apiClient';
 
 export const patientService = {
-
-  async getRecords() {
-    return apiRequest('/patients/records', {
-      method: 'GET', 
-    })
+  
+  getAllRecords() {
+    return apiClient.get('/patients/records');
   },
 
-
-  async getPatientById(patientId) {
-    return apiRequest(`/patients/${patientId}`, {
-      method: 'GET'
-    })
+  getPatientResults(patientId) {
+    return apiClient.get(`/patients/${patientId}`);
   }
-}
+};
