@@ -9,3 +9,5 @@ numpy
 scipy
 huggingface_hub
 albucore==0.0.16
+tensorboard
+scikit-learn

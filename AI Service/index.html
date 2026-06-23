@@ -1,208 +1,595 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RSNA Aneurysm Detection</title>
+    <title>Aneurysm AI Detector</title>
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: #f3f6f7;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #14263a;
             display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            align-items: flex-start;
         }
+
         .container {
-            background: white;
-            padding: 40px;
+            width: 630px;
+            max-width: 95%;
+            margin: 40px auto;
+            background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 500px;
+            padding: 34px 44px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
             text-align: center;
+            font-size: 26px;
+            margin: 0 0 18px;
+            color: #14263a;
         }
-        h2 { color: #2c3e50; margin-bottom: 5px; }
-        p { color: #7f8c8d; margin-bottom: 30px; font-size: 14px; }
-        
+
+        .subtitle {
+            text-align: center;
+            color: #657789;
+            font-size: 15px;
+            margin-bottom: 18px;
+        }
+
         .upload-area {
-            border: 2px dashed #3498db;
+            border: 2px dashed #34c759;
+            background: #f9fffb;
             border-radius: 8px;
-            padding: 30px;
-            background: #ebf5fb;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 14px;
             cursor: pointer;
-            transition: 0.3s;
-            margin-bottom: 20px;
         }
-        .upload-area:hover { background: #d6eaf8; }
-        input[type="file"] { display: none; }
-        
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
+
+        .upload-area:hover {
+            background: #f0fff5;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .selected-file {
+            font-size: 15px;
+            font-weight: bold;
+            color: #14263a;
+        }
+
+        .button {
             width: 100%;
-            transition: 0.3s;
+            border: none;
+            border-radius: 6px;
+            padding: 13px 18px;
+            font-size: 16px;
             font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s ease;
+            margin-top: 8px;
         }
-        button:hover { background: #2980b9; }
-        button:disabled { background: #95a5a6; cursor: not-allowed; }
 
-        /* Loading Spinner */
-        #loading {
-            display: none;
-            margin-top: 20px;
-            font-weight: bold;
-            color: #e67e22;
+        .button-primary {
+            background: #3498db;
+            color: #ffffff;
         }
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
-            border-radius: 50%; width: 30px; height: 30px;
-            animation: spin 1s linear infinite;
-            margin: 10px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Results Area */
-        #result-box {
-            display: none;
-            margin-top: 25px;
-            text-align: left;
-            background: #f8f9fa;
-            padding: 15px;
+        .button-primary:hover {
+            background: #2386c8;
+        }
+
+        .button-explain {
+            background: #8e44ad;
+            color: #ffffff;
+            margin-top: 16px;
+        }
+
+        .button-explain:hover {
+            background: #783993;
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-card {
+            margin-top: 28px;
+            background: #f8fafc;
+            border-left: 5px solid #e74c3c;
             border-radius: 8px;
-            border-left: 5px solid #2ecc71;
+            padding: 18px;
         }
-        .result-item {
+
+        .results-card h2 {
+            margin: 0 0 18px;
+            font-size: 20px;
+            color: #14263a;
+        }
+
+        .overall-risk {
+            font-size: 17px;
+            margin-bottom: 18px;
+        }
+
+        .risk-positive {
+            color: #ff3b30;
+            font-weight: bold;
+        }
+
+        .risk-negative {
+            color: #16a085;
+            font-weight: bold;
+        }
+
+        .details-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 16px 0 10px;
+        }
+
+        .location-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
+            gap: 12px;
+            padding: 9px 0;
+            border-bottom: 1px solid #e6eaf0;
+            font-size: 15px;
         }
-        .result-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-        .danger { color: #e74c3c; font-weight: bold; }
-        .safe { color: #27ae60; font-weight: bold; }
+
+        .location-row:last-child {
+            border-bottom: none;
+        }
+
+        .location-name {
+            flex: 1;
+        }
+
+        .location-value {
+            width: 70px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .explain-card {
+            margin-top: 24px;
+            background: #fffaf3;
+            border-left: 5px solid #f39c12;
+            border-radius: 8px;
+            padding: 18px;
+        }
+
+        .explain-card h2 {
+            margin: 0 0 10px;
+            font-size: 20px;
+            color: #14263a;
+        }
+
+        .explain-note {
+            font-size: 14px;
+            color: #657789;
+            line-height: 1.5;
+            margin-bottom: 18px;
+        }
+
+        .target-control {
+            margin-top: 14px;
+        }
+
+        .target-control label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .target-control select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccd6dd;
+            border-radius: 6px;
+            font-size: 15px;
+            background: white;
+        }
+
+        .gradcam-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .gradcam-item {
+            background: #ffffff;
+            border: 1px solid #e6eaf0;
+            border-radius: 8px;
+            padding: 14px;
+        }
+
+        .gradcam-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+
+        .gradcam-image {
+            width: 100%;
+            max-width: 512px;
+            display: block;
+            margin: 0 auto;
+            border-radius: 6px;
+            border: 1px solid #d9e1e8;
+        }
+
+        .loading {
+            margin-top: 18px;
+            padding: 14px;
+            background: #eef6ff;
+            border-radius: 8px;
+            color: #21618c;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .error {
+            margin-top: 18px;
+            padding: 14px;
+            background: #ffecec;
+            border-left: 5px solid #e74c3c;
+            border-radius: 8px;
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 26px 20px;
+            }
+
+            h1 {
+                font-size: 23px;
+            }
+
+            .location-row {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
+
 <body>
+    <div class="container">
+        <h1>Aneurysm AI Detector</h1>
 
-<div class="container">
-    <h2>Aneurysm AI Detector</h2>
-    <p>Upload a Patient's ZIP File containing DICOM Images</p>
+        <p class="subtitle">
+            Upload a Patient's ZIP File containing DICOM Images
+        </p>
 
-    <label class="upload-area" for="file-upload" id="upload-label">
-        📁 Click here to select a .zip file
-    </label>
-    <input type="file" id="file-upload" accept=".zip">
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="fileInput" class="file-input" accept=".zip">
+            <div id="selectedFileText" class="selected-file">
+                Click here to select ZIP file
+            </div>
+        </div>
 
-    <button id="submit-btn" onclick="uploadZip()">Analyze Scan</button>
+        <button id="analyzeButton" class="button button-primary">
+            Analyze Scan
+        </button>
 
-    <div id="loading">
-        <div class="spinner"></div>
-        Processing slices with AI... This may take a moment.
+        <div id="loadingBox" class="loading hidden">
+            Processing scan, please wait...
+        </div>
+
+        <div id="errorBox" class="error hidden"></div>
+
+        <div id="resultsBox" class="results-card hidden">
+            <h2>Analysis Results</h2>
+
+            <div id="overallRisk" class="overall-risk"></div>
+
+            <div class="details-title">Detailed Locations:</div>
+            <div id="detailsList"></div>
+
+            <div class="target-control">
+                <label for="targetLabelSelect">Explain target:</label>
+                <select id="targetLabelSelect">
+                    <option value="Aneurysm Present">Aneurysm Present</option>
+                    <option value="Left Infraclinoid Internal Carotid Artery">Left Infraclinoid Internal Carotid Artery</option>
+                    <option value="Right Infraclinoid Internal Carotid Artery">Right Infraclinoid Internal Carotid Artery</option>
+                    <option value="Left Supraclinoid Internal Carotid Artery">Left Supraclinoid Internal Carotid Artery</option>
+                    <option value="Right Supraclinoid Internal Carotid Artery">Right Supraclinoid Internal Carotid Artery</option>
+                    <option value="Left Middle Cerebral Artery">Left Middle Cerebral Artery</option>
+                    <option value="Right Middle Cerebral Artery">Right Middle Cerebral Artery</option>
+                    <option value="Anterior Communicating Artery">Anterior Communicating Artery</option>
+                    <option value="Left Anterior Cerebral Artery">Left Anterior Cerebral Artery</option>
+                    <option value="Right Anterior Cerebral Artery">Right Anterior Cerebral Artery</option>
+                    <option value="Left Posterior Communicating Artery">Left Posterior Communicating Artery</option>
+                    <option value="Right Posterior Communicating Artery">Right Posterior Communicating Artery</option>
+                    <option value="Basilar Tip">Basilar Tip</option>
+                    <option value="Other Posterior Circulation">Other Posterior Circulation</option>
+                </select>
+            </div>
+
+            <button id="explainButton" class="button button-explain">
+                Explain Result with Grad-CAM
+            </button>
+        </div>
+
+        <div id="explainLoadingBox" class="loading hidden">
+            Generating Grad-CAM explanation, please wait...
+        </div>
+
+        <div id="explainBox" class="explain-card hidden">
+            <h2>Grad-CAM Explainable AI Result</h2>
+
+            <p id="explainNote" class="explain-note"></p>
+
+            <div id="gradcamResults" class="gradcam-grid"></div>
+        </div>
     </div>
 
-    <div id="result-box">
-        <h3 style="margin-top:0; color:#2c3e50;">Analysis Results</h3>
-        <div id="overall-result" style="font-size: 18px; margin-bottom: 15px;"></div>
-        <div id="detailed-results"></div>
-    </div>
-</div>
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000";
 
-<script>
-    const fileInput = document.getElementById('file-upload');
-    const uploadLabel = document.getElementById('upload-label');
-    const submitBtn = document.getElementById('submit-btn');
-    const loadingDiv = document.getElementById('loading');
-    const resultBox = document.getElementById('result-box');
-    
-    // Change label text when file is selected
-    fileInput.addEventListener('change', function() {
-        if(this.files.length > 0) {
-            uploadLabel.innerHTML = "✅ Selected: <b>" + this.files[0].name + "</b>";
-            uploadLabel.style.borderColor = "#2ecc71";
-            uploadLabel.style.background = "#e9f7ef";
-        }
-    });
+        const uploadArea = document.getElementById("uploadArea");
+        const fileInput = document.getElementById("fileInput");
+        const selectedFileText = document.getElementById("selectedFileText");
 
-    async function uploadZip() {
-        const file = fileInput.files[0];
-        if (!file) {
-            alert("Please select a ZIP file first!");
-            return;
-        }
+        const analyzeButton = document.getElementById("analyzeButton");
+        const explainButton = document.getElementById("explainButton");
 
-        // Setup UI for loading
-        submitBtn.disabled = true;
-        loadingDiv.style.display = "block";
-        resultBox.style.display = "none";
+        const loadingBox = document.getElementById("loadingBox");
+        const explainLoadingBox = document.getElementById("explainLoadingBox");
+        const errorBox = document.getElementById("errorBox");
 
-        const formData = new FormData();
-        formData.append("file", file);
+        const resultsBox = document.getElementById("resultsBox");
+        const overallRisk = document.getElementById("overallRisk");
+        const detailsList = document.getElementById("detailsList");
 
-        try {
-            // Call your local FastAPI server
-            const response = await fetch("http://localhost:8000/predict", {
+        const targetLabelSelect = document.getElementById("targetLabelSelect");
+
+        const explainBox = document.getElementById("explainBox");
+        const explainNote = document.getElementById("explainNote");
+        const gradcamResults = document.getElementById("gradcamResults");
+
+        let selectedFile = null;
+        let lastPredictionData = null;
+
+        uploadArea.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files.length > 0) {
+                selectedFile = fileInput.files[0];
+
+                selectedFileText.innerHTML = `✅ Selected: ${selectedFile.name}`;
+
+                hideError();
+                hideResults();
+                hideExplainResults();
+            }
+        });
+
+        analyzeButton.addEventListener("click", async () => {
+            if (!selectedFile) {
+                showError("Please select a ZIP file first.");
+                return;
+            }
+
+            hideError();
+            hideResults();
+            hideExplainResults();
+
+            setLoading(true);
+            analyzeButton.disabled = true;
+
+            try {
+                const data = await sendPredictionRequest(false);
+                lastPredictionData = data;
+
+                renderPredictionResults(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setLoading(false);
+                analyzeButton.disabled = false;
+            }
+        });
+
+        explainButton.addEventListener("click", async () => {
+            if (!selectedFile) {
+                showError("Please select a ZIP file first.");
+                return;
+            }
+
+            hideError();
+            hideExplainResults();
+
+            setExplainLoading(true);
+            explainButton.disabled = true;
+
+            try {
+                const data = await sendPredictionRequest(true);
+                renderExplainResults(data);
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                setExplainLoading(false);
+                explainButton.disabled = false;
+            }
+        });
+
+        async function sendPredictionRequest(withExplain) {
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            let url = `${API_BASE_URL}/predict`;
+
+            if (withExplain) {
+                const selectedTarget = encodeURIComponent(targetLabelSelect.value);
+                url = `${API_BASE_URL}/predict?explain=true&target_label=${selectedTarget}`;
+            }
+
+            const response = await fetch(url, {
                 method: "POST",
                 body: formData
             });
 
-            const data = await response.json();
+            let data;
+
+            try {
+                data = await response.json();
+            } catch {
+                throw new Error("Server returned an invalid response.");
+            }
 
             if (!response.ok) {
-                throw new Error(data.detail || "Server Error");
+                const message = data.detail || "Prediction request failed.";
+                throw new Error(message);
             }
 
-            // --- Display Results ---
-            
-            // 1. Overall Prediction
-            const overallProb = (data.overall_prediction["Aneurysm Present"] * 100).toFixed(2);
-            const overallDiv = document.getElementById("overall-result");
-            
-            // تم تعديل الـ Threshold إلى 20% بناءً على طبيعة الداتا الطبية
-            if(overallProb >= 20) {
-                overallDiv.innerHTML = `Overall Risk: <span class="danger">${overallProb}% (Aneurysm Detected)</span>`;
-                resultBox.style.borderLeftColor = "#e74c3c"; // Red border for danger
-            } else {
-                overallDiv.innerHTML = `Overall Risk: <span class="safe">${overallProb}% (No Aneurysm)</span>`;
-                resultBox.style.borderLeftColor = "#2ecc71"; // Green border for safe
-            }
-
-            // 2. Detailed Locations
-            const detailedDiv = document.getElementById("detailed-results");
-            detailedDiv.innerHTML = "<strong>Detailed Locations:</strong><br><br>";
-            
-            for (const [location, prob] of Object.entries(data.detailed_locations)) {
-                const percentage = (prob * 100).toFixed(1);
-                // تلوين الشرايين الفرعية بالأحمر لو نسبة الخطر فيها تخطت 10%
-                const colorClass = prob > 0.10 ? "danger" : "";
-                
-                detailedDiv.innerHTML += `
-                    <div class="result-item">
-                        <span>${location.replace('any', 'Location ')}</span>
-                        <span class="${colorClass}">${percentage}%</span>
-                    </div>
-                `;
-            }
-
-            resultBox.style.display = "block";
-
-        } catch (error) {
-            alert("Error: " + error.message);
-        } finally {
-            // Reset UI
-            submitBtn.disabled = false;
-            loadingDiv.style.display = "none";
+            return data;
         }
-    }
-</script>
 
+        function renderPredictionResults(data) {
+            if (!data.overall_prediction || !data.detailed_locations) {
+                throw new Error("Invalid prediction response format.");
+            }
+
+            const risk = data.overall_prediction["Aneurysm Present"];
+            const riskPercent = risk * 100;
+
+            const isDetected = risk >= 0.05;
+
+            overallRisk.innerHTML = `
+                Overall Risk:
+                <span class="${isDetected ? "risk-positive" : "risk-negative"}">
+                    ${riskPercent.toFixed(2)}%
+                    (${isDetected ? "Aneurysm Detected" : "No Aneurysm Detected"})
+                </span>
+            `;
+
+            detailsList.innerHTML = "";
+
+            Object.entries(data.detailed_locations).forEach(([label, value]) => {
+                const row = document.createElement("div");
+                row.className = "location-row";
+
+                const name = document.createElement("div");
+                name.className = "location-name";
+                name.textContent = label;
+
+                const percentage = document.createElement("div");
+                percentage.className = "location-value";
+                percentage.textContent = `${(value * 100).toFixed(1)}%`;
+
+                row.appendChild(name);
+                row.appendChild(percentage);
+
+                detailsList.appendChild(row);
+            });
+
+            resultsBox.classList.remove("hidden");
+        }
+
+        function renderExplainResults(data) {
+            if (!data.explainability) {
+                throw new Error(
+                    "No Grad-CAM result found. Make sure backend was called with explain=true."
+                );
+            }
+
+            const explanation = data.explainability;
+
+            explainNote.textContent = explanation.note || "Grad-CAM explanation generated successfully.";
+
+            gradcamResults.innerHTML = "";
+
+            if (!explanation.top_slices || explanation.top_slices.length === 0) {
+                throw new Error("Grad-CAM returned no top slices.");
+            }
+
+            explanation.top_slices.forEach((slice, index) => {
+                const item = document.createElement("div");
+                item.className = "gradcam-item";
+
+                const title = document.createElement("div");
+                title.className = "gradcam-title";
+
+                const importancePercent = slice.importance * 100;
+
+                title.textContent =
+                    `Top ${index + 1} Focus Slice | Slice Index: ${slice.slice_index} | Importance: ${importancePercent.toFixed(1)}%`;
+
+                const image = document.createElement("img");
+                image.className = "gradcam-image";
+                image.alt = `Grad-CAM Slice ${slice.slice_index}`;
+                image.src = `data:image/png;base64,${slice.overlay_png_base64}`;
+
+                item.appendChild(title);
+                item.appendChild(image);
+
+                gradcamResults.appendChild(item);
+            });
+
+            explainBox.classList.remove("hidden");
+        }
+
+        function showError(message) {
+            errorBox.textContent = message;
+            errorBox.classList.remove("hidden");
+        }
+
+        function hideError() {
+            errorBox.textContent = "";
+            errorBox.classList.add("hidden");
+        }
+
+        function hideResults() {
+            resultsBox.classList.add("hidden");
+            detailsList.innerHTML = "";
+            overallRisk.innerHTML = "";
+            lastPredictionData = null;
+        }
+
+        function hideExplainResults() {
+            explainBox.classList.add("hidden");
+            explainNote.textContent = "";
+            gradcamResults.innerHTML = "";
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                loadingBox.classList.remove("hidden");
+            } else {
+                loadingBox.classList.add("hidden");
+            }
+        }
+
+        function setExplainLoading(isLoading) {
+            if (isLoading) {
+                explainLoadingBox.classList.remove("hidden");
+            } else {
+                explainLoadingBox.classList.add("hidden");
+            }
+        }
+    </script>
 </body>
 </html>
