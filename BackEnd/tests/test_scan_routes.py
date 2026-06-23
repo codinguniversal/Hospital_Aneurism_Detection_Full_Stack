@@ -3,9 +3,9 @@ Tests for scan analysis route: POST /api/scans/{scan_id}/analyze
 """
 import pytest
 from fastapi import status
-from app.domain.entities import (
+from app.core.patient_management.entities import (
     AneurysmAnalysisResultEntity,
-    OverAllAneurysmPredictionEntity
+    OverAllAneurysmPredictionEntity,
 )
 
 

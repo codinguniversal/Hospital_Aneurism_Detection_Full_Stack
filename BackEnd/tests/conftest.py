@@ -4,26 +4,32 @@ All stub use cases and dependency overrides are centralized here.
 """
 import pytest
 from fastapi import status
+from app.config import static_settings
 from fastapi.testclient import TestClient
 from app.main import app
 from app.dependencies import (
     get_patient_records_use_case,
     get_patient_results_use_case,
-    build_settings_repository,
     get_authenticate_user_use_case,
     get_register_user_use_case,
     get_check_email_use_case,
     get_update_settings_use_case,
-    get_scan_analysis_use_case
+    get_scan_analysis_use_case,
+    get_settings_use_case,
+    initialize_infrastructure
 )
-from app.domain.entities import (
-    SettingsEntity,
-    UserEntity,
-)
+from app.modules.identity_access.entities import UserEntity
+from app.modules.system_settings.entities import SettingsEntity
 
 # ============================================================================
 # SHARED TEST CLIENT
 # ============================================================================
+@pytest.fixture(scope="session", autouse=True)
+def setup_mock_infrastructure():
+    """Set the database to mock mode and initialize the factory once for all tests."""
+    static_settings.database_mode = "mock"
+    initialize_infrastructure(None)  # No DB connection needed
+    yield
 
 @pytest.fixture
 def client():
@@ -188,7 +194,6 @@ def setup_use_case_overrides(stub_records, stub_results, stub_auth, stub_registe
     """
     app.dependency_overrides[get_patient_records_use_case] = lambda: stub_records
     app.dependency_overrides[get_patient_results_use_case] = lambda: stub_results
-    app.dependency_overrides[build_settings_repository] = lambda: StubSettingsRepository()
     app.dependency_overrides[get_authenticate_user_use_case] = lambda: stub_auth
     app.dependency_overrides[get_register_user_use_case] = lambda: stub_register
     app.dependency_overrides[get_check_email_use_case] = lambda: stub_check_email

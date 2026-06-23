@@ -3,11 +3,11 @@ from fastapi import FastAPI
 import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app.routers import admin_settings_route
+from BackEnd.app.api.v1.routers import admin_settings_route, auth_route, email_check_route, patient_route, scans_route
 from app.dependencies import build_settings_repository, _ai_http_client, initialize_infrastructure
 from app.config import static_settings
-from app.routers import scans_route, auth_route, patient_route, email_check_route, users_route
-from app.tasks.scheduler import start_apscheduler
+from BackEnd.app.api.v1.routers import users_route
+from BackEnd.app.infrastructure.scheduler.scheduler import start_apscheduler
 
 
 @asynccontextmanager
