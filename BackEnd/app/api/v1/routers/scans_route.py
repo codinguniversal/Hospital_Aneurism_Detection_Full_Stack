@@ -1,6 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
-from BackEnd.app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
+from app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
 from app.core.patient_management.use_cases import ScanAnalysisUseCase
 from app.infrastructure.ai.ai_client import AIServiceError
 from app.dependencies import get_scan_analysis_use_case

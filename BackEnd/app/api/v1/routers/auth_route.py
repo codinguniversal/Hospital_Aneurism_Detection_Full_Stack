@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
+from app.modules.identity_access.security.jwt_provider import create_access_token
 from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
-from BackEnd.app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
+from app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
 
 from app.dependencies import get_authenticate_user_use_case, get_register_user_use_case
 
@@ -21,7 +22,27 @@ async def login(
             status_code= status.HTTP_401_UNAUTHORIZED,
             detail= "invalid credentials or role selection"
         )
-    return user
+    
+    if login_request.isAdmin and user.role != "Admin":
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid credentials or role selection"
+        )
+    
+    token_payload = {
+        "sub" : user.employee_id,
+        "role" : user.role
+    }
+
+    access_token = create_access_token(data= token_payload)
+
+    return {
+        "employee_id": user.employee_id,
+        "email": user.email,
+        "role": user.role,
+        "access_token": access_token,
+        "token_type": "bearer"
+        }
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
@@ -30,10 +51,9 @@ async def register(
 ):
     """Router layer: Manages the HTTP schema and maps values into the pure Use Case"""
     try:
-        # Pass fields matching your exact UseCase execute signature cleanly:
         user_entity = await use_case.execute(
             email=request.email,
-            password=request.password
+            password=request.password,
         )
         return {"status": "success", "user_id": user_entity.employee_id}
         

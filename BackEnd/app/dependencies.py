@@ -28,6 +28,11 @@ from app.modules.system_settings.use_cases import GetSettingsUseCase, UpdateSett
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from app.modules.identity_access.security.jwt_provider import (
+    oauth2_scheme,
+    extract_and_verify_claims,
+    enforce_role_whitelist
+)
 
 _factory: Optional[InfrastructureFactory] = None
 _ai_http_client = None
@@ -206,3 +211,17 @@ async def delete_user_by_id_use_case(
     use_case: DeleteUserByIdUseCase = Depends(build_delete_user_by_id_use_case),
 ) -> DeleteUserByIdUseCase:
     return use_case
+
+async def get_current_user_claims(token: str = Depends(oauth2_scheme)) -> dict:
+    """Extracts, verifies, and returns the claims payload from the incoming JWT token."""
+    return extract_and_verify_claims(token)
+
+
+class RoleChecker:
+    """A parameterized dependency wrapper used to restrict endpoints to specific roles."""
+    def __init__(self, allowed_roles: list[str]):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, claims: dict = Depends(get_current_user_claims)) -> dict:
+        enforce_role_whitelist(claims.get("role"), self.allowed_roles)
+        return claims

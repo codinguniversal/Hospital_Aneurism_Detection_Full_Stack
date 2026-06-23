@@ -1,5 +1,6 @@
 import bcrypt
 
+
 def get_password_hash(password: str) -> str:
     """
     Hashes a plain-text password using a secure, randomly generated salt.
