@@ -1,8 +1,8 @@
 
 from typing import List
 
-from app.schemas.patient_schema import PatientRecordResponseSchema
-from app.schemas.user_schema import UserResponseSchema
+from BackEnd.app.api.v1.schemas.patient_schema import PatientRecordResponseSchema
+from BackEnd.app.api.v1.schemas.user_schema import UserResponseSchema
 from app.core.patient_management.entities import PatientEntity, ScanStatus
 from app.modules.identity_access.entities import UserEntity
 

@@ -3,9 +3,9 @@ from typing import List
 from app.core.patient_management.entities import PatientEntity
 from app.core.patient_management.use_cases import GetAllPatientsUseCase, GetPatientResultsUseCase
 from app.modules.system_settings.use_cases import GetSettingsUseCase
-from app.schemas.patient_schema import PatientRecordResponseSchema
+from BackEnd.app.api.v1.schemas.patient_schema import PatientRecordResponseSchema
 from app.dependencies import build_get_patient_records_use_case, build_get_patient_results_use_case, build_get_settings_use_case, 
-from app.routers.mappers import patient_entities_to_records
+from BackEnd.app.api.v1.mappers import patient_entities_to_records
 
 
 router = APIRouter(prefix="/patients", tags=["Patients"])

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
-from app.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
+from BackEnd.app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
 
 from app.dependencies import get_authenticate_user_use_case, get_register_user_use_case
 

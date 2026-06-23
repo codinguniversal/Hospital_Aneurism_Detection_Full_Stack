@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Query, Depends
 from pydantic import EmailStr
 
-from app.schemas.auth_schema import EmailCheckResponseSchema
+from BackEnd.app.api.v1.schemas.auth_schema import EmailCheckResponseSchema
 from app.modules.identity_access.use_cases import CheckEmailUseCase
 from app.dependencies import get_check_email_use_case
 
