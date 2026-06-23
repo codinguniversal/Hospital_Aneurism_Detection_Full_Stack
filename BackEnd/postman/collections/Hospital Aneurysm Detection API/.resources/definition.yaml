@@ -3,3 +3,4 @@ name: Hospital Aneurysm Detection API
 variables:
   baseUrl: http://localhost:8000
   scan_id: ""
+  access_token: ""

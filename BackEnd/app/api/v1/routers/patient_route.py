@@ -7,7 +7,7 @@ from app.core.patient_management.use_cases import GetAllPatientsUseCase, GetPati
 from app.modules.system_settings.use_cases import GetSettingsUseCase
 
 # Infrastructure & Security
-from app.dependencies import RoleChecker
+from app.api.v1.dependencies.auth import RoleChecker
 
 # Presentation Layer (Schemas & Mappers)
 from app.api.v1.schemas.patient_schema import PatientRecordResponseSchema

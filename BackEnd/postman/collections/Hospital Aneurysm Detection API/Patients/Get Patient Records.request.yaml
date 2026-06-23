@@ -1,6 +1,10 @@
 $kind: http-request
 name: Get Patient Records
 method: GET
-url: '{{baseUrl}}/patients/records'
+url: "{{baseUrl}}/patients/records"
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
 order: 1000
-description: 'Retrieve a list of all patient records. Returns id, name, image_date, analyzed, timestamp, urgency.'
+description: Retrieve a list of all patient records. Returns id, name, image_date, analyzed, timestamp, urgency.

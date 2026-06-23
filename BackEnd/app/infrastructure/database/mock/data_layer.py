@@ -14,13 +14,13 @@ class MockNoSQLDataLayer:
             "admin@hospital.org": {
                 "employeeId": "ADMIN-01",
                 "email": "admin@hospital.org",
-                "password": "admin123",
-                "role": "admin",
+                "password": "$2b$12$DXJYff7eXTk51xD/cmpgwOJhesLztTiZyPb90ffPwq5Ov3cNce2FK", #admin123
+                "role": "Admin",
             },
             "user@example.com": {
                 "employeeId": "USER-01",
                 "email": "user@example.com",
-                "password": "password123",
+                "password": "$2b$12$hrpmpdVQamB9yy98F9d.tuvWzCZkm7QGcJPxZKrTNTSOUFz8BuACm", #pasword123
                 "role": "Doctor",
             },
         }

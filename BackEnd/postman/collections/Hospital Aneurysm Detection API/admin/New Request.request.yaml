@@ -2,6 +2,10 @@ $kind: http-request
 name: Update Admin Settings
 method: PUT
 url: "{{baseUrl}}/admin/settings"
+auth:
+  type: bearer
+  credentials:
+    token: "{{access_token}}"
 order: 1000
 headers:
   Content-Type: application/json

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.dependencies import RoleChecker, get_settings_use_case, get_update_settings_use_case
+from app.api.v1.dependencies.auth import RoleChecker
+from app.dependencies import build_update_settings_use_case, build_get_settings_use_case
 from app.modules.system_settings.entities import SettingsEntity
 from app.modules.system_settings.use_cases import GetSettingsUseCase, UpdateSettingsUseCase
 from app.api.v1.schemas.setting_schema import SettingsResponseSchema, SettingsUpdateRequestSchema
@@ -13,7 +14,7 @@ router = APIRouter(
 @router.put("",response_model= SettingsResponseSchema, status_code= status.HTTP_200_OK)
 async def update_settings(
     settings_update_request: SettingsUpdateRequestSchema,
-    use_case: UpdateSettingsUseCase = Depends(get_update_settings_use_case)
+    use_case: UpdateSettingsUseCase = Depends(build_update_settings_use_case)
 ):
     try:
         new_settings = SettingsEntity(**settings_update_request.model_dump())
@@ -24,7 +25,7 @@ async def update_settings(
     
 @router.get("", response_model=SettingsResponseSchema, status_code=status.HTTP_200_OK)
 async def get_settings(
-    use_case: GetSettingsUseCase = Depends(get_settings_use_case)
+    use_case: GetSettingsUseCase = Depends(build_get_settings_use_case)
 ):
     settings = await use_case.execute()
     return SettingsResponseSchema(**settings.model_dump())

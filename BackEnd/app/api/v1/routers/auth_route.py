@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
-from app.modules.identity_access.security.jwt_provider import create_access_token
+from app.infrastructure.security.jwt_provider import JWTTokenManager
 from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
 from app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
 
@@ -28,21 +28,21 @@ async def login(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid credentials or role selection"
         )
-    
-    token_payload = {
-        "sub" : user.employee_id,
-        "role" : user.role
-    }
-
-    access_token = create_access_token(data= token_payload)
-
-    return {
-        "employee_id": user.employee_id,
-        "email": user.email,
-        "role": user.role,
-        "access_token": access_token,
-        "token_type": "bearer"
+    token_manager = JWTTokenManager()
+    token = token_manager.create_access_token(
+        {
+            "sub" : user.employee_id,
+            "role" : user.role
         }
+    )
+
+    return LoginResponseSchema(
+        employee_id= user.employee_id,
+        email= user.email,
+        role= user.role,
+        access_token= token,
+        token_type= "bearer"
+    )
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(

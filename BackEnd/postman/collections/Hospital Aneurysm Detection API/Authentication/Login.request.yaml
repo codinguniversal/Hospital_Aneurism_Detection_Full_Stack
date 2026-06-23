@@ -1,6 +1,25 @@
 $kind: http-request
+name: Login
 method: POST
 url: "{{baseUrl}}/auth/login"
+scripts:
+  - type: afterResponse
+    code: "if (pm.response.code === 200) {\r
+
+      \    const response = pm.response.json();\r
+
+      \r
+
+      \    pm.collectionVariables.set(\r
+
+      \        \"access_token\",\r
+
+      \        response.access_token\r
+
+      \    );\r
+
+      }"
+    language: text/javascript
 examples: .resources/Login.resources/examples
 order: 1000
 headers:
@@ -9,8 +28,8 @@ body:
   type: json
   content: |-
     {
-      "loginIdentifier": "user@example.com",
-      "password": "password123",
+      "loginIdentifier": "ADMIN-01",
+      "password": "admin123",
       "isAdmin": false
     }
 description: Authenticate a user. Returns employee_id, email, and role on success. Returns 401 on invalid credentials.

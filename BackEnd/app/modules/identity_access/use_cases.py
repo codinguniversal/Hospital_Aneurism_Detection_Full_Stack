@@ -3,7 +3,7 @@ from typing import List, Optional
 from app.modules.identity_access.entities import UserEntity
 from app.modules.identity_access.repositories import UserRepository
 from app.modules.identity_access.services import IdGenerator
-from app.modules.identity_access.security.hashing import get_password_hash, verify_password
+from app.infrastructure.security.hashing import get_password_hash, verify_password
 
 
 class AuthenticateUserUseCase:

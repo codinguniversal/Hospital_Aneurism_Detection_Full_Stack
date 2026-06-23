@@ -5,7 +5,7 @@ from pymongo import MongoClient, ASCENDING
 from faker import Faker
 
 from app.config import static_settings
-from BackEnd.app.infrastructure.services.security import get_password_hash  
+from app.infrastructure.security.hashing import get_password_hash
 
 fake = Faker()
 
