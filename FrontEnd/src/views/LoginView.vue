@@ -55,7 +55,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
-// import { authApi } from '../services/authService.js' // Uncomment when backend is connected
+import { authService } from '../services/authService.js' // Active production import
 
 const router = useRouter()
 const loginIdentifier = ref('')
@@ -63,32 +63,51 @@ const password = ref('')
 const isAdmin = ref(false) 
 
 const handleLogin = async () => {
-  const isSixDigitId = /^\d{6}$/.test(loginIdentifier.value.trim())
-  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginIdentifier.value.trim())
+  const identifierValue = loginIdentifier.value.trim()
+  const isSixDigitId = /^\d{6}$/.test(identifierValue)
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifierValue)
 
   if (!isSixDigitId && !isEmail) {
     alert("Enter a valid 6-digit ID or email.")
     return
   }
 
+  // // --- 🛑 FRONTEND BYPASS CHEAT CODES 🛑 ---
+  // // Skip the backend entirely for UI testing
+  // if (identifierValue === 'admin@bypass.com') {
+  //   authStore.login('999999', 'admin')
+  //   router.push('/admin')
+  //   return
+  // }
+  
+  // if (identifierValue === 'doctor@bypass.com') {
+  //   authStore.login('123456', 'doctor')
+  //   router.push('/records')
+  //   return
+  // }
+  // // ----------------------------------------
+
   try {
-    /* // Uncomment this block when backend is ready
-    const user = await authApi.login(
-      loginIdentifier.value.trim(),
+    // 1. Dispatch the API request to your FastAPI server
+    const user = await authService.login(
+      identifierValue,
       password.value,
       isAdmin.value
     )
-    authStore.login(user.employee_id, user.role)
-    */
     
-    // Fallback local logic for UI testing
-    const role = isAdmin.value ? 'admin' : 'doctor'
-    authStore.login(loginIdentifier.value.trim(), role)
+    // 2. Hydrate global state management
+    authStore.login(user.employeeId, user.role)
     
-    router.push(isAdmin.value ? '/admin' : '/records')
+    // 3. Normalizes checks to match the backend 'Admin' or 'Radiologist' values safely
+    const normalizedRole = user.role.toLowerCase()
+    if (normalizedRole === 'admin') {
+      router.push('/admin')
+    } else {
+      router.push('/records')
+    }
   } catch (error) {
-    alert('Login failed. Please check your credentials.')
-    console.error('Login error:', error)
+    alert('Login failed. Please check your credentials or ensure the backend is running.')
+    console.error('Login integration exception:', error)
   }
 }
 </script>

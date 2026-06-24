@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware  # 👈 Added CORS Middleware import
 import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -51,7 +52,22 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title = "Hospital Aneurysm Detection Web Orchestrator",
     lifespan = lifespan
-    )
+)
+
+# 🌐 ---- CORS POLICY MIDDLEWARE INTEGRATION ----
+origins = [
+    "http://localhost:5173",    # Vite local web server default port
+    "http://127.0.0.1:5173",    # Local alternative network index mapping
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       # Intercepts and approves cross-origin script origins
+    allow_credentials=True,
+    allow_methods=["*"],         # Explicitly allows preflight OPTIONS along with POST/GET/PUT
+    allow_headers=["*"],         # Allows custom authorization headers to pass cleanly
+)
+# -----------------------------------------------
 
 app.include_router(scans_route.router)
 app.include_router(auth_route.router)
@@ -59,5 +75,3 @@ app.include_router(email_check_route.router)
 app.include_router(patient_route.router)
 app.include_router(admin_settings_route.router)
 app.include_router(users_route.router)
-
-

@@ -17,6 +17,23 @@ async def login(
         identifier= login_request.loginIdentifier,
         password= login_request.password,
     )
+
+    user = await use_case.execute(
+        identifier= login_request.loginIdentifier,
+        password= login_request.password,
+    )
+    
+    # 🔍 ADD THIS TEMPORARY DEBUG BLOCK HERE:
+    print("\n" + "="*50)
+    print("DEBUGGING AUTHENTICATION:")
+    print(f"Incoming Login Identifier: '{login_request.loginIdentifier}'")
+    print(f"Found User in DB?: {user is not None}")
+    if user:
+        print(f"DB Employee ID: '{user.employee_id}'")
+        print(f"DB User Email:  '{user.email}'")
+        print(f"DB User Role:   '{user.role}'")
+    print("="*50 + "\n")
+
     if not user:
         raise HTTPException(
             status_code= status.HTTP_401_UNAUTHORIZED,

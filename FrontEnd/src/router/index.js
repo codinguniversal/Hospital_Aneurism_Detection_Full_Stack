@@ -3,7 +3,6 @@ import { authStore } from '../store.js'
 
 import LoginView from '../views/LoginView.vue'
 import AdminView from '../views/AdminView.vue'
-import ManageUsersView from '../views/ManageUsersView.vue'
 import RecordsView from '../views/RecordsView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import ResultsView from '../views/ResultsView.vue'
@@ -15,9 +14,8 @@ const router = createRouter({
     { path: '/', redirect: () => authStore.role === 'admin' ? '/admin' : '/login' },
     { path: '/login', name: 'login', component: LoginView },
     
-    // Admin Realm
+    // Admin Realm (All tabs are handled inside AdminView)
     { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAuth: true, role: 'admin' } },
-    { path: '/manage', name: 'manage', component: ManageUsersView, meta: { requiresAuth: true, role: 'admin' } },
 
     // Doctor Realm
     { path: '/records', name: 'records', component: RecordsView, meta: { requiresAuth: true, role: 'doctor' } },
@@ -27,17 +25,14 @@ const router = createRouter({
   ]
 })
 
-// The Bouncer
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next("/login")
   } 
   else if (to.meta.requiresAuth && to.meta.role !== authStore.role) {
-    // Kicks users out of each other's pages
     next(authStore.role === 'admin' ? '/admin' : '/records')
   } 
   else if (to.path === '/login' && authStore.isAuthenticated) {
-    // Stops logged-in users from seeing the login screen
     next(authStore.role === 'admin' ? '/admin' : '/records')
   } 
   else {
