@@ -17,7 +17,7 @@
 
         <template v-if="authStore.isAuthenticated && authStore.role === 'admin'">
           <router-link to="/admin" class="nav-item">Settings</router-link>
-          <router-link to="/manage" class="nav-item btn-outline"><i class="fa fa-users"></i> Manage Users</router-link>
+          <!-- <router-link to="/manage" class="nav-item btn-outline"><i class="fa fa-users"></i> Manage Users</router-link> -->
           <button @click="handleLogout" class="nav-item logout-btn"><i class="fa fa-sign-out"></i> Logout</button>
         </template>
         

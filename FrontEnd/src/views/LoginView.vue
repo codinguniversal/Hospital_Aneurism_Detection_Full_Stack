@@ -72,7 +72,22 @@ const handleLogin = async () => {
     return
   }
 
-try {
+  // // --- 🛑 FRONTEND BYPASS CHEAT CODES 🛑 ---
+  // // Skip the backend entirely for UI testing
+  // if (identifierValue === 'admin@bypass.com') {
+  //   authStore.login('999999', 'admin')
+  //   router.push('/admin')
+  //   return
+  // }
+  
+  // if (identifierValue === 'doctor@bypass.com') {
+  //   authStore.login('123456', 'doctor')
+  //   router.push('/records')
+  //   return
+  // }
+  // // ----------------------------------------
+
+  try {
     // 1. Dispatch the API request to your FastAPI server
     const user = await authService.login(
       identifierValue,
@@ -91,7 +106,7 @@ try {
       router.push('/records')
     }
   } catch (error) {
-    alert('Login failed. Please check your credentials.')
+    alert('Login failed. Please check your credentials or ensure the backend is running.')
     console.error('Login integration exception:', error)
   }
 }
