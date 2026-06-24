@@ -9,6 +9,13 @@ from app.config import static_settings
 from app.api.v1.routers import users_route
 from app.infrastructure.scheduler.scheduler import start_apscheduler
 
+import logging
+
+# Configure logging to show INFO, WARNING, ERROR, CRITICAL
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

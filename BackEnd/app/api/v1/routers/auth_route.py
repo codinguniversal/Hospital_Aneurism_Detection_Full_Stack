@@ -4,14 +4,14 @@ from app.infrastructure.security.jwt_provider import JWTTokenManager
 from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
 from app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
 
-from app.dependencies import get_authenticate_user_use_case, get_register_user_use_case
+from app.dependencies import build_authenticate_user_use_case, build_register_user_use_case
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login" ,response_model= LoginResponseSchema, status_code= status.HTTP_200_OK)
 async def login(
     login_request: LoginRequestSchema,
-    use_case: AuthenticateUserUseCase = Depends(get_authenticate_user_use_case)
+    use_case: AuthenticateUserUseCase = Depends(build_authenticate_user_use_case),
 ):
     user = await use_case.execute(
         identifier= login_request.loginIdentifier,
@@ -47,7 +47,7 @@ async def login(
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(
     request: RegisterRequestSchema, 
-    use_case: RegisterUserUseCase = Depends(get_register_user_use_case) 
+    use_case: RegisterUserUseCase = Depends(build_register_user_use_case) 
 ):
     """Router layer: Manages the HTTP schema and maps values into the pure Use Case"""
     try:

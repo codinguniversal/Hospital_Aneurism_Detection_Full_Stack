@@ -11,7 +11,15 @@ class Settings(BaseSettings):
 
     # AI
     use_mock_ai: bool = True
-    
+
+    # security configurations
+    JWT_SECRET: str= "YOUR_SUPER_SECRET_ENVIRONMENT_KEY_2026"
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_HOURS: int = 8
+
+    # API Versioning
+    api_v1_str: str = "/api/v1"
+
     class Config:
         env_file = ".env"
 

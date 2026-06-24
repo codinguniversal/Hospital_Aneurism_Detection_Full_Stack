@@ -146,63 +146,63 @@ def build_delete_user_by_id_use_case() -> DeleteUserByIdUseCase:
     user_repo = build_user_repository()
     return DeleteUserByIdUseCase(user_repo=user_repo)
 
-
-async def get_patient_records_use_case(
-    use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case),
-) -> GetAllPatientsUseCase:
-    return use_case
-
-
-async def get_patient_results_use_case(
-    use_case: GetPatientResultsUseCase = Depends(build_get_patient_results_use_case),
-) -> GetPatientResultsUseCase:
-    return use_case
+# --- fast api wrappers ---
+# async def get_patient_records_use_case(
+#     use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case),
+# ) -> GetAllPatientsUseCase:
+#     return use_case
 
 
-async def get_scan_analysis_use_case(
-    use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case),
-) -> ScanAnalysisUseCase:
-    return use_case
+# async def get_patient_results_use_case(
+#     use_case: GetPatientResultsUseCase = Depends(build_get_patient_results_use_case),
+# ) -> GetPatientResultsUseCase:
+#     return use_case
 
 
-async def get_authenticate_user_use_case(
-    use_case: AuthenticateUserUseCase = Depends(build_authenticate_user_use_case),
-) -> AuthenticateUserUseCase:
-    return use_case
+# async def get_scan_analysis_use_case(
+#     use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case),
+# ) -> ScanAnalysisUseCase:
+#     return use_case
 
 
-async def get_register_user_use_case(
-    use_case: RegisterUserUseCase = Depends(build_register_user_use_case),
-) -> RegisterUserUseCase:
-    return use_case
+# async def get_authenticate_user_use_case(
+#     use_case: AuthenticateUserUseCase = Depends(build_authenticate_user_use_case),
+# ) -> AuthenticateUserUseCase:
+#     return use_case
 
 
-async def get_check_email_use_case(
-    use_case: CheckEmailUseCase = Depends(build_check_email_use_case),
-) -> CheckEmailUseCase:
-    return use_case
+# async def get_register_user_use_case(
+#     use_case: RegisterUserUseCase = Depends(build_register_user_use_case),
+# ) -> RegisterUserUseCase:
+#     return use_case
 
 
-async def get_update_settings_use_case(
-    use_case: UpdateSettingsUseCase = Depends(build_update_settings_use_case),
-) -> UpdateSettingsUseCase:
-    return use_case
+# async def get_check_email_use_case(
+#     use_case: CheckEmailUseCase = Depends(build_check_email_use_case),
+# ) -> CheckEmailUseCase:
+#     return use_case
 
 
-async def get_settings_use_case(
-    use_case: GetSettingsUseCase = Depends(build_get_settings_use_case),
-) -> GetSettingsUseCase:
-    return use_case
+# async def get_update_settings_use_case(
+#     use_case: UpdateSettingsUseCase = Depends(build_update_settings_use_case),
+# ) -> UpdateSettingsUseCase:
+#     return use_case
 
 
-async def get_all_users_use_case(
-    use_case: GetAllUsersUseCase = Depends(build_get_all_users_use_case),
-) -> GetAllUsersUseCase:
-    return use_case
+# async def get_settings_use_case(
+#     use_case: GetSettingsUseCase = Depends(build_get_settings_use_case),
+# ) -> GetSettingsUseCase:
+#     return use_case
 
 
-async def delete_user_by_id_use_case(
-    use_case: DeleteUserByIdUseCase = Depends(build_delete_user_by_id_use_case),
-) -> DeleteUserByIdUseCase:
-    return use_case
+# async def get_all_users_use_case(
+#     use_case: GetAllUsersUseCase = Depends(build_get_all_users_use_case),
+# ) -> GetAllUsersUseCase:
+#     return use_case
+
+
+# async def delete_user_by_id_use_case(
+#     use_case: DeleteUserByIdUseCase = Depends(build_delete_user_by_id_use_case),
+# ) -> DeleteUserByIdUseCase:
+#     return use_case
 

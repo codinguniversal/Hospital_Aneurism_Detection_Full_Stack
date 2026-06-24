@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 from app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
 from app.core.patient_management.use_cases import ScanAnalysisUseCase
 from app.infrastructure.ai.ai_client import AIServiceError
-from app.dependencies import get_scan_analysis_use_case
+from app.dependencies import build_scan_analysis_use_case
 
 router = APIRouter(
     prefix="/api/scans",
@@ -14,7 +14,7 @@ router = APIRouter(
 async def run_manual_analysis(
     scan_id: str,
     analysis_request: ScanAnalysisRequestSchema,
-    use_case: ScanAnalysisUseCase = Depends(get_scan_analysis_use_case)
+    use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case)
 ):
     """
     Endpoint triggered when the Run Analysis button in the frontend table is pressed.
