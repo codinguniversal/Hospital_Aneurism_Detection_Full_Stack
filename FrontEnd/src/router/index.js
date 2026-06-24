@@ -17,7 +17,7 @@ const router = createRouter({
     // Admin Realm
     { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAuth: true, role: 'admin' } },
 
-    // Doctor Realm
+    // Doctor/Radiologist Realm
     { path: '/records', name: 'records', component: RecordsView, meta: { requiresAuth: true, role: 'doctor' } },
     { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true, role: 'doctor' } },
     { path: '/results/:id', name: 'results', component: ResultsView, meta: { requiresAuth: true, role: 'doctor' } },
@@ -25,7 +25,7 @@ const router = createRouter({
   ]
 })
 
-// 🟢 Modern Vue Router v4 Navigation Guard (Warning & Loop Free)
+//  Modern Vue Router v4 Navigation Guard
 router.beforeEach((to, from) => {
   const isAuthenticated = authStore.isAuthenticated
   const userRole = authStore.role ? authStore.role.toLowerCase() : ''
@@ -37,10 +37,15 @@ router.beforeEach((to, from) => {
   } 
   
   // 2. Authenticated users attempting to access a route belonging to another role
-  if (to.meta.requiresAuth && targetRole !== userRole) {
-    const fallbackPath = userRole === 'admin' ? '/admin' : '/records'
-    // ONLY redirect if we aren't already going to that exact fallback path
-    if (to.path !== fallbackPath) return fallbackPath
+  if (to.meta.requiresAuth) {
+    // Treat 'radiologist' as 'doctor' for routing permission scopes
+    const operationalRole = userRole === 'radiologist' ? 'doctor' : userRole
+
+    if (targetRole !== operationalRole) {
+      const fallbackPath = userRole === 'admin' ? '/admin' : '/records'
+      // ONLY redirect if we aren't already going to that exact fallback path
+      if (to.path !== fallbackPath) return fallbackPath
+    }
   } 
   
   // 3. Authenticated users going back to login get pushed straight to their dashboard

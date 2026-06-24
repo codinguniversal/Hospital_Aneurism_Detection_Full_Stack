@@ -17,6 +17,7 @@ class PatientRecordResponseSchema(BaseModel):
     model_config = ConfigDict(from_attributes= True)
 
     id: str
+    scan_id: str
     name: str
     scan_date: datetime
     analyzed: bool

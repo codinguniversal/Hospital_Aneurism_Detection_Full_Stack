@@ -17,6 +17,7 @@ def patient_entities_to_records(high_threshold: float, mid_threshold: float ,pat
             results.append(
                 PatientRecordResponseSchema(               
                     id= patient.id,
+                    scan_id= latest_scan.id,
                     name=patient.patient_name,
                     scan_date=latest_scan.scan_date,
                     analyzed=latest_scan.status == ScanStatus.COMPLETED.value,
