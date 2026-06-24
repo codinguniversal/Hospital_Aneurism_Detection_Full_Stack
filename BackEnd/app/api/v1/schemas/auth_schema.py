@@ -15,7 +15,6 @@ class LoginResponseSchema(BaseModel):
 class RegisterRequestSchema(BaseModel):
     email: EmailStr
     password: str
-    gender: str
 
 class EmailCheckResponseSchema(BaseModel):
     exists: bool

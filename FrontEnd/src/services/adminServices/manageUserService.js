@@ -1,5 +1,5 @@
 import apiClient from '../apiClient';
-
+import axios from 'axios'
 //for admin user management page//
 
 export const userService = {
@@ -13,20 +13,30 @@ export const userService = {
   /**
    * Registers a brand-new medical staff profile record in MongoDB.
    */
-  async register(employeeId, email, password) {
-    // 🎯 Matches your AdminView.vue call signatures perfectly
-    return apiClient.post('/auth/register', { 
-      employee_id: employeeId, 
-      email, 
-      password 
-    });
+    async register(email, password) {
+        // 1. Grab the token you just received during login (adjust localStorage key if named differently)
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+
+        // 2. Send the exact payload body AND the Authorization header
+        return await axios.post('http://localhost:8000/auth/register', 
+        {
+            email: email,
+            password: password,
+        },
+        {
+            headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+            }
+        }
+        );
   },
 
   /**
    * Validates if an email address is already locked to an active profile.
    */
   async checkEmailExists(email) {
-    const response = await apiClient.get('/email/check', {
+    const response = await apiClient.get('/auth/check-email', {
       params: { email } 
     });
     const data = response.data || response;

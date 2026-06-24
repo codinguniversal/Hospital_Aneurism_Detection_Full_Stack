@@ -11,10 +11,10 @@ import ExplainView from '../views/ExplainView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: () => authStore.role === 'admin' ? '/admin' : '/login' },
+    { path: '/', redirect: () => authStore.role?.toLowerCase() === 'admin' ? '/admin' : '/login' },
     { path: '/login', name: 'login', component: LoginView },
     
-    // Admin Realm (All tabs are handled inside AdminView)
+    // Admin Realm
     { path: '/admin', name: 'admin', component: AdminView, meta: { requiresAuth: true, role: 'admin' } },
 
     // Doctor Realm
@@ -25,19 +25,31 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next("/login")
+// 🟢 Modern Vue Router v4 Navigation Guard (Warning & Loop Free)
+router.beforeEach((to, from) => {
+  const isAuthenticated = authStore.isAuthenticated
+  const userRole = authStore.role ? authStore.role.toLowerCase() : ''
+  const targetRole = to.meta.role ? to.meta.role.toLowerCase() : ''
+
+  // 1. Unauthenticated users trying to access protected routes go to login
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return '/login'
   } 
-  else if (to.meta.requiresAuth && to.meta.role !== authStore.role) {
-    next(authStore.role === 'admin' ? '/admin' : '/records')
+  
+  // 2. Authenticated users attempting to access a route belonging to another role
+  if (to.meta.requiresAuth && targetRole !== userRole) {
+    const fallbackPath = userRole === 'admin' ? '/admin' : '/records'
+    // ONLY redirect if we aren't already going to that exact fallback path
+    if (to.path !== fallbackPath) return fallbackPath
   } 
-  else if (to.path === '/login' && authStore.isAuthenticated) {
-    next(authStore.role === 'admin' ? '/admin' : '/records')
-  } 
-  else {
-    next()
+  
+  // 3. Authenticated users going back to login get pushed straight to their dashboard
+  if (to.path === '/login' && isAuthenticated) {
+    return userRole === 'admin' ? '/admin' : '/records'
   }
+  
+  // Allow navigation to proceed safely
+  return true
 })
 
 export default router
