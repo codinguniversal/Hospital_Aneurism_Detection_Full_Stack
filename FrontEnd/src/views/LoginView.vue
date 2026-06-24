@@ -17,24 +17,30 @@
 
         <div class="form-group">
           <label>Employee ID (6 Digits) or Email</label>
-          <input 
-            type="text" 
-            v-model="loginIdentifier" 
-            class="form-control" 
-            :placeholder="isAdmin ? 'e.g., admin@hospital.org' : 'e.g., 123456 or dr@hospital.org'" 
-            required 
-          />
+          <div class="input-wrapper">
+            <i class="fa fa-id-badge"></i>
+            <input 
+              type="text" 
+              v-model="loginIdentifier" 
+              class="form-control" 
+              :placeholder="isAdmin ? 'e.g., admin@hospital.org' : 'e.g., 123456 or dr@hospital.org'" 
+              required 
+            />
+          </div>
         </div>
 
         <div class="form-group">
           <label>Password</label>
-          <input 
-            type="password" 
-            v-model="password" 
-            class="form-control" 
-            placeholder="Enter your password" 
-            required 
-          />
+          <div class="input-wrapper">
+            <i class="fa fa-lock"></i>
+            <input 
+              type="password" 
+              v-model="password" 
+              class="form-control" 
+              placeholder="Enter your password" 
+              required 
+            />
+          </div>
         </div>
 
         <button type="submit" class="action-btn btn-green full-width">
@@ -49,7 +55,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
-import { authApi } from '../services/authService.js'
+// import { authApi } from '../services/authService.js' // Uncomment when backend is connected
 
 const router = useRouter()
 const loginIdentifier = ref('')
@@ -66,13 +72,19 @@ const handleLogin = async () => {
   }
 
   try {
+    /* // Uncomment this block when backend is ready
     const user = await authApi.login(
       loginIdentifier.value.trim(),
       password.value,
       isAdmin.value
     )
-
     authStore.login(user.employee_id, user.role)
+    */
+    
+    // Fallback local logic for UI testing
+    const role = isAdmin.value ? 'admin' : 'doctor'
+    authStore.login(loginIdentifier.value.trim(), role)
+    
     router.push(isAdmin.value ? '/admin' : '/records')
   } catch (error) {
     alert('Login failed. Please check your credentials.')
@@ -86,6 +98,8 @@ const handleLogin = async () => {
 .auth-card { background: #ffffff; width: 100%; max-width: 400px; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
 .auth-header { text-align: center; margin-bottom: 30px; }
 .auth-header h2 { color: #2c3e50; font-size: 26px; }
+
+/* Role Toggle */
 .role-toggle-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 25px; padding: 10px; background: #f8f9fa; border-radius: 12px; border: 1px solid #e9ecef; }
 .role-label { font-size: 15px; font-weight: 600; color: #95a5a6; transition: color 0.3s; }
 .role-label.active { color: #0aa159; }
@@ -95,11 +109,19 @@ const handleLogin = async () => {
 .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: #0aa159; }
 input:checked + .slider:before { transform: translateX(26px); }
+
+/* Form Elements */
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-size: 13px; font-weight: 600; color: #34495e; margin-bottom: 8px; }
-.form-control { width: 100%; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 15px; outline: none; }
-.form-control:focus { border-color: #0aa159; }
+
+/* ICONS WRAPPER CSS */
+.input-wrapper { position: relative; display: flex; align-items: center; }
+.input-wrapper i { position: absolute; left: 15px; color: #95a5a6; }
+.form-control { width: 100%; padding: 12px 15px 12px 40px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 15px; outline: none; transition: border-color 0.2s;}
+.form-control:focus { border-color: #0aa159; box-shadow: 0 0 0 3px rgba(10, 161, 89, 0.1); }
 .form-control::placeholder { color: #b2bec3; }
+
+/* Buttons */
 .full-width { width: 100%; padding: 12px; margin-top: 10px; }
 .action-btn { border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-green { background-color: #0aa159; color: white; box-shadow: 0 4px 6px rgba(10, 161, 89, 0.2); }
