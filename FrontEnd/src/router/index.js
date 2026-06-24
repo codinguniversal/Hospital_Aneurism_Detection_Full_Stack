@@ -12,7 +12,7 @@ import ExplainView from '../views/ExplainView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    { path: '/', redirect: () => authStore.role === 'admin' ? '/admin' : '/login' },
+    { path: '/', redirect: () => authStore.role?.toLowerCase() === 'admin' ? '/admin' : '/login' },
     { path: '/login', name: 'login', component: LoginView },
     
     // Admin Realm
@@ -27,21 +27,40 @@ const router = createRouter({
   ]
 })
 
-// The Bouncer
-router.beforeEach((to, from, next) => {
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next("/login")
+// The Modern Bouncer (Vue Router v4 Style)
+router.beforeEach((to, from) => {
+  if (!to.meta.requiresAuth) {
+    // If user is logged in and hits login view, redirect to dashboard
+    if (to.path === '/login' && authStore.isAuthenticated) {
+      const currentRole = authStore.role?.toLowerCase() || '';
+      return currentRole === 'admin' ? '/admin' : '/records'
+    }
+    return; // Allow public routes
+  }
+
+  // 1. Guard against unauthenticated sessions
+  if (!authStore.isAuthenticated) {
+    return "/login"
   } 
-  else if (to.meta.requiresAuth && to.meta.role !== authStore.role) {
-    // Kicks users out of each other's pages
-    next(authStore.role === 'admin' ? '/admin' : '/records')
-  } 
-  else if (to.path === '/login' && authStore.isAuthenticated) {
-    // Stops logged-in users from seeing the login screen
-    next(authStore.role === 'admin' ? '/admin' : '/records')
-  } 
-  else {
-    next()
+  
+  const userRole = authStore.role?.toLowerCase() || '';
+  const requiredRole = to.meta.role?.toLowerCase() || '';
+
+  // 2. Validate multi-tier role access controls cleanly
+  let hasAccess = false;
+  if (requiredRole === 'admin' && userRole === 'admin') {
+    hasAccess = true;
+  } else if (requiredRole === 'doctor' && userRole !== 'admin') {
+    // 🎯 Captures 'Radiologist', 'Doctor', etc. without locking them out
+    hasAccess = true;
+  }
+
+  // 3. Prevent unauthorized jumping or infinite redirection loops
+  if (!hasAccess) {
+    const targetDashboard = userRole === 'admin' ? '/admin' : '/records';
+    if (to.path !== targetDashboard) {
+      return targetDashboard;
+    }
   }
 })
 

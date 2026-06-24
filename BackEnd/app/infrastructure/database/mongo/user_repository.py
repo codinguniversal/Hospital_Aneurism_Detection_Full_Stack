@@ -11,13 +11,20 @@ class MongoUserRepository(UserRepository):
         self.collection = db["users"]
 
     async def get_by_identifier(self, employee_id: str) -> Optional[UserEntity]:
-        raw_user = await self.collection.find_one({"employeeId": employee_id.strip()})
-
+        search_string = str(employee_id).strip()
+        
+        raw_user = await self.collection.find_one({
+            "$or": [
+                {"employee_id": search_string},
+                {"email": search_string}
+            ]
+        })
+        
         if not raw_user:
             return None
 
         return UserEntity(
-            employee_id=raw_user["employeeId"],
+            employee_id=raw_user["employee_id"],
             email=raw_user["email"],
             password=raw_user["password"],
             role=raw_user["role"],
@@ -39,7 +46,7 @@ class MongoUserRepository(UserRepository):
             return None
 
         return UserEntity(
-            employee_id=raw_user["employeeId"],
+            employee_id=raw_user["employee_id"],
             email=raw_user["email"],
             password=raw_user["password"],
             role=raw_user["role"],
@@ -47,7 +54,7 @@ class MongoUserRepository(UserRepository):
 
     async def add_user(self, user: UserEntity) -> None:
         user_document = {
-            "employeeId": user.employee_id,
+            "employee_id": user.employee_id,
             "email": user.email,
             "password": user.password,
             "role": user.role,
@@ -60,7 +67,7 @@ class MongoUserRepository(UserRepository):
         )
 
     async def delete_user_by_id(self, user_id: str) -> None:
-        result = await self.collection.delete_one({"employeeId": user_id})
+        result = await self.collection.delete_one({"employee_id": user_id})
 
         if result.deleted_count == 0:
             raise ValueError(f"User with employee ID '{user_id}' not found")
