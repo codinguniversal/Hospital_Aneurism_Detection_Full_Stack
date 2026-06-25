@@ -33,3 +33,18 @@ class PatientRepository(ABC):
     async def get_all_pending_scans(self) -> List[ScanEntity]:
         """retrieves all scans that have not been analyzed yet"""
         pass
+
+    @abstractmethod
+    async def store_slice_image(self, scan_id: str, slice_index: int, base64_data: str) -> str:
+        """
+        Persists the overlay image and returns its reference (URI/URL/ID) for later access
+        """
+        pass
+
+    @abstractmethod
+    async def get_slice_image(self, slice_ref:str)->Optional[bytes]:
+        """
+        Retrieves the raw binary image data given its reference.
+        Returns None if the reference does not exist.
+        """
+        pass

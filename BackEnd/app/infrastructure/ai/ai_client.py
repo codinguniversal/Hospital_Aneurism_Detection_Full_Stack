@@ -1,18 +1,34 @@
+from typing import List, Optional, Dict, Any
+
 import httpx
 from pydantic import BaseModel
 
+from app.core.patient_management.repositories import PatientRepository
 from app.core.patient_management.entities import (
     AneurysmAnalysisResultEntity,
+    ExplainabilityEntity,
     LocationPredictionsEntity,
     OverAllAneurysmPredictionEntity,
+    TopSliceEntity,
 )
 from app.core.patient_management.services import ScanAnalysisService
 
+class TopSliceDTO(BaseModel):
+    slice_index: int
+    importance: float
+    overlay_png_base64: str
+
+class ExplainabilityDTO(BaseModel):
+    method: str
+    target_label: str
+    top_slices: List[TopSliceDTO]
+    model_explanations: Optional[List[Dict[str,Any]]] = None
 
 class AIResponseDTO(BaseModel):
     status: str
-    overall_prediction: dict[str, float]
-    detailed_locations: dict[str, float]
+    overall_prediction: Dict[str, float]
+    detailed_locations: Dict[str, float]
+    explainability: Optional[ExplainabilityDTO]
 
 
 class AIServiceError(Exception):
@@ -22,21 +38,40 @@ class AIServiceError(Exception):
 
 
 class HTTPXScanAnalysisService(ScanAnalysisService):
-    def __init__(self, client: httpx.AsyncClient, base_url: str, timeout: int):
+    def __init__(
+            self,
+            client: httpx.AsyncClient,
+            base_url: str,
+            patient_repo: PatientRepository,
+            timeout: int = 60,
+        ):
         self.client = client
         self.base_url = base_url
+        self.patient_repo = patient_repo
         self.timeout = timeout
 
-    async def analyze_scan(self, scan_id: str, binary_data: bytes) -> AneurysmAnalysisResultEntity:
+    async def analyze_scan(
+                self,
+                scan_id: str,
+                binary_data: bytes,
+                explain: bool= False,
+                target_label: str = "Aneurysm Present",
+            ) -> AneurysmAnalysisResultEntity:
+        
+        query_params = {}
+        if explain:
+            query_params["explain"] = "true"
+            query_params["target_label"] = target_label 
+        
         files = {"file": (f"{scan_id}.zip", binary_data, "application/zip")}
         try:
-            print(f"\n[CROSS-SERVER COMMUNICATION] Routing from Backend (8000) -> AI Service (8001) via URL: {self.base_url}\n")
+            print(f"\n[CROSS-SERVER] Backend -> AI Service: {self.base_url} with params {query_params}\n")
             response = await self.client.post(
                 self.base_url,
                 files=files,
+                params= query_params,
                 timeout=self.timeout,
             )
-
             response.raise_for_status()
 
             dto = AIResponseDTO.model_validate(response.json())
@@ -47,7 +82,7 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                     status_code=502,
                 )
 
-            return self._map_to_entity(dto)
+            return await self._map_to_entity(scan_id= scan_id, dto= dto)
 
         except httpx.HTTPStatusError as exc:
             raise AIServiceError(
@@ -65,8 +100,12 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                 status_code=503,
             )
 
-    def _map_to_entity(self, dto: AIResponseDTO) -> AneurysmAnalysisResultEntity:
-        return AneurysmAnalysisResultEntity(
+    async def _map_to_entity(
+            self,
+            scan_id: str,
+            dto: AIResponseDTO
+        ) -> AneurysmAnalysisResultEntity:
+        result = AneurysmAnalysisResultEntity(
             overall=OverAllAneurysmPredictionEntity(
                 probability=dto.overall_prediction["Aneurysm Present"]
             ),
@@ -85,4 +124,32 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                 BasilarTip=dto.detailed_locations["Basilar Tip"],
                 OtherPosteriorCirculation=dto.detailed_locations["Other Posterior Circulation"],
             ),
+            explainability= []
         )
+        if dto.explainability:
+            top_slices_entities = []
+            for slice_dto in dto.explainability.top_slices:
+                image_ref = await self.patient_repo.store_slice_image(
+                    scan_id= scan_id,
+                    slice_index= slice_dto.slice_index,
+                    base64_data= slice_dto.overlay_png_base64
+                )
+                top_slices_entities.append(
+                    TopSliceEntity(
+                        slice_index=slice_dto.slice_index,
+                        importance=slice_dto.importance,
+                        overlay_image_ref= image_ref
+                    )
+                )
+            explainability_entity = ExplainabilityEntity(
+                id=f"exp_{scan_id}_{dto.explainability.target_label.replace(' ', '_')}",
+                method=dto.explainability.method,
+                target_label=dto.explainability.target_label,
+                top_slices=top_slices_entities,
+                model_metadata=dto.explainability.model_explanations,
+            )
+            if result.explainability is None:
+                result.explainability = []
+            result.explainability.append(explainability_entity)
+        return result
+        

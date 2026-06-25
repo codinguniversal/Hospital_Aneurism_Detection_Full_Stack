@@ -1,10 +1,14 @@
+import base64
+import io
 import random
-from typing import Optional
+from typing import Any, Optional
 
 from app.core.patient_management.entities import (
     AneurysmAnalysisResultEntity,
     LocationPredictionsEntity,
     OverAllAneurysmPredictionEntity,
+    ExplainabilityEntity,
+    TopSliceEntity,
 )
 from app.core.patient_management.services import ScanAnalysisService
 from app.infrastructure.ai.ai_client import AIServiceError
@@ -24,6 +28,8 @@ class MockScanAnalysisService(ScanAnalysisService):
         simulate_timeout: bool = False,
         simulate_http_error: bool = False,
         simulate_status_failure: bool = False,
+        patient_repo: Optional[Any] = None,
+        fixed_scan_id: Optional[str] = None,
     ):
         self.always_success = always_success
         self.fixed_overall_probability = fixed_overall_probability
@@ -31,6 +37,8 @@ class MockScanAnalysisService(ScanAnalysisService):
         self.simulate_timeout = simulate_timeout
         self.simulate_http_error = simulate_http_error
         self.simulate_status_failure = simulate_status_failure
+        self.patient_repo = patient_repo
+        self.fixed_scan_id = fixed_scan_id
 
     @staticmethod
     def _default_location_probs() -> dict[str, float]:
@@ -50,9 +58,25 @@ class MockScanAnalysisService(ScanAnalysisService):
             "Other Posterior Circulation": 0.10,
         }
 
+    def _generate_fake_base64_png(self, width: int = 512, height: int = 512) -> str:
+        """Generate a fake PNG in Base64."""
+        try:
+            from PIL import Image
+            img = Image.new("RGB", (width, height), color=(255, 0, 0))
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            return base64.b64encode(buffer.getvalue()).decode("utf-8")
+        except ImportError:
+            return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+
     async def analyze_scan(
-        self, scan_id: str, binary_data: bytes
+        self,
+        scan_id: str,
+        binary_data: bytes,
+        explain: bool = False,  # ✅ Added to match abstract
+        target_label: str = "Aneurysm Present",  # ✅ Added to match abstract
     ) -> AneurysmAnalysisResultEntity:
+        # Simulate failures
         if self.simulate_timeout:
             raise AIServiceError("Mock AI timeout", status_code=504)
         if self.simulate_http_error:
@@ -60,6 +84,7 @@ class MockScanAnalysisService(ScanAnalysisService):
         if self.simulate_status_failure:
             raise AIServiceError("Mock status failure (unsuccessful)", status_code=502)
 
+        # Generate probabilities
         overall_prob = self.fixed_overall_probability
         if overall_prob is None:
             overall_prob = round(random.uniform(0.2, 0.95), 3)
@@ -83,7 +108,7 @@ class MockScanAnalysisService(ScanAnalysisService):
                 "Other Posterior Circulation": round(random.random(), 3),
             }
 
-        return AneurysmAnalysisResultEntity(
+        result = AneurysmAnalysisResultEntity(
             overall=OverAllAneurysmPredictionEntity(probability=overall_prob),
             locations=LocationPredictionsEntity(
                 LeftInfraclinoidInternalCarotidArtery=loc_probs["Left Infraclinoid Internal Carotid Artery"],
@@ -100,4 +125,45 @@ class MockScanAnalysisService(ScanAnalysisService):
                 BasilarTip=loc_probs["Basilar Tip"],
                 OtherPosteriorCirculation=loc_probs["Other Posterior Circulation"],
             ),
+            explainability=[],
         )
+
+        # 🚀 NOW: Only generate fake heatmaps if `explain=True`
+        if explain and self.patient_repo:
+            fake_slices = [
+                {"slice_index": 42, "importance": 1.0},
+                {"slice_index": 15, "importance": 0.85},
+                {"slice_index": 71, "importance": 0.60},
+            ]
+
+            top_slices_entities = []
+            for fake_slice in fake_slices:
+                fake_base64 = self._generate_fake_base64_png()
+                image_ref = await self.patient_repo.store_slice_image(
+                    scan_id=scan_id,
+                    slice_index=fake_slice["slice_index"],
+                    base64_data=fake_base64,
+                )
+
+                top_slices_entities.append(
+                    TopSliceEntity(
+                        slice_index=fake_slice["slice_index"],
+                        importance=fake_slice["importance"],
+                        overlay_image_ref=image_ref,
+                    )
+                )
+
+            # ✅ Use the `target_label` passed from the Use Case
+            explainability_entity = ExplainabilityEntity(
+                id=f"exp_{scan_id}_{target_label.replace(' ', '_')}",
+                method="Grad-CAM",
+                target_label=target_label,  # ✅ Use the actual passed label
+                top_slices=top_slices_entities,
+                model_metadata={"mock": True, "simulated": True},
+            )
+
+            if result.explainability is None:
+                result.explainability = []
+            result.explainability.append(explainability_entity)
+
+        return result

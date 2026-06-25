@@ -1,9 +1,10 @@
 from datetime import datetime, date
 from enum import Enum
-from typing import List, Optional, Self
+from typing import Any, List, Optional, Self
 
 from pydantic import BaseModel, Field, model_validator
 
+MAXNUMOFEXPLAINEDSLICES =5
 
 class ScanStatus(str, Enum):
     PENDING = "pending"
@@ -13,7 +14,7 @@ class ScanStatus(str, Enum):
 
 
 class ScanUrgency(str, Enum):
-    UNKOWN = "Unkown"
+    UNKNOWN = "Unknown"
     LOW = "Low"
     MEDIUM = "Medium"
     HIGH = "High"
@@ -38,10 +39,23 @@ class LocationPredictionsEntity(BaseModel):
     BasilarTip: float
     OtherPosteriorCirculation: float
 
+class TopSliceEntity(BaseModel):
+    slice_index: int
+    importance: float
+    overlay_image_ref: str
+
+class ExplainabilityEntity(BaseModel):
+    id:str
+    method:str ="Grad-CAM"
+    target_label: str
+    top_slices: List[TopSliceEntity] = Field(min_length= 1, max_length=MAXNUMOFEXPLAINEDSLICES)
+    model_metadata: Optional[Any] = None
+
 
 class AneurysmAnalysisResultEntity(BaseModel):
     overall: Optional[OverAllAneurysmPredictionEntity] = None
     locations: Optional[LocationPredictionsEntity] = None
+    explainability: Optional[List[ExplainabilityEntity]] = Field(default_factory= list)
 
 
 class ScanEntity(BaseModel):
@@ -58,7 +72,7 @@ class ScanEntity(BaseModel):
             or self.results.overall is None
             or getattr(self.results.overall, "probability", None) is None
         ):
-            return ScanUrgency.UNKOWN.value
+            return ScanUrgency.UNKNOWN.value
 
         probability = self.results.overall.probability
         if probability >= high_threshold:

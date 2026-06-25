@@ -30,8 +30,6 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 
 _factory: Optional[InfrastructureFactory] = None
 _ai_http_client = None
-_id_generator = None
-
 
 def initialize_infrastructure(db: Optional[AsyncIOMotorDatabase] = None):
     global _factory
@@ -52,12 +50,15 @@ def get_ai_http_client() -> httpx.AsyncClient:
 
 
 async def build_ai_service():
+    patient_repo = build_patient_repository()
     if static_settings.use_mock_ai:
-        return MockScanAnalysisService(fixed_overall_probability=0.85)
+        return MockScanAnalysisService(patient_repo = patient_repo ,
+                                    fixed_overall_probability=0.85)
 
     settings_repo = build_settings_repository()
     dynamic_settings = await settings_repo.get_settings()
     return HTTPXScanAnalysisService(
+        patient_repo = patient_repo,
         client=get_ai_http_client(),
         base_url=str(dynamic_settings.ai_api_url),
         timeout=dynamic_settings.ai_timeout_limit,

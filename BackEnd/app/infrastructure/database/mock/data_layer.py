@@ -10,6 +10,8 @@ class MockNoSQLDataLayer:
     def __init__(self):
         print("Initializing Mock Database...")
 
+        self.images: Dict[str, str] = {}
+
         self.users: Dict[str, Dict[str, Any]] = {
             "admin@hospital.org": {
                 "employeeId": "ADMIN-01",

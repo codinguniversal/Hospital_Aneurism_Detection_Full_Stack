@@ -40,8 +40,9 @@ class ScanAnalysisUseCase:
             raise ValueError(f"Scan record with id {scan_id} not found in DB")
 
         analysis_results = await self.ai_service.analyze_scan(
-            scan_id=scan_id,
-            binary_data=binary_data,
+            scan_id= scan_id,
+            binary_data= binary_data,
+            explain= False
         )
 
         await self.patient_repo.update_scan_results(

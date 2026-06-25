@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -66,3 +67,37 @@ class MockPatientRepository(PatientRepository):
                 if scan_data.get("status") == "pending":
                     pending_scans.append(ScanEntity.model_validate(scan_data))
         return pending_scans
+    async def store_slice_image(
+        self,
+        scan_id: str,
+        slice_index: int,
+        base64_data: str,
+    ) -> str:
+        """
+        Mock implementation of image storage.
+        Stores the Base64 image in an in-memory dictionary and returns a reference.
+        """
+        # Generate a reference that looks realistic
+        ref = f"mock://scans/{scan_id}/slice_{slice_index}.png"
+
+        # Store the raw Base64 in the mock data layer's images dict
+        if not hasattr(self.db, "images"):
+            self.db.images = {}
+        self.db.images[ref] = base64_data
+
+        return ref
+    async def get_slice_image(self, image_ref: str) -> Optional[bytes]:
+        """Retrieve the raw binary image data given its reference."""
+        if not hasattr(self.db, "images"):
+            return None
+        
+        base64_str = self.db.images.get(image_ref)
+        if base64_str is None:
+            return None
+        
+        # Decode Base64 back to binary bytes
+        try:
+            return base64.b64decode(base64_str)
+        except Exception:
+            return None
+
