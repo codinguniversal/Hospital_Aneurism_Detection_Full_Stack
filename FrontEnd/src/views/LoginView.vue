@@ -18,7 +18,7 @@
         <div class="form-group">
           <label>Employee ID (6 Digits) or Email</label>
           <div class="input-wrapper">
-            <i class="fa fa-id-badge"></i>
+            <span class="material-symbols-outlined input-icon">badge</span>
             <input 
               type="text" 
               v-model="loginIdentifier" 
@@ -32,7 +32,7 @@
         <div class="form-group">
           <label>Password</label>
           <div class="input-wrapper">
-            <i class="fa fa-lock"></i>
+            <span class="material-symbols-outlined input-icon">lock</span>
             <input 
               type="password" 
               v-model="password" 
@@ -55,7 +55,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { authStore } from '../store.js'
-import { authService } from '../services/authService.js' // Active production import
+import { authService } from '../services/authService.js'
 
 const router = useRouter()
 const loginIdentifier = ref('')
@@ -72,33 +72,29 @@ const handleLogin = async () => {
     return
   }
 
-  // // --- 🛑 FRONTEND BYPASS CHEAT CODES 🛑 ---
-  // // Skip the backend entirely for UI testing
-  // if (identifierValue === 'admin@bypass.com') {
-  //   authStore.login('999999', 'admin')
-  //   router.push('/admin')
-  //   return
-  // }
+  // --- 🛑 FRONTEND BYPASS CHEAT CODES 🛑 ---
+  if (identifierValue === 'admin@bypass.com') {
+    authStore.login('999999', 'admin')
+    router.push('/admin')
+    return
+  }
   
-  // if (identifierValue === 'doctor@bypass.com') {
-  //   authStore.login('123456', 'doctor')
-  //   router.push('/records')
-  //   return
-  // }
-  // // ----------------------------------------
+  if (identifierValue === 'doctor@bypass.com') {
+    authStore.login('123456', 'doctor')
+    router.push('/records')
+    return
+  }
+  // ----------------------------------------
 
   try {
-    // 1. Dispatch the API request to your FastAPI server
     const user = await authService.login(
       identifierValue,
       password.value,
       isAdmin.value
     )
     
-    // 2. Hydrate global state management
     authStore.login(user.employeeId, user.role)
     
-    // 3. Normalizes checks to match the backend 'Admin' or 'Radiologist' values safely
     const normalizedRole = user.role.toLowerCase()
     if (normalizedRole === 'admin') {
       router.push('/admin')
@@ -129,18 +125,15 @@ const handleLogin = async () => {
 input:checked + .slider { background-color: #0aa159; }
 input:checked + .slider:before { transform: translateX(26px); }
 
-/* Form Elements */
 .form-group { margin-bottom: 20px; }
 .form-group label { display: block; font-size: 13px; font-weight: 600; color: #34495e; margin-bottom: 8px; }
 
-/* ICONS WRAPPER CSS */
 .input-wrapper { position: relative; display: flex; align-items: center; }
-.input-wrapper i { position: absolute; left: 15px; color: #95a5a6; }
+.input-wrapper .input-icon { position: absolute; left: 15px; color: #95a5a6; pointer-events: none; font-size: 20px; }
 .form-control { width: 100%; padding: 12px 15px 12px 40px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 15px; outline: none; transition: border-color 0.2s;}
 .form-control:focus { border-color: #0aa159; box-shadow: 0 0 0 3px rgba(10, 161, 89, 0.1); }
 .form-control::placeholder { color: #b2bec3; }
 
-/* Buttons */
 .full-width { width: 100%; padding: 12px; margin-top: 10px; }
 .action-btn { border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn-green { background-color: #0aa159; color: white; box-shadow: 0 4px 6px rgba(10, 161, 89, 0.2); }
