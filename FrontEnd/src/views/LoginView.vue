@@ -6,15 +6,6 @@
       </div>
 
       <form @submit.prevent="handleLogin">
-        <div class="role-toggle-container">
-          <span class="role-label" :class="{ active: !isAdmin }">Doctor</span>
-          <label class="switch">
-            <input type="checkbox" v-model="isAdmin">
-            <span class="slider round"></span>
-          </label>
-          <span class="role-label" :class="{ active: isAdmin }">Admin</span>
-        </div>
-
         <div class="form-group">
           <label>Employee ID (6 Digits) or Email</label>
           <div class="input-wrapper">
@@ -23,7 +14,7 @@
               type="text" 
               v-model="loginIdentifier" 
               class="form-control" 
-              :placeholder="isAdmin ? 'e.g., admin@hospital.org' : 'e.g., 123456 or dr@hospital.org'" 
+              placeholder="e.g., 123456 or dr@hospital.org" 
               required 
             />
           </div>
@@ -44,7 +35,7 @@
         </div>
 
         <button type="submit" class="action-btn btn-green full-width">
-          Sign In as {{ isAdmin ? 'Admin' : 'Doctor' }}
+          Sign In
         </button>
       </form>
     </div>

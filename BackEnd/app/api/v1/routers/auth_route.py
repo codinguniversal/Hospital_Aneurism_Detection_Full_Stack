@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
+from app.api.v1.dependencies.auth import get_token_manager
 from app.infrastructure.security.jwt_provider import JWTTokenManager
 from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
 from app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
@@ -17,13 +18,7 @@ async def login(
         identifier= login_request.loginIdentifier,
         password= login_request.password,
     )
-
-    user = await use_case.execute(
-        identifier= login_request.loginIdentifier,
-        password= login_request.password,
-    )
-    
-    # 🔍 ADD THIS TEMPORARY DEBUG BLOCK HERE:
+     
     print("\n" + "="*50)
     print("DEBUGGING AUTHENTICATION:")
     print(f"Incoming Login Identifier: '{login_request.loginIdentifier}'")
@@ -39,13 +34,8 @@ async def login(
             status_code= status.HTTP_401_UNAUTHORIZED,
             detail= "invalid credentials or role selection"
         )
-    
-    if login_request.isAdmin and user.role != "Admin":
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="invalid credentials or role selection"
-        )
-    token_manager = JWTTokenManager()
+
+    token_manager = get_token_manager()
     token = token_manager.create_access_token(
         {
             "sub" : user.employee_id,

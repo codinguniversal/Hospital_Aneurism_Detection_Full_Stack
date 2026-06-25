@@ -3,7 +3,6 @@ from pydantic import BaseModel, EmailStr
 class LoginRequestSchema(BaseModel):
     loginIdentifier: str
     password: str
-    isAdmin: bool
 
 class LoginResponseSchema(BaseModel):
     access_token: str
