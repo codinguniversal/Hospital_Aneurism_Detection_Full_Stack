@@ -5,9 +5,9 @@ export const settingsApi = {
         return apiClient.get('/admin/settings');
     },
 
-    async updateSettings(newSettings){
-        return apiClient.put('/admin/settings', newSettings);
-    }
+   updateSystemSettings(configPayload) {
+    return apiClient.put('/admin/settings', configPayload); 
+  }
 }
      
 

@@ -177,10 +177,10 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { userService } from '../services/adminServices/manageUserService.js' 
-
+import { settingsApi } from '../services/adminServices/settings.js'
 const currentTab = ref('manage') 
 
-// --- MANAGE USERS ---
+// --- MANAGE USERS STATE ---
 const users = ref([])
 const isLoadingUsers = ref(false)
 
@@ -195,7 +195,6 @@ const fetchAllAccounts = async () => {
     users.value = response.data || response
   } catch (error) {
     console.error('Failed fetching user list:', error)
-    // alert('Could not retrieve active personnel records.')
   } finally {
     isLoadingUsers.value = false
   }
@@ -218,10 +217,10 @@ onMounted(() => {
   fetchAllAccounts()
 })
 
-// --- SETTINGS STATE ---
+// --- SETTINGS STATE & FUNCTIONS ---
 const isEditingSettings = ref(false)
 const settings = ref({
-  ai_api_url: 'https://api.neuroscan.org/v1/analyze',
+  ai_api_url: 'http://127.0.0.1:8001/predict',
   ai_timeout_limit: 30000,
   automatic_scan_interval: 15,
   automatic_scan_start_hour: 1,
@@ -230,12 +229,18 @@ const settings = ref({
   aneurysm_medium_risk_threshold: 0.30
 })
 
-const saveSettings = () => { 
-  alert('System settings updated successfully.') 
-  isEditingSettings.value = false 
+const saveSettings = async () => { 
+  try {
+    await settingsApi.updateSystemSettings(settings.value);
+    alert('System configurations securely saved to MongoDB!'); 
+    isEditingSettings.value = false;
+  } catch (error) {
+    console.error('Failed to submit system properties:', error);
+    alert('Failed to synchronize parameters with backend.');
+  }
 }
 
-// --- REGISTER STAFF ---
+// --- REGISTER STAFF STATE & FUNCTIONS ---
 const showPassword = ref(false)
 const isRegistering = ref(false)
 const isCheckingEmail = ref(false)
@@ -374,7 +379,6 @@ const handleRegister = async () => {
 .half { flex: 1; }
 .form-group label { display: block; font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 8px; }
 
-/* Adjusted form control (No left padding for icons) */
 .form-control { width: 100%; padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 15px; outline: none; transition: border-color 0.2s;}
 .form-control:focus { border-color: #0aa159; box-shadow: 0 0 0 3px rgba(10, 161, 89, 0.1); }
 .form-control:disabled { background-color: #f8f9fa; color: #95a5a6; cursor: not-allowed; border-color: #e9ecef; }
