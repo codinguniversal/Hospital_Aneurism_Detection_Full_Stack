@@ -27,8 +27,7 @@ class GetPatientResultsUseCase:
         if not patient:
             return None
         return patient
-
-
+ 
 class ScanAnalysisUseCase:
     def __init__(self, patient_repo: PatientRepository, ai_service: ScanAnalysisService):
         self.patient_repo = patient_repo

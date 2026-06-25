@@ -4,8 +4,11 @@ from typing import Any, List, Optional, Self
 
 from pydantic import BaseModel, Field, model_validator
 
+<<<<<<< Updated upstream
 MAXNUMOFEXPLAINEDSLICES =5
 
+=======
+>>>>>>> Stashed changes
 class ScanStatus(str, Enum):
     PENDING = "pending"
     PROCESSING = "processing"

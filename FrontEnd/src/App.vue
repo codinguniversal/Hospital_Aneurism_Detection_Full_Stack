@@ -46,10 +46,9 @@ import { authStore } from './store.js'
 const router = useRouter()
 
 const handleLogout = () => {
-  if (confirm("Are you sure you want to log out?")) {
     authStore.logout()
     router.push('/login')
-  }
+
 }
 </script>
 
