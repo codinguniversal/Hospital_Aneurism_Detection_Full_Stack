@@ -2,7 +2,7 @@
   <div class="card-container wide">
     <div v-if="isLoading" class="loading-overlay">
       <i class="fa fa-spinner fa-spin"></i>
-      <p>Loading Analysis Results & Imaging Series...</p>
+      <p>Loading Analysis Results...</p>
     </div>
 
     <div v-if="error" class="error-container">
@@ -15,7 +15,7 @@
       <div class="page-header flex-header">
         <div>
           <h1>Patient Analysis: {{ patientData.name }}</h1>
-          <p>ID: {{ patientId }} | Reviewing AI detection results and imaging</p>
+          <p>ID: {{ patientId }} | Reviewing AI detection results</p>
         </div>
         <div class="header-actions">
           <button @click="handleRerun" class="action-btn btn-outline-green" :disabled="isProcessing">
@@ -85,48 +85,12 @@
           </div>
         </div>
       </div>
-
-      <div class="dicom-section">
-        <h3><i class="fa fa-picture-o"></i> Medical Imaging (DICOM Viewer)</h3>
-        
-        <div v-if="dicomLoading" class="dicom-viewer-loading">
-          <i class="fa fa-circle-o-notch fa-spin"></i> Loading Medical Imagery Engine Slices...
-        </div>
-
-        <div class="dicom-viewer-container" v-show="!dicomLoading">
-          <div class="viewer-wrapper">
-            <div id="cornerstone-element" ref="dicomCanvas" class="dicom-canvas" @wheel.prevent="handleScrollWheel"></div>
-            
-            <div class="viewer-overlay top-left">
-              <p>Patient: {{ patientData.name }}</p>
-              <p>ID: {{ patientId }}</p>
-            </div>
-            <div class="viewer-overlay top-right">
-              <p>Modality: CTA</p>
-              <p>Slice: {{ currentSliceIndex + 1 }} / {{ totalSlices }}</p>
-            </div>
-          </div>
-
-          <div class="viewer-controls" v-if="totalSlices > 1">
-            <button @click="stepSlice(-1)" class="step-btn"><i class="fa fa-chevron-left"></i></button>
-            <input 
-              type="range" 
-              :min="0" 
-              :max="totalSlices - 1" 
-              v-model.number="currentSliceIndex" 
-              @input="renderActiveSlice"
-              class="slice-slider"
-            />
-            <button @click="stepSlice(1)" class="step-btn"><i class="fa fa-chevron-right"></i></button>
-          </div>
-        </div>
-      </div>
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { patientService } from '../services/doctorServices/patientService.js'
 import { scanService } from '../services/doctorServices/scanService.js'
@@ -145,12 +109,77 @@ const expanded = ref(false)
 const patientData = ref({})
 const allLocations = ref([])
 
-// 🌌 DICOM Engine Viewport States
-const dicomCanvas = ref(null)
-const dicomLoading = ref(false)
-const currentSliceIndex = ref(0)
-const totalSlices = ref(0)
-let dicomImageIds = [] // Holds the parsed string array pointers to medical frames
+// Helper to map and format data payloads adaptively
+const parsePayload = (rawData) => {
+  // 🔍 DEBUG TRACE LOGS
+  console.log("%c=== DISPATCHING BACKEND DATA INSPECTION ===", "color: #1abc9c; font-weight: bold;");
+  console.log("Raw Payload Arrived:", rawData);
+
+  const isDirectScanSchema = !!rawData.scan_id;
+  console.log("Is direct ScanAnalysisResponseSchema?", isDirectScanSchema);
+  
+  let activeScanId = null;
+  let activeScanDate = null;
+  let scanResultsObj = null;
+
+  if (isDirectScanSchema) {
+    activeScanId = rawData.scan_id;
+    activeScanDate = rawData.analysis_timestamp;
+    scanResultsObj = rawData.result;
+  } else {
+    console.log("Evaluating scans array field structural context...", rawData.scans);
+    const scanContainer = rawData.scans && rawData.scans.length > 0 ? rawData.scans[0] : null;
+    if (scanContainer) {
+      activeScanId = scanContainer.id;
+      activeScanDate = scanContainer.scan_date;
+      scanResultsObj = scanContainer.result || scanContainer.results;
+    }
+  }
+
+  console.log("Extracted Scan Results Sub-Object:", scanResultsObj);
+  if (scanResultsObj) {
+    console.log("Locations target raw evaluation block:", scanResultsObj.locations);
+  }
+
+  let computedAge = 'N/A';
+  if (rawData.birth_date) {
+    const birthYear = new Date(rawData.birth_date).getFullYear();
+    const currentYear = new Date().getFullYear();
+    computedAge = currentYear - birthYear;
+  } else if (patientData.value.age) {
+    computedAge = patientData.value.age;
+  }
+
+  const targetProbability = scanResultsObj?.overall?.probability || 0;
+  
+  patientData.value = {
+    name: rawData.patient_name || patientData.value.name || 'Unknown Patient',
+    age: computedAge,
+    sex: rawData.sex || patientData.value.sex || 'N/A',
+    scanId: activeScanId,
+    scanDate: activeScanDate,
+    urgency: targetProbability >= 0.7 ? 'High' : targetProbability >= 0.3 ? 'Medium' : 'Low'
+  };
+if (scanResultsObj && scanResultsObj.locations) {
+  allLocations.value = Object.keys(scanResultsObj.locations)
+    .map(key => {
+      const rawValue = scanResultsObj.locations[key] || 0;
+      const percentage = rawValue * 100;
+      
+      // 🎯 High-Precision Precision Formatting:
+      // If it's greater than 0 but ultra-low, show 3 decimal places. Otherwise, keep it clean.
+      const formattedProbability = percentage > 0 && percentage < 1 
+        ? parseFloat(percentage.toFixed(3)) 
+        : parseFloat(percentage.toFixed(1));
+
+      return {
+        name: key.replace(/([A-Z])/g, ' $1').trim(),
+        probability: formattedProbability
+      };
+    })
+    .sort((a, b) => b.probability - a.probability);
+}
+}
 
 const fetchPatientData = async () => {
   isLoading.value = true
@@ -158,137 +187,13 @@ const fetchPatientData = async () => {
   try {
     const response = await patientService.getPatientResults(patientId)
     const rawData = response.data || response
-
-    const activeScan = rawData.scans && rawData.scans.length > 0 ? rawData.scans[0] : null
-
-    let computedAge = 'N/A'
-    if (rawData.birth_date) {
-      const birthYear = new Date(rawData.birth_date).getFullYear()
-      const currentYear = new Date().getFullYear()
-      computedAge = currentYear - birthYear
-    }
-
-    patientData.value = {
-      name: rawData.patient_name || 'Unknown Patient',
-      age: computedAge,
-      sex: rawData.sex || 'N/A',
-      scanId: activeScan ? activeScan.id : null,
-      scanDate: activeScan ? activeScan.scan_date : null,
-      urgency: activeScan?.results?.overall?.probability >= 0.7 ? 'High' : 'Low'
-    }
-
-    const scanResults = activeScan?.results
-    if (scanResults && scanResults.locations) {
-      allLocations.value = Object.keys(scanResults.locations)
-        .map(key => ({
-          name: key.replace(/([A-Z])/g, ' $1').trim(),
-          probability: Math.round(scanResults.locations[key] * 100)
-        }))
-        .sort((a, b) => b.probability - a.probability)
-    } else {
-      allLocations.value = []
-    }
-
-    // Initialize DICOM Engine setup directly after verifying scan registration parameters
-    if (patientData.value.scanId) {
-      initDicomViewer(patientData.value.scanId)
-    }
+    parsePayload(rawData)
   } catch (err) {
     console.error('Failed fetching data pipeline window:', err)
     error.value = 'Failed loading patient analysis records.'
   } finally {
     isLoading.value = false
   }
-}
-
-// 🩻 Cornerstone JS Initialization & Image Stream Factory Routing Loop
-const initDicomViewer = async (scanId) => {
-  dicomLoading.value = true
-  try {
-    // Dynamic runtime safe-load hook checker to dynamically bind parsing scripts to DOM
-    await loadCornerstoneLibraries()
-
-    // Configure cornerstone structural properties
-    const element = document.getElementById('cornerstone-element') || dicomCanvas.value
-    if (!element) return
-    
-    // Register rendering frame layout with the native runtime context
-    try {
-      window.cornerstone.enable(element)
-    } catch(e) { /* Catch initialization safety re-entry crashes */ }
-
-    // FETCH DICOM FILES: Modify this URL route mapping rule configuration matching your back-end streaming configuration rules!
-    // Since you are tracking binary files matching scan paths, this should return a JSON string array pointing to your slice instances or routes.
-    // Replace with: const sliceUrls = await scanService.getScanSlices(scanId);
-    
-    // Fallback simulation mock layers if direct list array route isn't running yet:
-    const mockTotalSlices = 24
-    dicomImageIds = []
-    for(let i = 1; i <= mockTotalSlices; i++) {
-      // WADO plugin pattern linking directly to backend streaming slice binary objects
-      dicomImageIds.push(`wadouri:http://localhost:8000/api/scans/${scanId}/slices/${i}`)
-    }
-    
-    totalSlices.value = dicomImageIds.length
-    currentSliceIndex.value = 0
-
-    await renderActiveSlice()
-  } catch (err) {
-    console.error('Cornerstone graphics layout exception:', err)
-  } finally {
-    dicomLoading.value = false
-  }
-}
-
-const renderActiveSlice = async () => {
-  const element = document.getElementById('cornerstone-element')
-  if (!element || !dicomImageIds.length) return
-
-  try {
-    const imageId = dicomImageIds[currentSliceIndex.value]
-    const image = await window.cornerstone.loadImage(imageId)
-    window.cornerstone.displayImage(element, image)
-  } catch (err) {
-    console.error('Image viewport execution breakdown:', err)
-  }
-}
-
-const stepSlice = (direction) => {
-  const nextIndex = currentSliceIndex.value + direction
-  if (nextIndex >= 0 && nextIndex < totalSlices.value) {
-    currentSliceIndex.value = nextIndex
-    renderActiveSlice()
-  }
-}
-
-const handleScrollWheel = (event) => {
-  const direction = event.deltaY > 0 ? 1 : -1
-  stepSlice(direction)
-}
-
-// Async dynamic dependency injector script factory mapping hook loaders
-const loadCornerstoneLibraries = () => {
-  return new Promise((resolve, reject) => {
-    if (window.cornerstone && window.cornerstoneWADOImageLoader) return resolve()
-
-    const cornerstoneScript = document.createElement('script')
-    cornerstoneScript.src = 'https://unpkg.com/cornerstone-core@2.3.0/dist/cornerstone.js'
-    document.head.appendChild(cornerstoneScript)
-
-    cornerstoneScript.onload = () => {
-      const loaderScript = document.createElement('script')
-      loaderScript.src = 'https://unpkg.com/cornerstone-wado-image-loader@3.3.2/dist/cornerstoneWADOImageLoader.bundle.min.js'
-      document.head.appendChild(loaderScript)
-      
-      loaderScript.onload = () => {
-        // Initialize structural WADO loader hooks definitions
-        window.cornerstoneWADOImageLoader.external.cornerstone = window.cornerstone
-        resolve()
-      }
-      loaderScript.onerror = () => reject(new Error('WADO Bundle Script pipeline failure.'))
-    }
-    cornerstoneScript.onerror = () => reject(new Error('Cornerstone Core load breakdown.'))
-  })
 }
 
 const handleRerun = async () => {
@@ -299,8 +204,11 @@ const handleRerun = async () => {
       patient_name: patientData.value.name,
       scan_id: patientData.value.scanId
     }
-    await scanService.analyzeScan(patientData.value.scanId, analysisRequestData)
-    await fetchPatientData()
+    const response = await scanService.analyzeScan(patientData.value.scanId, analysisRequestData)
+    const rawData = response.data || response
+    
+    // Parse the response schema directly instead of calling fetchPatientData again
+    parsePayload(rawData)
     alert('Analysis completed successfully.')
   } catch (err) {
     alert('Rerun failed: ' + (err.response?.data?.detail || err.message))
@@ -332,17 +240,9 @@ const getRiskClass = (prob) => {
 onMounted(() => {
   fetchPatientData()
 })
-
-onBeforeUnmount(() => {
-  const element = document.getElementById('cornerstone-element')
-  if (element && window.cornerstone) {
-    window.cornerstone.disable(element)
-  }
-})
 </script>
 
 <style scoped>
-/* 🎨 EXISTING LAYOUT CORE STYLES */
 .card-container { width: 100%; }
 .card-container.wide { max-width: 1200px; margin: 0 auto; }
 .flex-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; }
@@ -378,25 +278,11 @@ onBeforeUnmount(() => {
 
 .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 .badge.high { background: #ffebee; color: #e53935; border: 1px solid #ffcdd2; }
+.badge.medium { background: #fff3e0; color: #f57c00; border: 1px solid #ffe0b2; }
 .badge.low { background: #e8f5e9; color: #43a047; border: 1px solid #a5d6a7; }
 
 .toggle-container { margin-top: 15px; }
 .full-width { width: 100%; justify-content: center; }
-
-/* 🖥️ DYNAMIC RETROFITTED CLINICAL VIEWER VIEWPORT STYLES */
-.dicom-section h3 { color: #2c3e50; font-size: 18px; margin-top: 25px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-.dicom-viewer-loading { background: #111; color: #0aa159; height: 420px; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 16px; gap: 10px; font-weight: 600; }
-.dicom-viewer-container { background: #000; border-radius: 10px; border: 2px solid #2c3e50; overflow: hidden; display: flex; flex-direction: column; }
-.viewer-wrapper { position: relative; width: 100%; height: 450px; background-color: #000; }
-.dicom-canvas { width: 100%; height: 100%; cursor: row-resize; }
-.viewer-overlay { position: absolute; color: #00ff00; font-family: monospace; font-size: 12px; pointer-events: none; padding: 12px; line-height: 1.4; text-shadow: 1px 1px 2px #000; }
-.viewer-overlay.top-left { top: 0; left: 0; }
-.viewer-overlay.top-right { top: 0; right: 0; text-align: right; }
-
-.viewer-controls { background: #14191f; display: flex; align-items: center; gap: 15px; padding: 10px 20px; border-top: 1px solid #2c3e50; }
-.slice-slider { flex: 1; accent-color: #0aa159; cursor: pointer; height: 6px; background: #232d38; border-radius: 3px; }
-.step-btn { background: #232d38; color: #ecf0f1; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-.step-btn:hover { background: #34495e; color: #0aa159; }
 
 .loading-overlay, .error-container { text-align: center; padding: 80px; color: #7f8c8d; font-size: 16px; font-weight: 600; }
 .loading-overlay i { font-size: 44px; color: #0aa159; margin-bottom: 15px; display: block; }
