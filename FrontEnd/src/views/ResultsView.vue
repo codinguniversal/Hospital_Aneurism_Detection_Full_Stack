@@ -166,7 +166,6 @@ if (scanResultsObj && scanResultsObj.locations) {
       const rawValue = scanResultsObj.locations[key] || 0;
       const percentage = rawValue * 100;
       
-      // 🎯 High-Precision Precision Formatting:
       // If it's greater than 0 but ultra-low, show 3 decimal places. Otherwise, keep it clean.
       const formattedProbability = percentage > 0 && percentage < 1 
         ? parseFloat(percentage.toFixed(3)) 
