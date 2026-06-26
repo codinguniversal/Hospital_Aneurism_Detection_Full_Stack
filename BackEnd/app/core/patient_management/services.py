@@ -23,3 +23,9 @@ class ScanAnalysisService(ABC):
             target_label: Which specific label to generate heatmaps for.
         """
         pass
+
+class INotificationService(ABC):
+    @abstractmethod
+    async def send_urgent_alert(self, scan_id: str, probability: float) -> bool:
+        """Dispatches an urgent priority alert without exposing HIPAA/PHI data."""
+        pass

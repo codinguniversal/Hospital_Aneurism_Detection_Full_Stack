@@ -1,7 +1,11 @@
+import inspect
+import os
 from typing import Optional
 from fastapi import Depends
 import httpx
 
+from app.core.patient_management.services import INotificationService
+from app.infrastructure.notifications.mail_trap_notifier import MailtrapEmailNotifier
 from app.config import static_settings
 from app.core.patient_management.repositories import PatientRepository
 from app.core.patient_management.use_cases import (
@@ -25,7 +29,7 @@ from app.modules.identity_access.use_cases import (
 )
 from app.modules.system_settings.repositories import SettingsRepository
 from app.modules.system_settings.use_cases import GetSettingsUseCase, UpdateSettingsUseCase
-
+from app.infrastructure.common.reflection import load_class_dynamically
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 _factory: Optional[InfrastructureFactory] = None
@@ -102,13 +106,38 @@ def build_get_patient_results_use_case() -> GetPatientResultsUseCase:
     patient_repo = build_patient_repository()
     return GetPatientResultsUseCase(patient_repo=patient_repo)
 
+def build_notification_service() -> INotificationService:
+    """
+    Dynamically loads and initializes the notification provider 
+    dictated by the environment configuration.
+    """
+    provider_class_path = static_settings.notification_provider_class
+
+    NotifierClass = load_class_dynamically(provider_class_path)
+
+    config_context = {
+        "api_token": static_settings.mailtrap_api_token,
+        "inbox_id": static_settings.mailtrap_inbox_id,
+        "recipient_emails_str": static_settings.notification_recipients,
+        "sender_email": static_settings.sender_email
+    }
+
+    init_params = inspect.signature(NotifierClass.__init__).parameters
+    filtered_kwargs = {k: v for k, v in config_context.items() if k in init_params}
+
+    return NotifierClass(**filtered_kwargs)
 
 async def build_scan_analysis_use_case() -> ScanAnalysisUseCase:
     patient_repo = build_patient_repository()
     ai_service = await build_ai_service()
+    notification_service = build_notification_service()
+    settings_repo = build_settings_repository()
+
     return ScanAnalysisUseCase(
         patient_repo=patient_repo,
         ai_service=ai_service,
+        notifier= notification_service,
+        settings_repo=settings_repo
     )
 
 

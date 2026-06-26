@@ -8,14 +8,14 @@ from app.config import static_settings
 from fastapi.testclient import TestClient
 from app.main import app
 from app.dependencies import (
-    get_patient_records_use_case,
-    get_patient_results_use_case,
-    get_authenticate_user_use_case,
-    get_register_user_use_case,
-    get_check_email_use_case,
-    get_update_settings_use_case,
-    get_scan_analysis_use_case,
-    get_settings_use_case,
+    build_get_patient_records_use_case as get_patient_records_use_case,
+    build_get_patient_results_use_case as get_patient_results_use_case,
+    build_authenticate_user_use_case as get_authenticate_user_use_case,
+    build_register_user_use_case as get_register_user_use_case,
+    build_check_email_use_case as get_check_email_use_case,
+    build_update_settings_use_case as get_update_settings_use_case,
+    build_scan_analysis_use_case as get_scan_analysis_use_case,
+    build_get_settings_use_case as get_settings_use_case,
     initialize_infrastructure
 )
 from app.modules.identity_access.entities import UserEntity
@@ -195,11 +195,18 @@ def setup_use_case_overrides(stub_records, stub_results, stub_auth, stub_registe
     app.dependency_overrides[get_patient_records_use_case] = lambda: stub_records
     app.dependency_overrides[get_patient_results_use_case] = lambda: stub_results
     app.dependency_overrides[get_authenticate_user_use_case] = lambda: stub_auth
-    app.dependency_overrides[get_register_user_use_case] = lambda: stub_register
     app.dependency_overrides[get_check_email_use_case] = lambda: stub_check_email
     app.dependency_overrides[get_update_settings_use_case] = lambda: stub_update_settings
-    app.dependency_overrides[get_scan_analysis_use_case] = lambda: stub_scan_analysis
+    
+    # Handled as async calls to match async def in dependencies.py
+    app.dependency_overrides[get_scan_analysis_use_case] = async_lambda(stub_scan_analysis)
+    app.dependency_overrides[get_register_user_use_case] = async_lambda(stub_register)
     
     yield  # Run test
     
     app.dependency_overrides.clear()  # Clean up after
+
+def async_lambda(value):
+    async def _async_wrapper(*args, **kwargs):
+        return value
+    return _async_wrapper

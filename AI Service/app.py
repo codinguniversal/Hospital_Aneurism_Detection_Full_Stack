@@ -1,6 +1,21 @@
+
 import os
-import shutil
 import tempfile
+
+# Force Python and underlying C++ matrix engines to use your spacious D: drive folder
+os.environ["TMPDIR"] = r"D:\AI_Temp"
+os.environ["TEMP"] = r"D:\AI_Temp"
+os.environ["TMP"] = r"D:\AI_Temp"
+os.environ["HF_HOME"] = r"D:\AI_Temp\hf_cache"
+
+# Explicitly ensure that this folder exists right now on your D: drive
+os.makedirs(r"D:\AI_Temp", exist_ok=True)
+
+# Instruct Python's global temp library to reset its core baseline path pointer
+tempfile.tempdir = r"D:\AI_Temp"
+# ==============================================================================
+
+import shutil
 import zipfile
 import numpy as np
 import torch
@@ -251,7 +266,8 @@ async def predict_aneurysm_zip(
             detail="Only ZIP files are allowed."
         )
 
-    base_dir = tempfile.mkdtemp()
+    # 🚀 Explicitly force mkdtemp to build within our high capacity drive path
+    base_dir = tempfile.mkdtemp(dir=r"D:\AI_Temp")
     zip_path = os.path.join(base_dir, file.filename)
     extract_dir = os.path.join(base_dir, "extracted")
 

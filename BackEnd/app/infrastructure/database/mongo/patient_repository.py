@@ -8,10 +8,16 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.patient_management.entities import AneurysmAnalysisResultEntity, PatientEntity, ScanEntity
 from app.core.patient_management.repositories import PatientRepository as IPatientRepository
 
-
 class MongoPatientRepository(IPatientRepository):
-    def __init__(self, db: AsyncIOMotorDatabase):
+    def __init__(
+            self, 
+            db: AsyncIOMotorDatabase,
+            storage_base_dir: str,
+            slice_meta_collection_name: str
+            ):
         self.collection = db["patients"]
+        self.slice_meta_collections = db[slice_meta_collection_name]
+        self.storage_base_dir = storage_base_dir
 
     def _scan_to_document(self, scan: ScanEntity) -> dict:
         return {

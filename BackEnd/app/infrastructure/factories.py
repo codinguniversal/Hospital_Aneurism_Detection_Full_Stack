@@ -14,7 +14,7 @@ from app.infrastructure.database.mongo.user_repository import MongoUserRepositor
 from app.modules.identity_access.repositories import UserRepository
 from app.modules.identity_access.services import IdGenerator
 from app.modules.system_settings.repositories import SettingsRepository
-
+from app.config import static_settings
 
 class MongoInfrastructureFactory(InfrastructureFactory):
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -23,7 +23,11 @@ class MongoInfrastructureFactory(InfrastructureFactory):
         self._id_generator = None
 
     def get_patient_repository(self) -> PatientRepository:
-        return MongoPatientRepository(db=self._db)
+        return MongoPatientRepository(
+            db=self._db,
+            storage_base_dir = static_settings.storage_base_dir,
+            slice_meta_collection_name = static_settings.slice_meta_collection_name
+            )
 
     def get_user_repository(self) -> UserRepository:
         return MongoUserRepository(db=self._db)
