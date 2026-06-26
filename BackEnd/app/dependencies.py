@@ -8,6 +8,7 @@ from app.core.patient_management.use_cases import (
     GetAllPatientsUseCase,
     GetPatientResultsUseCase,
     ScanAnalysisUseCase,
+    GetSliceImageUseCase,
 )
 from app.infrastructure.ai.ai_client import HTTPXScanAnalysisService
 from app.infrastructure.ai.mock_ai_client import MockScanAnalysisService
@@ -110,6 +111,9 @@ async def build_scan_analysis_use_case() -> ScanAnalysisUseCase:
         patient_repo=patient_repo,
         ai_service=ai_service,
     )
+async def build_get_slice_image_use_case()->GetSliceImageUseCase:
+    patient_repo = build_patient_repository()
+    return GetSliceImageUseCase(patient_repo= patient_repo)
 
 
 def build_authenticate_user_use_case() -> AuthenticateUserUseCase:

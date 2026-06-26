@@ -1,11 +1,52 @@
 $kind: http-request
 name: Analyze Scan
 method: POST
-url: '{{baseUrl}}/api/scans/{{scan_id}}/analyze'
+url: "{{baseUrl}}/api/scans/{{scan_id}}/analyze?include_heatmap={{include_heatmap}}"
+queryParams:
+  include_heatmap: "{{include_heatmap}}"
+scripts:
+  - type: afterResponse
+    code: "// ✅ Parse the response\r
+
+      const response = pm.response.json();\r
+
+      \r
+
+      // ✅ Extract the first overlay image reference and store it in COLLECTION variables\r
+
+      if (response && response.result && response.result.explainability && response.result.explainability.length > 0) {\r
+
+      \    const topSlices = response.result.explainability[0].top_slices;\r
+
+      \    if (topSlices && topSlices.length > 0) {\r
+
+      \        const imageRef = topSlices[0].overlay_slice_image_ref;\r
+
+      \        \r
+
+      \        // 🚀 Store in COLLECTION variables (persists across environments)\r
+
+      \        pm.collectionVariables.set(\"image_ref\", imageRef);\r
+
+      \        \r
+
+      \        console.log(\"✅ image_ref set to: \" + imageRef);\r
+
+      \    } else {\r
+
+      \        console.log(\"⚠️ No top slices found in response.\");\r
+
+      \    }\r
+
+      } else {\r
+
+      \    console.log(\"⚠️ No explainability data in response.\");\r
+
+      }"
+    language: text/javascript
 order: 1000
 headers:
-  - key: Content-Type
-    value: application/json
+  Content-Type: application/json
 body:
   type: json
   content: |-
@@ -14,4 +55,4 @@ body:
       "patient_id": "patient-001",
       "scan_id": "scan-001"
     }
-description: 'Trigger AI analysis for a specific scan. Returns status, patient_name, scan_id, analysis_timestamp, and result. Returns 404 if scan not found, 500+ on AI service error.'
+description: Trigger AI analysis for a specific scan. Returns status, patient_name, scan_id, analysis_timestamp, and result. Returns 404 if scan not found, 500+ on AI service error.

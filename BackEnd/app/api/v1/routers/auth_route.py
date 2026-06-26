@@ -18,7 +18,6 @@ async def login(
         identifier= login_request.loginIdentifier,
         password= login_request.password,
     )
-     
     print("\n" + "="*50)
     print("DEBUGGING AUTHENTICATION:")
     print(f"Incoming Login Identifier: '{login_request.loginIdentifier}'")

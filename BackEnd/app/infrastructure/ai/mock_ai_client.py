@@ -57,7 +57,21 @@ class MockScanAnalysisService(ScanAnalysisService):
             "Basilar Tip": 0.55,
             "Other Posterior Circulation": 0.10,
         }
-
+    def _generate_fake_raw_slice_base64(self, width: int = 512, height: int = 512) -> str:
+        """Generate a fake grayscale raw slice PNG."""
+        try:
+            from PIL import Image
+            # Create a gray gradient with a random circle to simulate anatomy
+            img = Image.new("L", (width, height), color=128)
+            # Just return a simple gradient for testing
+            import numpy as np
+            arr = np.random.randint(0, 255, (height, width), dtype=np.uint8)
+            img = Image.fromarray(arr)
+            buffer = io.BytesIO()
+            img.save(buffer, format="PNG")
+            return base64.b64encode(buffer.getvalue()).decode("utf-8")
+        except ImportError:
+            return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
     def _generate_fake_base64_png(self, width: int = 512, height: int = 512) -> str:
         """Generate a fake PNG in Base64."""
         try:
@@ -138,18 +152,25 @@ class MockScanAnalysisService(ScanAnalysisService):
 
             top_slices_entities = []
             for fake_slice in fake_slices:
-                fake_base64 = self._generate_fake_base64_png()
-                image_ref = await self.patient_repo.store_slice_image(
+                fake_overlay_base64 = self._generate_fake_base64_png()
+                fake_raw_base64 = self._generate_fake_raw_slice_base64()
+                fake_ref = await self.patient_repo.store_slice_image(
                     scan_id=scan_id,
                     slice_index=fake_slice["slice_index"],
-                    base64_data=fake_base64,
+                    base64_data=fake_overlay_base64,
+                )
+                raw_ref = await self.patient_repo.store_slice_image(
+                    scan_id=scan_id,
+                    slice_index=fake_slice["slice_index"],
+                    base64_data=fake_raw_base64 
                 )
 
                 top_slices_entities.append(
                     TopSliceEntity(
                         slice_index=fake_slice["slice_index"],
                         importance=fake_slice["importance"],
-                        overlay_image_ref=image_ref,
+                        overlay_slice_image_ref=fake_ref,
+                        raw_slice_image_ref= raw_ref
                     )
                 )
 
