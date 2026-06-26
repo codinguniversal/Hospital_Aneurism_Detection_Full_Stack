@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware  # 👈 Added CORS Middleware
 import httpx
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from app.api.v1.routers import admin_settings_route, auth_route, email_check_route, patient_route, scans_route
+from app.api.v1.routers import image_route,admin_settings_route, auth_route, email_check_route, patient_route, scans_route
 from app.dependencies import build_settings_repository, _ai_http_client, initialize_infrastructure
 from app.config import static_settings
 from app.api.v1.routers import users_route
@@ -75,3 +75,4 @@ app.include_router(email_check_route.router)
 app.include_router(patient_route.router)
 app.include_router(admin_settings_route.router)
 app.include_router(users_route.router)
+app.include_router(image_route.router)

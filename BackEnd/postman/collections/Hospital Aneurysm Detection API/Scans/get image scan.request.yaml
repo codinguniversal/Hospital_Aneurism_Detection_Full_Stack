@@ -1,0 +1,5 @@
+$kind: http-request
+name: get image scan
+url: "{{baseUrl}}/api/v1/images/{{image_ref}}"
+method: GET
+order: 1376753802019510

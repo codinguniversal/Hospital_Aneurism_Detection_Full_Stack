@@ -42,7 +42,8 @@ class LocationPredictionsEntity(BaseModel):
 class TopSliceEntity(BaseModel):
     slice_index: int
     importance: float
-    overlay_image_ref: str
+    overlay_slice_image_ref: str
+    raw_slice_image_ref: str
 
 class ExplainabilityEntity(BaseModel):
     id:str

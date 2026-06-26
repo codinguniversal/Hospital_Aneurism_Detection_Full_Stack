@@ -1,4 +1,5 @@
 $kind: http-request
-url: ""
-method: GET
+name: Delete User by Id
+url: "{{baseUrl}}/users/{{user_id}}"
+method: DELETE
 order: 2113487983499143

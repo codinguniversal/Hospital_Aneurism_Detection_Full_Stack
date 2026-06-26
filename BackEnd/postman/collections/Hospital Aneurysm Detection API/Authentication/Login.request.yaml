@@ -28,8 +28,7 @@ body:
   type: json
   content: |-
     {
-      "loginIdentifier": "ADMIN-01",
-      "password": "admin123",
-      "isAdmin": false
+      "loginIdentifier": "000002",
+      "password": "password123"
     }
 description: Authenticate a user. Returns employee_id, email, and role on success. Returns 401 on invalid credentials.

@@ -14,6 +14,8 @@ router = APIRouter(
 async def run_manual_analysis(
     scan_id: str,
     analysis_request: ScanAnalysisRequestSchema,
+    include_heatmap: bool = False,
+    target_label: str = "Aneurysm Present", 
     use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case)
 ):
     """
@@ -24,7 +26,11 @@ async def run_manual_analysis(
     try:
         # Note: Always pass the clean URL string parameter (scan_id) over the request body object
         # to ensure the path parameter and the body stay completely synchronized.
-        analysis_results = await use_case.execute(scan_id=scan_id)
+        analysis_results = await use_case.execute(
+                scan_id=scan_id,
+                include_heatmap= include_heatmap,
+                target_label = target_label
+            )
 
         # Map back to your frontend validation response schema
         return ScanAnalysisResponseSchema(

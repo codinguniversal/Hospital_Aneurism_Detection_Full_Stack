@@ -17,6 +17,7 @@ class TopSliceDTO(BaseModel):
     slice_index: int
     importance: float
     overlay_png_base64: str
+    raw_slice_png_base64: Optional[str] = None
 
 class ExplainabilityDTO(BaseModel):
     method: str
@@ -129,16 +130,27 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
         if dto.explainability:
             top_slices_entities = []
             for slice_dto in dto.explainability.top_slices:
-                image_ref = await self.patient_repo.store_slice_image(
+                overlay_ref = await self.patient_repo.store_slice_image(
                     scan_id= scan_id,
                     slice_index= slice_dto.slice_index,
                     base64_data= slice_dto.overlay_png_base64
                 )
+                if slice_dto.raw_slice_png_base64:
+                    raw_ref = await self.patient_repo.store_slice_image(
+                        scan_id= scan_id,
+                        slice_index=slice_dto.slice_index,
+                        base64_data= slice_dto.raw_slice_png_base64
+                    )
+                else:
+                    # placeholder
+                    raw_ref = f"placeholder://scans/{scan_id}/slice_{slice_dto.slice_index}_raw.png"
+                    print(f"WARNING: Raw slice not provided by AI for scan {scan_id}, slice {slice_dto.slice_index}")
                 top_slices_entities.append(
                     TopSliceEntity(
                         slice_index=slice_dto.slice_index,
                         importance=slice_dto.importance,
-                        overlay_image_ref= image_ref
+                        overlay_slice_image_ref= overlay_ref,
+                        raw_slice_image_ref= raw_ref
                     )
                 )
             explainability_entity = ExplainabilityEntity(

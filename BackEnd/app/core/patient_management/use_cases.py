@@ -27,7 +27,7 @@ class GetPatientResultsUseCase:
         if not patient:
             return None
         return patient
- 
+
 class ScanAnalysisUseCase:
     def __init__(
             self, 
@@ -42,7 +42,12 @@ class ScanAnalysisUseCase:
         self.settings_repo = settings_repo
         
 
-    async def execute(self, scan_id: str) -> AneurysmAnalysisResultEntity:
+    async def execute(
+                self,
+                scan_id: str,
+                include_heatmap: bool = False,
+                target_label: str = "Aneurysm Present"
+            ) -> AneurysmAnalysisResultEntity:
         binary_data = await self.patient_repo.get_scan_file(scan_id)
         if not binary_data:
             raise ValueError(f"Scan record with id {scan_id} not found in DB")
@@ -50,7 +55,8 @@ class ScanAnalysisUseCase:
         analysis_results = await self.ai_service.analyze_scan(
             scan_id= scan_id,
             binary_data= binary_data,
-            explain= False
+            explain= include_heatmap,
+            target_label= target_label
         )
         
         await self.patient_repo.update_scan_results(
@@ -66,3 +72,11 @@ class ScanAnalysisUseCase:
             asyncio.create_task(self.notifier.send_urgent_alert(scan_id=scan_id, probability=overall_prob))
 
         return analysis_results
+
+class GetSliceImageUseCase:
+    def __init__(self,patient_repo: PatientRepository):
+        self.patient_repo = patient_repo
+    
+    async def execute(self, image_ref: str)->Optional[bytes]:
+        """ Fetches a stored overlay or raw slice image by its reference"""
+        return await self.patient_repo.get_slice_image(image_ref)
