@@ -42,7 +42,9 @@ apiClient.interceptors.response.use(
         alert("Security Alert: You do not have the required role permissions to view this resource.");
       }
     }
-    return Promise.reject(error.response?.data || error.message);
+    // Keep the Axios error intact so callers can read the HTTP status and
+    // backend detail instead of receiving an unhelpful generic message.
+    return Promise.reject(error);
   }
 );
 

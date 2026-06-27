@@ -72,13 +72,15 @@ class MockPatientRepository(PatientRepository):
         scan_id: str,
         slice_index: int,
         base64_data: str,
+        image_kind: str = "overlay",
     ) -> str:
         """
         Mock implementation of image storage.
         Stores the Base64 image in an in-memory dictionary and returns a reference.
         """
         # Generate a reference that looks realistic
-        ref = f"mock://scans/{scan_id}/slice_{slice_index}.png"
+        safe_image_kind = "raw" if image_kind == "raw" else "overlay"
+        ref = f"mock://scans/{scan_id}/{safe_image_kind}_slice_{slice_index}.png"
 
         # Store the raw Base64 in the mock data layer's images dict
         if not hasattr(self.db, "images"):

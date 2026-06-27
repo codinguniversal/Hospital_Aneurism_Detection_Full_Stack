@@ -1,9 +1,9 @@
 import { reactive } from 'vue'
 
 export const authStore = reactive({
-  isAuthenticated: false,
-  employeeId: '',
-  role: '', 
+  isAuthenticated: Boolean(localStorage.getItem('access_token')),
+  employeeId: localStorage.getItem('employee_id') || '',
+  role: localStorage.getItem('user_role') || '',
 
   
   login(identifier, role) {
@@ -16,5 +16,8 @@ export const authStore = reactive({
     this.isAuthenticated = false
     this.employeeId = ''
     this.role = ''
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('employee_id')
+    localStorage.removeItem('user_role')
   }
 })

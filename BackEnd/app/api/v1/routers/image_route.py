@@ -6,15 +6,26 @@ from app.dependencies import build_get_slice_image_use_case, build_patient_repos
 
 router = APIRouter(prefix="/api/v1/images", tags=["Images"])
 
+def image_response_or_404(image_bytes: bytes | None) -> Response:
+    if not image_bytes:
+        raise HTTPException(status_code=404, detail="Image not found")
+    return Response(content=image_bytes, media_type="image/png")
+
+
+@router.get("")
+async def get_slice_image_by_query(
+    image_ref: str,
+    get_slice_image_use_case: GetSliceImageUseCase = Depends(build_get_slice_image_use_case),
+):
+    """Query form safely supports absolute Windows paths containing ':' and '\\'."""
+    image_bytes = await get_slice_image_use_case.execute(image_ref=image_ref)
+    return image_response_or_404(image_bytes)
+
+
 @router.get("/{image_ref:path}")
 async def get_slice_image(
     image_ref: str,
     get_slice_image_use_case: GetSliceImageUseCase = Depends(build_get_slice_image_use_case)
 ):
-    print("DEBUG: GETTING IMAGES")
     image_bytes = await get_slice_image_use_case.execute(image_ref= image_ref)
-    if not image_bytes:
-        print("DEBUG: NOT IMAGESFOUND")
-        raise HTTPException(status_code=404, detail="Image not found")
-    print("DEBUG: IMAGES FOUND")
-    return Response(content=image_bytes, media_type="image/png")
+    return image_response_or_404(image_bytes)

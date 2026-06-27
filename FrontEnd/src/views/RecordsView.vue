@@ -111,7 +111,8 @@ const fetchRecords = async () => {
     })
   } catch (error) {
     console.error('Error fetching patient records:', error)
-    alert('Failed to load patient records from the server.')
+    const detail = error.response?.data?.detail || error.message || 'Unknown server error'
+    alert(`Failed to load patient records: ${detail}`)
   } finally {
     isLoading.value = false
   }
@@ -139,7 +140,7 @@ const runAnalysis = async (record) => {
       ? new Date(resultData.analysis_timestamp).toLocaleString() 
       : new Date().toLocaleString()
     
-    record.urgency = resultData.result?.urgency || 'Low'
+    record.urgency = resultData.urgency || 'Unknown'
   } catch (error) {
     console.error('AI Analysis execution fault:', error)
     alert(`Analysis failed: ${error.response?.data?.detail || error.message || 'Server connection error'}`)

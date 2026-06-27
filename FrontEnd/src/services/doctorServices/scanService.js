@@ -6,7 +6,7 @@ export const scanService = {
       `/api/scans/${scanId}/analyze`, 
       analysisRequestData,
       {
-        timeout: 300000 
+        timeout: 600000000
       }
     );
   }

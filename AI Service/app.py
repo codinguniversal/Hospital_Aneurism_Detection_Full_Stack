@@ -238,7 +238,7 @@ def startup_load_models():
 @app.post("/predict")
 async def predict_aneurysm_zip(
     file: UploadFile = File(...),
-    explain: bool = False,
+    explain: bool = True,
     target_label: str = "Aneurysm Present"
 ):
     """
@@ -252,7 +252,7 @@ async def predict_aneurysm_zip(
         POST /predict?explain=true&target_label=Basilar%20Tip
     """
 
-    print(f"Explain requested: {explain}, target label: {target_label}")
+    print(f"Grad-CAM enabled, target label: {target_label}")
 
     if not MODELS:
         raise HTTPException(
@@ -435,30 +435,29 @@ async def predict_aneurysm_zip(
             "detailed_locations": response_data,
             "message": f"Analyzed {len(all_dicom_filepaths)} slices successfully.",
             "dicom_warning": dicom_warning,
-            "explain_requested": bool(explain),
+            "explain_requested": True,
             "target_label": target_label
         }
 
         # 7. Explainable AI باستخدام Grad-CAM
         # مهم جدًا: Grad-CAM يجب أن يعمل خارج torch.no_grad()
-        if explain:
-            print("Starting Grad-CAM explanation...")
+        print("Starting Grad-CAM explanation...")
 
-            explanation = explain_ensemble_gradcam(
-                volume=volume,
-                modality=modality,
-                models=MODELS,
-                device=DEVICE,
-                preprocess_transforms=preprocess_transforms,
-                process_volume_functions=process_volumes,
-                label_cols=LABEL_COLS,
-                target_label=target_label,
-                top_k=3
-            )
+        explanation = explain_ensemble_gradcam(
+            volume=volume,
+            modality=modality,
+            models=MODELS,
+            device=DEVICE,
+            preprocess_transforms=preprocess_transforms,
+            process_volume_functions=process_volumes,
+            label_cols=LABEL_COLS,
+            target_label=target_label,
+            top_k=3
+        )
 
-            content["explainability"] = explanation
+        content["explainability"] = explanation
 
-            print("Grad-CAM explanation added to response.")
+        print("Grad-CAM explanation added to response.")
 
         return JSONResponse(content=content)
 

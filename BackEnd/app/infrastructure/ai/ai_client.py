@@ -1,7 +1,7 @@
 from typing import List, Optional, Dict, Any
 
 import httpx
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from app.core.patient_management.repositories import PatientRepository
 from app.core.patient_management.entities import (
@@ -29,7 +29,9 @@ class AIResponseDTO(BaseModel):
     status: str
     overall_prediction: Dict[str, float]
     detailed_locations: Dict[str, float]
-    explainability: Optional[ExplainabilityDTO]
+    # Normal predictions intentionally omit Grad-CAM data unless the caller
+    # requests an explanation.
+    explainability: Optional[ExplainabilityDTO] = None
 
 
 class AIServiceError(Exception):
@@ -55,14 +57,14 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                 self,
                 scan_id: str,
                 binary_data: bytes,
-                explain: bool= False,
+            explain: bool = True,
                 target_label: str = "Aneurysm Present",
             ) -> AneurysmAnalysisResultEntity:
         
-        query_params = {}
-        if explain:
-            query_params["explain"] = "true"
-            query_params["target_label"] = target_label 
+        query_params = {
+            "explain": "true",
+            "target_label": target_label,
+        }
         
         files = {"file": (f"{scan_id}.zip", binary_data, "application/zip")}
         try:
@@ -100,6 +102,11 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                 message=f"Failed to communicate with external AI network: {exc}",
                 status_code=503,
             )
+        except (ValidationError, KeyError, TypeError) as exc:
+            raise AIServiceError(
+                message=f"AI service returned an invalid response payload: {exc}",
+                status_code=502,
+            ) from exc
 
     async def _map_to_entity(
             self,
@@ -133,13 +140,15 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                 overlay_ref = await self.patient_repo.store_slice_image(
                     scan_id= scan_id,
                     slice_index= slice_dto.slice_index,
-                    base64_data= slice_dto.overlay_png_base64
+                    base64_data= slice_dto.overlay_png_base64,
+                    image_kind="overlay",
                 )
                 if slice_dto.raw_slice_png_base64:
                     raw_ref = await self.patient_repo.store_slice_image(
                         scan_id= scan_id,
                         slice_index=slice_dto.slice_index,
-                        base64_data= slice_dto.raw_slice_png_base64
+                        base64_data= slice_dto.raw_slice_png_base64,
+                        image_kind="raw",
                     )
                 else:
                     # placeholder

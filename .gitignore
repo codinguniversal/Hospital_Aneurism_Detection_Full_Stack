@@ -5,3 +5,4 @@ __pycache__/
 *.pyc
 *.pyo
 /BackEnd/.venv
+/BackEnd/app/infrastructure/storage/scan_slices/

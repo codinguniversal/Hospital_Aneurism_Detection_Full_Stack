@@ -27,4 +27,5 @@ class ScanAnalysisResponseSchema(BaseModel):
     patient_name: str
     scan_id: str
     analysis_timestamp: datetime
+    urgency: str
     result: AneurysmAnalysisResultEntity

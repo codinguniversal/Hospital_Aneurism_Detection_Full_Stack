@@ -2,8 +2,9 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
 from app.core.patient_management.use_cases import ScanAnalysisUseCase
+from app.modules.system_settings.use_cases import GetSettingsUseCase
 from app.infrastructure.ai.ai_client import AIServiceError
-from app.dependencies import build_scan_analysis_use_case
+from app.dependencies import build_get_settings_use_case, build_scan_analysis_use_case
 
 router = APIRouter(
     prefix="/api/scans",
@@ -14,9 +15,9 @@ router = APIRouter(
 async def run_manual_analysis(
     scan_id: str,
     analysis_request: ScanAnalysisRequestSchema,
-    include_heatmap: bool = False,
     target_label: str = "Aneurysm Present", 
-    use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case)
+    use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case),
+    get_settings_use_case: GetSettingsUseCase = Depends(build_get_settings_use_case),
 ):
     """
     Endpoint triggered when the Run Analysis button in the frontend table is pressed.
@@ -28,9 +29,14 @@ async def run_manual_analysis(
         # to ensure the path parameter and the body stay completely synchronized.
         analysis_results = await use_case.execute(
                 scan_id=scan_id,
-                include_heatmap= include_heatmap,
+                include_heatmap=True,
                 target_label = target_label
             )
+        settings = await get_settings_use_case.execute()
+        urgency = analysis_results.urgency(
+            high_threshold=settings.aneurysm_high_risk_threshold,
+            mid_threshold=settings.aneurysm_medium_risk_threshold,
+        )
 
         # Map back to your frontend validation response schema
         return ScanAnalysisResponseSchema(
@@ -38,6 +44,7 @@ async def run_manual_analysis(
             patient_name=analysis_request.patient_name,
             scan_id=scan_id,
             analysis_timestamp=datetime.now(),
+            urgency=urgency,
             result=analysis_results  # This matches the AneurysmAnalysisResult entity
         )
         
