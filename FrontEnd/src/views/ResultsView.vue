@@ -35,7 +35,7 @@
           <div class="info-card">
             <h3><i class="fa fa-address-card-o"></i> Patient Details</h3>
             <div class="detail-row"><span>Name:</span> <strong>{{ patientData.name }}</strong></div>
-            <div class="detail-row"><span>Age / Sex:</span> <strong>{{ patientData.age || 'N/A' }} / {{ patientData.sex || 'N/A' }}</strong></div>
+            <div class="detail-row"><span>Age :</span> <strong>{{ patientData.age || 'N/A' }}</strong></div>
             <div class="detail-row"><span>Scan Date:</span> <strong>{{ formatDate(patientData.scanDate) }}</strong></div>
             <div class="detail-row"><span>Modality:</span> <strong>CT Angiography</strong></div>
           </div>
