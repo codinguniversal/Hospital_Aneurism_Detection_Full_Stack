@@ -15,7 +15,6 @@
           <span class="role-display-label">
             <span class="material-symbols-outlined icon-fix">medical_services</span> Doctor
           </span>
-          <router-link to="/records" class="nav-item">Records</router-link>
           
           <button @click="handleLogout" class="nav-item logout-btn">
             <span class="material-symbols-outlined icon-fix">logout</span> Logout
