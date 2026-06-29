@@ -34,9 +34,15 @@ class Patients(ABC):
         pass
 
     @abstractmethod
-    async def store_slice_image(self, scan_id: str, slice_index: int, base64_data: str) -> str:
+    async def store_slice_image(
+        self,
+        scan_id: str,
+        slice_index: int,
+        base64_data: str,
+        image_kind: str = "overlay",
+    ) -> str:
         """
-        Persists the overlay image and returns its reference (URI/URL/ID) for later access
+        Persists one slice image and returns its reference for later access.
         """
         pass
 

@@ -45,7 +45,7 @@ class DetectAneurysmProbabilities:
     async def execute(
                 self,
                 scan_id: str,
-                include_heatmap: bool = False,
+                include_heatmap: bool = True,
                 target_label: str = "Aneurysm Present"
             ) -> AneurysmAnalysisResult:
         binary_data = await self.patient_repo.get_scan_file(scan_id)

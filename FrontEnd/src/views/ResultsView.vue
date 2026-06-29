@@ -35,7 +35,7 @@
           <div class="info-card">
             <h3><i class="fa fa-address-card-o"></i> Patient Details</h3>
             <div class="detail-row"><span>Name:</span> <strong>{{ patientData.name }}</strong></div>
-            <div class="detail-row"><span>Age / Sex:</span> <strong>{{ patientData.age || 'N/A' }} / {{ patientData.sex || 'N/A' }}</strong></div>
+            <div class="detail-row"><span>Age :</span> <strong>{{ patientData.age || 'N/A' }}</strong></div>
             <div class="detail-row"><span>Scan Date:</span> <strong>{{ formatDate(patientData.scanDate) }}</strong></div>
             <div class="detail-row"><span>Modality:</span> <strong>CT Angiography</strong></div>
           </div>
@@ -49,6 +49,14 @@
             </span>
           </div>
 
+          <div class="overall-result">
+            <div>
+              <span class="overall-label">Overall Aneurysm Present</span>
+              <small>Total model probability</small>
+            </div>
+            <strong>{{ overallProbability }}%</strong>
+          </div>
+
           <table class="clean-table">
             <thead>
               <tr>
@@ -57,7 +65,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="loc in displayedLocations" :key="loc.name">
+              <tr v-for="loc in allLocations" :key="loc.name">
                 <td class="fw-bold">{{ loc.name }}</td>
                 <td>
                   <div class="probability-container">
@@ -77,12 +85,6 @@
             </tbody>
           </table>
 
-          <div class="toggle-container" v-if="allLocations.length > 5">
-            <button @click="toggleExpand" class="action-btn btn-outline-green full-width">
-              <i class="fa" :class="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-              {{ expanded ? 'Show Top 5 Locations Only' : `View All ${allLocations.length} Locations` }}
-            </button>
-          </div>
         </div>
       </div>
     </template>
@@ -90,7 +92,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { patientService } from '../services/doctorServices/patientService.js'
 import { scanService } from '../services/doctorServices/scanService.js'
@@ -103,14 +105,21 @@ const patientId = route.params.id
 const isLoading = ref(true)
 const isProcessing = ref(false)
 const error = ref(null)
-const expanded = ref(false)
 
 // Backend Mapped Models
 const patientData = ref({})
 const allLocations = ref([])
+const overallProbability = ref(0)
+
+const formatProbability = (rawValue) => {
+  const percentage = (rawValue || 0) * 100
+  return percentage > 0 && percentage < 1
+    ? parseFloat(percentage.toFixed(3))
+    : parseFloat(percentage.toFixed(1))
+}
 
 // Helper to map and format data payloads adaptively
-const parsePayload = (rawData) => {
+const parsePayload = (rawData, urgencyOverride = null) => {
   // 🔍 DEBUG TRACE LOGS
   console.log("%c=== DISPATCHING BACKEND DATA INSPECTION ===", "color: #1abc9c; font-weight: bold;");
   console.log("Raw Payload Arrived:", rawData);
@@ -151,6 +160,7 @@ const parsePayload = (rawData) => {
   }
 
   const targetProbability = scanResultsObj?.overall?.probability || 0;
+  overallProbability.value = formatProbability(targetProbability)
   
   patientData.value = {
     name: rawData.patient_name || patientData.value.name || 'Unknown Patient',
@@ -158,25 +168,16 @@ const parsePayload = (rawData) => {
     sex: rawData.sex || patientData.value.sex || 'N/A',
     scanId: activeScanId,
     scanDate: activeScanDate,
-    urgency: targetProbability >= 0.7 ? 'High' : targetProbability >= 0.3 ? 'Medium' : 'Low'
+    urgency: rawData.urgency || urgencyOverride || patientData.value.urgency || 'Unknown'
   };
 if (scanResultsObj && scanResultsObj.locations) {
   allLocations.value = Object.keys(scanResultsObj.locations)
     .map(key => {
-      const rawValue = scanResultsObj.locations[key] || 0;
-      const percentage = rawValue * 100;
-      
-      // If it's greater than 0 but ultra-low, show 3 decimal places. Otherwise, keep it clean.
-      const formattedProbability = percentage > 0 && percentage < 1 
-        ? parseFloat(percentage.toFixed(3)) 
-        : parseFloat(percentage.toFixed(1));
-
       return {
         name: key.replace(/([A-Z])/g, ' $1').trim(),
-        probability: formattedProbability
+        probability: formatProbability(scanResultsObj.locations[key])
       };
-    })
-    .sort((a, b) => b.probability - a.probability);
+    });
 }
 }
 
@@ -184,9 +185,14 @@ const fetchPatientData = async () => {
   isLoading.value = true
   error.value = null
   try {
-    const response = await patientService.getPatientResults(patientId)
-    const rawData = response.data || response
-    parsePayload(rawData)
+    const [patientResponse, recordsResponse] = await Promise.all([
+      patientService.getPatientResults(patientId),
+      patientService.getAllRecords()
+    ])
+    const rawData = patientResponse.data || patientResponse
+    const records = recordsResponse.data || recordsResponse
+    const matchingRecord = records.find(record => record.id === patientId)
+    parsePayload(rawData, matchingRecord?.urgency)
   } catch (err) {
     console.error('Failed fetching data pipeline window:', err)
     error.value = 'Failed loading patient analysis records.'
@@ -216,11 +222,6 @@ const handleRerun = async () => {
   }
 }
 
-const displayedLocations = computed(() => 
-  expanded.value ? allLocations.value : allLocations.value.slice(0, 5)
-)
-
-const toggleExpand = () => expanded.value = !expanded.value
 const explainResults = () => router.push(`/explain/${patientId}`)
 const goBack = () => router.push('/records')
 
@@ -260,6 +261,11 @@ onMounted(() => {
 .dashboard-main { background: #ffffff; border: 1px solid #e9ecef; border-radius: 10px; padding: 20px; }
 .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .results-header h3 { color: #2c3e50; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+.overall-result { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding: 16px 18px; border-radius: 10px; background: #eefaf4; border: 1px solid #b7e4ce; }
+.overall-result div { display: flex; flex-direction: column; gap: 3px; }
+.overall-label { color: #1f3d32; font-weight: 700; }
+.overall-result small { color: #6c7f77; }
+.overall-result strong { color: #0aa159; font-size: 26px; }
 
 .clean-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
 .clean-table th { padding: 12px 15px; background-color: #f8f9fa; color: #5c6bc0; font-weight: 700; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #e9ecef; }

@@ -19,6 +19,7 @@ class PatientRecordResponseSchema(BaseModel):
     id: str
     scan_id: str
     name: str
+    assigned_doc: str
     scan_date: datetime
     analyzed: bool
     scan_analysis_date: Optional[datetime] = None

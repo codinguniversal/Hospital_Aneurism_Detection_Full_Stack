@@ -5,18 +5,21 @@
         class="tab-btn" 
         :class="{ active: currentTab === 'manage' }" 
         @click="currentTab = 'manage'">
+        <ManageUsersIcon class="tab-icon" />
         Manage Users
       </button>
       <button 
         class="tab-btn" 
         :class="{ active: currentTab === 'settings' }" 
         @click="currentTab = 'settings'">
+        <SettingsIcon class="tab-icon" />
         System Settings
       </button>
       <button 
         class="tab-btn" 
         :class="{ active: currentTab === 'register' }" 
         @click="currentTab = 'register'">
+        <RegisterIcon class="tab-icon" />
         Register Staff
       </button>
     </div>
@@ -176,8 +179,16 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+
+// API Network Modules
 import { userService } from '../services/adminServices/manageUserService.js' 
 import { settingsApi } from '../services/adminServices/settings.js'
+
+// Local Icon Components
+import ManageUsersIcon from '../components/icons/ManageUsersIcon.vue'
+import SettingsIcon from '../components/icons/SettingsIcon.vue'
+import RegisterIcon from '../components/icons/RegisterIcon.vue'
+
 const currentTab = ref('manage') 
 
 // --- MANAGE USERS STATE ---
@@ -341,11 +352,15 @@ const handleRegister = async () => {
 .card-container.wide { max-width: 900px; }
 .flex-card { display: flex; flex-direction: column; max-height: calc(100vh - 120px); }
 
-/* Ensure tabs stay pinned to the top */
+/* Tabs Header Grid Layout */
 .admin-tabs.fixed-tabs { display: flex; gap: 12px; border-bottom: 2px solid #e9ecef; padding: 20px 30px 0 30px; margin-bottom: 0; background: #fff; z-index: 10; }
-.tab-btn { background: none; border: none; padding: 15px 25px; font-size: 16px; font-weight: 600; color: #7f8c8d; cursor: pointer; transition: all 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-.tab-btn:hover { color: #0aa159; }
+.tab-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: none; padding: 15px 25px; font-size: 16px; font-weight: 600; color: #7f8c8d; cursor: pointer; transition: all 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tab-btn:hover, .tab-btn:hover .tab-icon { color: #0aa159; stroke: #0aa159; }
 .tab-btn.active { color: #0aa159; border-bottom-color: #0aa159; }
+.tab-btn.active .tab-icon { stroke: #0aa159; }
+
+/* SVG Dynamic Sizing Style rule */
+.tab-icon { transition: stroke 0.2s; flex-shrink: 0; }
 
 /* Dynamic inner scroll for large content */
 .tab-content { padding: 30px; overflow-y: auto; flex: 1; min-height: 0; animation: fadeIn 0.3s ease-in-out; }

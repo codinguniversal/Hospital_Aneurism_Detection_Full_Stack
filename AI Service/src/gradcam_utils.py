@@ -266,6 +266,17 @@ def create_overlay_base64(slice_img, heatmap, alpha=0.45):
     return encode_png_base64(overlay)
 
 
+def create_original_base64(slice_img):
+    """Encode the unmodified DICOM slice using the same display normalization."""
+    slice_img = slice_img.astype(np.float32)
+    slice_img = slice_img - slice_img.min()
+    slice_img = slice_img / (slice_img.max() + 1e-8)
+
+    grayscale = (slice_img * 255).astype(np.uint8)
+    original_rgb = np.stack([grayscale, grayscale, grayscale], axis=-1)
+    return encode_png_base64(original_rgb)
+
+
 def explain_ensemble_gradcam(
     volume,
     modality,
@@ -375,6 +386,7 @@ def explain_ensemble_gradcam(
     top_slices = []
 
     for slice_idx in top_slice_indices:
+        raw_slice_base64 = create_original_base64(volume[slice_idx])
         overlay_base64 = create_overlay_base64(
             volume[slice_idx],
             final_heatmap
@@ -383,7 +395,8 @@ def explain_ensemble_gradcam(
         top_slices.append({
             "slice_index": int(slice_idx),
             "importance": float(final_slice_scores[slice_idx]),
-            "overlay_png_base64": overlay_base64
+            "overlay_png_base64": overlay_base64,
+            "raw_slice_png_base64": raw_slice_base64,
         })
 
     return {

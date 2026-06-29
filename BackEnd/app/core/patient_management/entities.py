@@ -58,6 +58,17 @@ class AneurysmAnalysisResult(BaseModel):
     locations: Optional[LocationPredictions] = None
     explainability: Optional[List[AnalysisRationale]] = Field(default_factory= list)
 
+    def urgency(self, high_threshold: float, mid_threshold: float) -> str:
+        if self.overall is None or self.overall.probability is None:
+            return ScanUrgency.UNKNOWN.value
+
+        probability = self.overall.probability
+        if probability >= high_threshold:
+            return ScanUrgency.HIGH.value
+        if probability >= mid_threshold:
+            return ScanUrgency.MEDIUM.value
+        return ScanUrgency.LOW.value
+
 
 class Scan(BaseModel):
     id: str
@@ -68,19 +79,9 @@ class Scan(BaseModel):
     results: Optional[AneurysmAnalysisResult] = None
 
     def urgency(self, high_threshold: float, mid_threshold: float) -> str:
-        if (
-            not self.results
-            or self.results.overall is None
-            or getattr(self.results.overall, "probability", None) is None
-        ):
+        if not self.results:
             return ScanUrgency.UNKNOWN.value
-
-        probability = self.results.overall.probability
-        if probability >= high_threshold:
-            return ScanUrgency.HIGH.value
-        if probability >= mid_threshold:
-            return ScanUrgency.MEDIUM.value
-        return ScanUrgency.LOW.value
+        return self.results.urgency(high_threshold, mid_threshold)
 
 
 class Patient(BaseModel):

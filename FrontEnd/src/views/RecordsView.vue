@@ -19,6 +19,7 @@
         <thead>
           <tr>
             <th>Patient Name</th>
+            <th>Assigned Doctor</th>
             <th>Image Taken</th>
             <th>AI Analysis Status</th>
             <th>Actions</th>
@@ -27,39 +28,47 @@
         <tbody>
           <tr v-for="record in records" :key="record.id">
             <td class="fw-bold">{{ record.name }}</td>
+            <td>{{ record.assignedDoc }}</td>
             <td>{{ record.imageDate }}</td>
             
             <td class="status-cell">
-              <template v-if="!record.analyzed">
-                <button 
-                  @click="runAnalysis(record)" 
-                  class="action-btn btn-green"
-                  :disabled="processingScans[record.id]"
-                >
-                  <i class="fa" :class="processingScans[record.id] ? 'fa-spinner fa-spin' : 'fa-play-circle'"></i>
-                  {{ processingScans[record.id] ? 'Analyzing Scan...' : 'Run AI Analysis' }}
-                </button>
-              </template>
+              <div v-if="!record.analyzed">
+                <span class="status-placeholder-text">
+                  <i class="fa fa-circle-o-notch"></i> Awaiting Analysis
+                </span>
+              </div>
               
-              <template v-else>
-                <div class="results-data">
-                  <span class="timestamp">Completed: {{ record.timestamp }}</span>
-                  <span v-if="record.urgency" class="badge" :class="record.urgency.toLowerCase()">
-                    Urgency: {{ record.urgency }}
-                  </span>
-                  <button @click="viewResults(record.id)" class="action-btn btn-outline-blue">
-                    <i class="fa fa-file-text-o"></i> View Results
-                  </button>
-                </div>
-              </template>
+              <div v-else class="results-data">
+                <span class="timestamp">Completed: {{ record.timestamp }}</span>
+                <span v-if="record.urgency" class="badge" :class="record.urgency.toLowerCase()">
+                  Urgency: {{ record.urgency }}
+                </span>
+              </div>
             </td>
 
             <td>
-              <button @click="goToPatient(record.id)" class="action-btn btn-grey">
-                Patient Details
-              </button>
+              <div v-if="!record.analyzed">
+                <AiLoader v-if="processingScans[record.id]" />
+
+                <button 
+                  v-else
+                  @click="runAnalysis(record)" 
+                  class="action-btn btn-green"
+                >
+                  <i class="fa fa-play-circle"></i>
+                  Run AI Analysis
+                </button>
+              </div>
+
+              <div v-else>
+                <button @click="viewResults(record.id)" class="action-btn btn-outline-blue">
+                  <i class="fa fa-file-text-o"></i> View Results
+                </button>
+              </div>
             </td>
+            
           </tr>
+          
           <tr v-if="records.length === 0">
             <td colspan="4" class="empty-row">No patient records available.</td>
           </tr>
@@ -74,6 +83,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { patientService } from '../services/doctorServices/patientService.js'
 import { scanService } from '../services/doctorServices/scanService.js'
+import AiLoader from '../components/common/AiLoader.vue'
 
 const router = useRouter()
 const records = ref([])
@@ -98,9 +108,10 @@ const fetchRecords = async () => {
       }
 
       return {
-        id: patient.id,          // Patient ID (e.g., PT-63294)
-        scanId: patient.scan_id, //  Now cleanly pulled via your verified mappers block!
+        id: patient.id,          
+        scanId: patient.scan_id, 
         name: patient.name || 'Unknown Patient',
+        assignedDoc: patient.assigned_doc || 'Unassigned',
         imageDate: formattedDate,
         analyzed: patient.analyzed || false, 
         timestamp: patient.scan_analysis_date 
@@ -111,7 +122,8 @@ const fetchRecords = async () => {
     })
   } catch (error) {
     console.error('Error fetching patient records:', error)
-    alert('Failed to load patient records from the server.')
+    const detail = error.response?.data?.detail || error.message || 'Unknown server error'
+    alert(`Failed to load patient records: ${detail}`)
   } finally {
     isLoading.value = false
   }
@@ -135,11 +147,11 @@ const runAnalysis = async (record) => {
     alert(`AI Analysis finalized successfully for ${record.name}!`)
     
     record.analyzed = true
-    record.timestamp = resultData.analysis_timestamp 
-      ? new Date(resultData.analysis_timestamp).toLocaleString() 
+    record.timestamp = resultData.analysis_timestamp  
+      ? new Date(resultData.analysis_timestamp).toLocaleString()  
       : new Date().toLocaleString()
     
-    record.urgency = resultData.result?.urgency || 'Low'
+    record.urgency = resultData.urgency || 'Unknown'
   } catch (error) {
     console.error('AI Analysis execution fault:', error)
     alert(`Analysis failed: ${error.response?.data?.detail || error.message || 'Server connection error'}`)
@@ -148,13 +160,8 @@ const runAnalysis = async (record) => {
   }
 }
 
-//  Safely navigates matching your index.js pattern (/results/:id)
 const viewResults = (patientId) => { 
   router.push(`/results/${patientId}`) 
-}
-
-const goToPatient = (patientId) => { 
-  alert(`Navigating to General Patient Details for ${patientId}`) 
 }
 
 onMounted(() => {
@@ -177,7 +184,8 @@ onMounted(() => {
 .clean-table tbody tr:hover { background-color: #f8f9fa; }
 .fw-bold { font-weight: 600; }
 
-.status-cell { min-width: 250px; }
+.status-cell { min-width: 220px; }
+.status-placeholder-text { font-size: 13px; color: #94a3b8; font-style: italic; display: inline-flex; align-items: center; gap: 6px; }
 .results-data { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .timestamp { font-size: 12px; color: #7f8c8d; }
 
@@ -189,23 +197,30 @@ onMounted(() => {
 .loading-state { padding: 30px; text-align: center; color: #7f8c8d; font-weight: 600; }
 .empty-row { text-align: center; color: #7f8c8d; padding: 30px !important; font-style: italic; }
 
-.action-btn { padding: 8px 16px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.action-btn { 
+  padding: 8px 16px; 
+  border: none; 
+  border-radius: 8px; 
+  font-size: 14px; 
+  font-weight: 600; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 6px; 
+  width: 153.5px;
+  height: 37px;
+  justify-content: center;
+  box-sizing: border-box;
+}
 .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-green { background-color: #0aa159; color: white; }
 .btn-green:hover { background-color: #088c4d; }
-.btn-outline-green { background: transparent; color: #0aa159; border: 1px solid #0aa159; }
+.btn-outline-green { background: transparent; color: #0aa159; border: 1px solid #0aa159; width: auto; }
 .btn-outline-green:hover { background: #e8f5e9; }
 .btn-grey { background: #f1f3f5; color: #495057; border: none; }
 .btn-grey:hover { background: #e9ecef; }
 
-/*  Added View Results custom theme styling */
-.btn-outline-blue {
-  background: transparent;
-  color: #5c6bc0;
-  border: 1px solid #5c6bc0;
-}
-.btn-outline-blue:hover {
-  background: #f0f2f5;
-  color: #3f51b5;
-}
+.btn-outline-blue { background: transparent; color: #5c6bc0; border: 1px solid #5c6bc0; }
+.btn-outline-blue:hover { background: #f0f2f5; color: #3f51b5; }
 </style>

@@ -9,7 +9,7 @@ class ScanAnalyzer(ABC):
         self,
         scan_id: str,
         binary_data: bytes,
-        explain: bool = False,
+        explain: bool = True,
         target_label: str = "Aneurysm Present", 
     ) -> AneurysmAnalysisResult:
         """
@@ -19,7 +19,7 @@ class ScanAnalyzer(ABC):
         Args:
             scan_id: Unique identifier for the scan.
             binary_data: Raw DICOM file bytes.
-            explain: If True, request Grad-CAM heatmaps from the AI.
+            explain: Retained for service compatibility; Grad-CAM is always requested.
             target_label: Which specific label to generate heatmaps for.
         """
         pass

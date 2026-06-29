@@ -32,6 +32,7 @@ class TestScanAnalysisRoute:
         assert data["scan_id"] == "SCN-1001"
         assert data["patient_name"] == "Alice Smith"
         assert data["status"] == "completed"
+        assert data["urgency"] == "High"
         assert data["result"]["overall"]["probability"] == 0.92
 
     def test_run_manual_analysis_not_found(self, client, stub_scan_analysis):
@@ -68,4 +69,5 @@ class TestScanAnalysisRoute:
         data = response.json()
         assert data["scan_id"] == "SCN-5555"
         assert data["patient_name"] == "John Doe"
+        assert data["urgency"] == "Medium"
         assert data["result"]["overall"]["probability"] == 0.65

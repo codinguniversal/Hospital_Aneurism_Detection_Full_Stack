@@ -11,11 +11,10 @@
       </div>
 
       <div class="nav-links">
-        <template v-if="authStore.isAuthenticated && authStore.role?.toLowerCase() === 'doctor'">
+        <template v-if="authStore.isAuthenticated && ['doctor', 'radiologist'].includes(authStore.role?.toLowerCase())">
           <span class="role-display-label">
             <span class="material-symbols-outlined icon-fix">medical_services</span> Doctor
           </span>
-          <router-link to="/records" class="nav-item">Records</router-link>
           
           <button @click="handleLogout" class="nav-item logout-btn">
             <span class="material-symbols-outlined icon-fix">logout</span> Logout

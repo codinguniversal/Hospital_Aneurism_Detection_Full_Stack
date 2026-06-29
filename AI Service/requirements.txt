@@ -1,10 +1,13 @@
 fastapi
 uvicorn
 python-multipart
+torch
+torchvision
 albumentations==1.4.15
 opencv-python-headless
 timm
 pydicom
+tqdm
 numpy
 scipy
 huggingface_hub

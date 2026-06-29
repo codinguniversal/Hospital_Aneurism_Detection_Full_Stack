@@ -142,8 +142,8 @@ class MockScanAnalysisService(ScanAnalyzer):
             explainability=[],
         )
 
-        # 🚀 NOW: Only generate fake heatmaps if `explain=True`
-        if explain and self.patient_repo:
+        # Mirror production behavior: explanations are always generated.
+        if self.patient_repo:
             fake_slices = [
                 {"slice_index": 42, "importance": 1.0},
                 {"slice_index": 15, "importance": 0.85},
@@ -158,11 +158,13 @@ class MockScanAnalysisService(ScanAnalyzer):
                     scan_id=scan_id,
                     slice_index=fake_slice["slice_index"],
                     base64_data=fake_overlay_base64,
+                    image_kind="overlay",
                 )
                 raw_ref = await self.patient_repo.store_slice_image(
                     scan_id=scan_id,
                     slice_index=fake_slice["slice_index"],
-                    base64_data=fake_raw_base64 
+                    base64_data=fake_raw_base64,
+                    image_kind="raw",
                 )
 
                 top_slices_entities.append(

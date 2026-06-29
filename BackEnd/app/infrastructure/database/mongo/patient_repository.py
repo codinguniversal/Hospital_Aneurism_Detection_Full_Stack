@@ -1,6 +1,7 @@
 import base64
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 import os
+from pathlib import Path
 from typing import List, Optional
 
 from motor.motor_asyncio import AsyncIOMotorDatabase
@@ -16,7 +17,7 @@ class MongoPatientRepository(IPatientRepository):
             slice_meta_collection_name: str
             ):
         self.collection = db["patients"]
-        self.slice_meta_collections = db[slice_meta_collection_name]
+        self.slice_meta_collection = db[slice_meta_collection_name]
         self.storage_base_dir = storage_base_dir
 
     def _scan_to_document(self, scan: Scan) -> dict:
@@ -109,11 +110,24 @@ class MongoPatientRepository(IPatientRepository):
                 file_path = s.get("img_file_path")
                 break
 
-        if not file_path or not os.path.exists(file_path):
-            print(f"[REPO ERROR] File missing on storage disk at: {file_path}")
-            return None
+        if not file_path:
+            raise FileNotFoundError(
+                f"Scan {scan_id} has no DICOM ZIP path configured in MongoDB."
+            )
 
-        with open(file_path, "rb") as archive_file:
+        # MongoDB stores paths as strings. Normalize mixed slash styles,
+        # surrounding quotes, environment variables, and relative components.
+        normalized_path = Path(
+            os.path.normpath(os.path.expandvars(str(file_path).strip().strip('"')))
+        ).expanduser()
+
+        if not normalized_path.is_file():
+            raise FileNotFoundError(
+                f"DICOM ZIP for scan {scan_id} does not exist at "
+                f"'{normalized_path}'. Update scans.$.img_file_path with the full Windows path."
+            )
+
+        with normalized_path.open("rb") as archive_file:
             return archive_file.read()
 
     async def update_scan_results(self, scan_id: str, ai_results: AneurysmAnalysisResult) -> bool:
@@ -123,6 +137,7 @@ class MongoPatientRepository(IPatientRepository):
             {
                 "$set": {
                     "scans.$.status": "Completed",
+                    "scans.$.scan_analysis_date": datetime.now(timezone.utc),
                     "scans.$.results": results,
                 }
             },
@@ -144,7 +159,13 @@ class MongoPatientRepository(IPatientRepository):
 
         return pending_scans
 
-    async def store_slice_image(self, scan_id: str, slice_index: int, base64_data: str) -> str:
+    async def store_slice_image(
+            self,
+            scan_id: str,
+            slice_index: int,
+            base64_data: str,
+            image_kind: str = "overlay",
+            ) -> str:
         """
         Saves the binary decoded highlighted AI slice directly onto the server disk storage,
         tracks the file path metadata inside MongoDB, and returns a absolute file path reference.
@@ -161,7 +182,8 @@ class MongoPatientRepository(IPatientRepository):
         os.makedirs(scan_directory, exist_ok=True)
 
         # Generate absolute filename for the pinpointed frame slice
-        file_name = f"slice_{slice_index}.png"
+        safe_image_kind = "raw" if image_kind == "raw" else "overlay"
+        file_name = f"{safe_image_kind}_slice_{slice_index}.png"
         target_file_path = os.path.normpath(os.path.join(scan_directory, file_name))
 
         # Write data natively to host file system
@@ -176,6 +198,7 @@ class MongoPatientRepository(IPatientRepository):
                 "$set": {
                     "scan_id": scan_id,
                     "slice_index": slice_index,
+                    "image_kind": safe_image_kind,
                     "stored_at": datetime.utcnow()
                 }
             },
