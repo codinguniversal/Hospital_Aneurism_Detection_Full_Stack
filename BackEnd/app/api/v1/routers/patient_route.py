@@ -2,8 +2,8 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 
 # Core Domains & Use Cases
-from app.core.patient_management.entities import PatientEntity
-from app.core.patient_management.use_cases import GetAllPatientsUseCase, GetPatientResultsUseCase
+from app.core.patient_management.entities import Patient
+from app.core.patient_management.use_cases import GetAllPatients, GetPatientDiagnosticReport
 from app.modules.system_settings.use_cases import GetSettingsUseCase
 
 # Infrastructure & Security
@@ -30,7 +30,7 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
     dependencies=[Depends(RoleChecker(["Radiologist", "Doctor"]))] 
 )
 async def get_records(
-    get_all_patients_use_case: GetAllPatientsUseCase = Depends(build_get_patient_records_use_case),
+    get_all_patients_use_case: GetAllPatients = Depends(build_get_patient_records_use_case),
     get_settings_use_case: GetSettingsUseCase = Depends(build_get_settings_use_case)
 ):
     results = await get_all_patients_use_case.execute()
@@ -57,13 +57,13 @@ async def get_records(
 
 @router.get(
     "/{patient_id}", 
-    response_model=PatientEntity, 
+    response_model=Patient, 
     status_code=status.HTTP_200_OK,
     dependencies=[Depends(RoleChecker(["Radiologist", "Doctor", "Admin"]))]  
 )
 async def get_patient_results(
     patient_id: str,
-    use_case: GetPatientResultsUseCase = Depends(build_get_patient_results_use_case)
+    use_case: GetPatientDiagnosticReport = Depends(build_get_patient_results_use_case)
 ):
     patient = await use_case.execute(patient_id)
     if not patient:

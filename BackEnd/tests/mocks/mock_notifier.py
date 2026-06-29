@@ -1,6 +1,6 @@
-from app.core.patient_management.services import INotificationService
+from app.core.patient_management.services import Notifier
 
-class MockNotificationService(INotificationService):
+class MockNotificationService(Notifier):
     def __init__(self):
         # In-memory spy tracker to record outbound dispatches
         self.sent_alerts = []

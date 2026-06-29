@@ -20,11 +20,11 @@ class ScanUrgency(str, Enum):
     HIGH = "High"
 
 
-class OverAllAneurysmPredictionEntity(BaseModel):
+class OverAllAneurysmPrediction(BaseModel):
     probability: float
 
 
-class LocationPredictionsEntity(BaseModel):
+class LocationPredictions(BaseModel):
     LeftInfraclinoidInternalCarotidArtery: float
     RightInfraclinoidInternalCarotidArtery: float
     LeftSupraclinoidInternalCarotidArtery: float
@@ -39,33 +39,33 @@ class LocationPredictionsEntity(BaseModel):
     BasilarTip: float
     OtherPosteriorCirculation: float
 
-class TopSliceEntity(BaseModel):
+class TopSlice(BaseModel):
     slice_index: int
     importance: float
     overlay_slice_image_ref: str
     raw_slice_image_ref: str
 
-class ExplainabilityEntity(BaseModel):
+class AnalysisRationale(BaseModel):
     id:str
     method:str ="Grad-CAM"
     target_label: str
-    top_slices: List[TopSliceEntity] = Field(min_length= 1, max_length=MAXNUMOFEXPLAINEDSLICES)
+    top_slices: List[TopSlice] = Field(min_length= 1, max_length=MAXNUMOFEXPLAINEDSLICES)
     model_metadata: Optional[Any] = None
 
 
-class AneurysmAnalysisResultEntity(BaseModel):
-    overall: Optional[OverAllAneurysmPredictionEntity] = None
-    locations: Optional[LocationPredictionsEntity] = None
-    explainability: Optional[List[ExplainabilityEntity]] = Field(default_factory= list)
+class AneurysmAnalysisResult(BaseModel):
+    overall: Optional[OverAllAneurysmPrediction] = None
+    locations: Optional[LocationPredictions] = None
+    explainability: Optional[List[AnalysisRationale]] = Field(default_factory= list)
 
 
-class ScanEntity(BaseModel):
+class Scan(BaseModel):
     id: str
     scan_date: datetime
     status: ScanStatus
     img_file_path: str
     scan_analysis_date: Optional[datetime] = None
-    results: Optional[AneurysmAnalysisResultEntity] = None
+    results: Optional[AneurysmAnalysisResult] = None
 
     def urgency(self, high_threshold: float, mid_threshold: float) -> str:
         if (
@@ -83,15 +83,21 @@ class ScanEntity(BaseModel):
         return ScanUrgency.LOW.value
 
 
-class PatientEntity(BaseModel):
+class Patient(BaseModel):
     id: str
     patient_name: str
     birth_date: date
     assigned_doc: str
     medical_history: List[str] = Field(default_factory=list)
-    scans: List[ScanEntity] = Field(default_factory=list)
+    scans: List[Scan] = Field(default_factory=list)
+    @property
+    def latest_scan(self) -> Optional[Scan]:
+        if not self.scans:
+            return None
+        return max(self.scans, key=lambda s: s.scan_date)
 
-    def add_scan(self, scan: ScanEntity) -> None:
+
+    def add_scan(self, scan: Scan) -> None:
         if scan.id in {s.id for s in self.scans}:
             raise ValueError("Scan ID already exists for this patient")
         self.scans.append(scan)

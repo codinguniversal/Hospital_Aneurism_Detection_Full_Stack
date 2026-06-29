@@ -1,7 +1,7 @@
 from datetime import datetime, date
 import pytest
 from fastapi import status
-from app.core.patient_management.entities import PatientEntity, ScanEntity, ScanStatus
+from app.core.patient_management.entities import Patient, Scan, ScanStatus
 
 
 class TestPatientRecordsRoute:
@@ -11,14 +11,14 @@ class TestPatientRecordsRoute:
         """Should return 200 with list of patient records when data exists."""
         # Arrange
         stub_records.mock_patients = [
-            PatientEntity(
+            Patient(
                 id="pat_001",
                 patient_name="Alice Smith",
                 birth_date=date(1985, 4, 12),
                 assigned_doc="dr_smith",
                 medical_history=["Hypertension"],
                 scans=[
-                    ScanEntity(
+                    Scan(
                         id="SCN-1001",
                         scan_date=datetime.now(),
                         status=ScanStatus.COMPLETED,
@@ -57,7 +57,7 @@ class TestPatientResultsRoute:
     def test_get_patient_results_success(self, client, stub_results):
         """Should return 200 with patient details including scans."""
         # Arrange
-        mock_scan = ScanEntity(
+        mock_scan = Scan(
             id="SCN-2026-e6905722",
             scan_date=datetime(2026, 6, 18, 16, 32, 37),
             status=ScanStatus.COMPLETED,
@@ -65,7 +65,7 @@ class TestPatientResultsRoute:
             results=None
         )
 
-        stub_results.mock_patient = PatientEntity(
+        stub_results.mock_patient = Patient(
             id="PT-66457",
             patient_name="Brandi Gallagher",
             birth_date=date(1959, 8, 25),

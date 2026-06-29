@@ -4,8 +4,8 @@ Tests for scan analysis route: POST /api/scans/{scan_id}/analyze
 import pytest
 from fastapi import status
 from app.core.patient_management.entities import (
-    AneurysmAnalysisResultEntity,
-    OverAllAneurysmPredictionEntity,
+    AneurysmAnalysisResult,
+    OverAllAneurysmPrediction,
 )
 
 
@@ -14,8 +14,8 @@ class TestScanAnalysisRoute:
 
     def test_run_manual_analysis_success(self, client, stub_scan_analysis):
         """Should return 200 with analysis results on successful scan processing."""
-        stub_scan_analysis.result = AneurysmAnalysisResultEntity(
-            overall=OverAllAneurysmPredictionEntity(probability=0.92)
+        stub_scan_analysis.result = AneurysmAnalysisResult(
+            overall=OverAllAneurysmPrediction(probability=0.92)
         )
         stub_scan_analysis.raise_not_found = False
 
@@ -51,8 +51,8 @@ class TestScanAnalysisRoute:
 
     def test_run_manual_analysis_with_different_scan_ids(self, client, stub_scan_analysis):
         """Should handle multiple scans with different IDs."""
-        stub_scan_analysis.result = AneurysmAnalysisResultEntity(
-            overall=OverAllAneurysmPredictionEntity(probability=0.65)
+        stub_scan_analysis.result = AneurysmAnalysisResult(
+            overall=OverAllAneurysmPrediction(probability=0.65)
         )
         stub_scan_analysis.raise_not_found = False
 

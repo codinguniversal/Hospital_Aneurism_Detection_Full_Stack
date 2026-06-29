@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 
-from app.core.patient_management.repositories import PatientRepository
+from app.core.patient_management.services import Notifier
+from app.core.patient_management.repositories import Patients
 from app.modules.identity_access.repositories import UserRepository
 from app.modules.identity_access.services import IdGenerator
 from app.modules.system_settings.repositories import SettingsRepository
@@ -8,17 +9,21 @@ from app.modules.system_settings.repositories import SettingsRepository
 
 class InfrastructureFactory(ABC):
     @abstractmethod
-    def get_patient_repository(self) -> PatientRepository:
+    def patients(self) -> Patients:
         pass
 
     @abstractmethod
-    def get_user_repository(self) -> UserRepository:
+    def users(self) -> UserRepository:
         pass
 
     @abstractmethod
-    def get_settings_repository(self) -> SettingsRepository:
+    def settings(self) -> SettingsRepository:
         pass
 
     @abstractmethod
-    def get_id_generator(self) -> IdGenerator:
+    def id_generator(self) -> IdGenerator:
+        pass
+
+    @abstractmethod
+    def notifier(self) -> Notifier:
         pass

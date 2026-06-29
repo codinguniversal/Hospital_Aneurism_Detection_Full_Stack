@@ -1,7 +1,7 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
-from app.core.patient_management.use_cases import ScanAnalysisUseCase
+from app.core.patient_management.use_cases import DetectAneurysmProbabilities
 from app.infrastructure.ai.ai_client import AIServiceError
 from app.dependencies import build_scan_analysis_use_case
 
@@ -16,7 +16,7 @@ async def run_manual_analysis(
     analysis_request: ScanAnalysisRequestSchema,
     include_heatmap: bool = False,
     target_label: str = "Aneurysm Present", 
-    use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case)
+    use_case: DetectAneurysmProbabilities = Depends(build_scan_analysis_use_case)
 ):
     """
     Endpoint triggered when the Run Analysis button in the frontend table is pressed.

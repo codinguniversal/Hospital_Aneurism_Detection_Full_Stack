@@ -2,8 +2,8 @@ import asyncio
 
 import pytest
 from unittest.mock import AsyncMock
-from app.core.patient_management.use_cases import ScanAnalysisUseCase
-from app.core.patient_management.entities import AneurysmAnalysisResultEntity
+from app.core.patient_management.use_cases import DetectAneurysmProbabilities
+from app.core.patient_management.entities import AneurysmAnalysisResult
 
 # Import your test mock notifier
 from tests.mocks.mock_notifier import MockNotificationService
@@ -30,7 +30,7 @@ async def test_scan_analysis_triggers_notification_on_high_risk():
     mock_ai_service.analyze_scan.return_value = mock_result
 
     # 2. Inject components into the Use Case
-    use_case = ScanAnalysisUseCase(
+    use_case = DetectAneurysmProbabilities(
         patient_repo=mock_patient_repo,
         ai_service=mock_ai_service,
         notifier=mock_notifier,        #  Injected mock notifier
@@ -67,7 +67,7 @@ async def test_scan_analysis_skips_notification_on_low_risk():
     mock_result.overall.probability = 0.32
     mock_ai_service.analyze_scan.return_value = mock_result
 
-    use_case = ScanAnalysisUseCase(
+    use_case = DetectAneurysmProbabilities(
         patient_repo=mock_patient_repo,
         ai_service=mock_ai_service,
         notifier=mock_notifier,

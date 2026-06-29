@@ -1,18 +1,14 @@
-import inspect
-import os
 from typing import Optional
-from fastapi import Depends
 import httpx
 
-from app.core.patient_management.services import INotificationService
-from app.infrastructure.notifications.mail_trap_notifier import MailtrapEmailNotifier
+from app.core.patient_management.services import Notifier
 from app.config import static_settings
-from app.core.patient_management.repositories import PatientRepository
+from app.core.patient_management.repositories import Patients
 from app.core.patient_management.use_cases import (
-    GetAllPatientsUseCase,
-    GetPatientResultsUseCase,
-    ScanAnalysisUseCase,
-    GetSliceImageUseCase,
+    GetAllPatients,
+    GetPatientDiagnosticReport,
+    DetectAneurysmProbabilities,
+    GetSliceImage,
 )
 from app.infrastructure.ai.ai_client import HTTPXScanAnalysisService
 from app.infrastructure.ai.mock_ai_client import MockScanAnalysisService
@@ -30,7 +26,6 @@ from app.modules.identity_access.use_cases import (
 )
 from app.modules.system_settings.repositories import SettingsRepository
 from app.modules.system_settings.use_cases import GetSettingsUseCase, UpdateSettingsUseCase
-from app.infrastructure.common.reflection import load_class_dynamically
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 _factory: Optional[InfrastructureFactory] = None
@@ -73,76 +68,60 @@ async def build_ai_service():
 async def build_id_generator() -> IdGenerator:
     if _factory is None:
         raise RuntimeError("Infrastructure not initialized.")
-    return _factory.get_id_generator()
+    return _factory.id_generator()
 
 
-def build_patient_repository() -> PatientRepository:
+def build_patient_repository() -> Patients:
     if _factory is None:
         raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
-    return _factory.get_patient_repository()
+    return _factory.patients()
 
 
 def build_user_repository() -> UserRepository:
     if _factory is None:
         raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
-    return _factory.get_user_repository()
+    return _factory.users()
 
 
 def build_settings_repository() -> SettingsRepository:
     if _factory is None:
         raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
-    return _factory.get_settings_repository()
+    return _factory.settings()
 
 
-def build_get_patient_records_use_case() -> GetAllPatientsUseCase:
+def build_get_patient_records_use_case() -> GetAllPatients:
     patient_repo = build_patient_repository()
     settings_repo = build_settings_repository()
-    return GetAllPatientsUseCase(
+    return GetAllPatients(
         patient_repo=patient_repo,
         settings_repo=settings_repo,
     )
 
 
-def build_get_patient_results_use_case() -> GetPatientResultsUseCase:
+def build_get_patient_results_use_case() -> GetPatientDiagnosticReport:
     patient_repo = build_patient_repository()
-    return GetPatientResultsUseCase(patient_repo=patient_repo)
+    return GetPatientDiagnosticReport(patient_repo=patient_repo)
 
-def build_notification_service() -> INotificationService:
-    """
-    Dynamically loads and initializes the notification provider 
-    dictated by the environment configuration.
-    """
-    provider_class_path = static_settings.notification_provider_class
+def build_notification_service() -> Notifier:
+    if _factory is None:
+        raise RuntimeError("Infrastructure not initialized. Call initialize_infrastructure() first.")
+    return _factory.notifier()
 
-    NotifierClass = load_class_dynamically(provider_class_path)
-
-    config_context = {
-        "api_token": static_settings.mailtrap_api_token,
-        "inbox_id": static_settings.mailtrap_inbox_id,
-        "recipient_emails_str": static_settings.notification_recipients,
-        "sender_email": static_settings.sender_email
-    }
-
-    init_params = inspect.signature(NotifierClass.__init__).parameters
-    filtered_kwargs = {k: v for k, v in config_context.items() if k in init_params}
-
-    return NotifierClass(**filtered_kwargs)
-
-async def build_scan_analysis_use_case() -> ScanAnalysisUseCase:
+async def build_scan_analysis_use_case() -> DetectAneurysmProbabilities:
     patient_repo = build_patient_repository()
     ai_service = await build_ai_service()
     notification_service = build_notification_service()
     settings_repo = build_settings_repository()
 
-    return ScanAnalysisUseCase(
+    return DetectAneurysmProbabilities(
         patient_repo=patient_repo,
         ai_service=ai_service,
         notifier= notification_service,
         settings_repo=settings_repo
     )
-async def build_get_slice_image_use_case()->GetSliceImageUseCase:
+async def build_get_slice_image_use_case()->GetSliceImage:
     patient_repo = build_patient_repository()
-    return GetSliceImageUseCase(patient_repo= patient_repo)
+    return GetSliceImage(patient_repo= patient_repo)
 
 
 def build_authenticate_user_use_case() -> AuthenticateUserUseCase:

@@ -3,16 +3,18 @@ from typing import List
 
 from app.api.v1.schemas.patient_schema import PatientRecordResponseSchema
 from app.api.v1.schemas.user_schema import UserResponseSchema
-from app.core.patient_management.entities import PatientEntity, ScanStatus
+from app.core.patient_management.entities import Patient, ScanStatus
 from app.modules.identity_access.entities import UserEntity
 
 
-def patient_entities_to_records(high_threshold: float, mid_threshold: float ,patients: List[PatientEntity])-> List[PatientRecordResponseSchema] :
+def patient_entities_to_records(high_threshold: float, mid_threshold: float ,patients: List[Patient])-> List[PatientRecordResponseSchema] :
         results = []
         for patient in patients:
             if not patient.scans:
                 continue  # Skip patients without scans
-            latest_scan = patient.scans[0]  # Assuming the first scan is the latest; adjust if necessary
+            latest_scan = patient.latest_scan
+            if latest_scan is None:
+                continue
             urgency = latest_scan.urgency(high_threshold=high_threshold, mid_threshold=mid_threshold)
             results.append(
                 PatientRecordResponseSchema(               

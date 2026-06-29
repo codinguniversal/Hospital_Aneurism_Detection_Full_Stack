@@ -3,15 +3,15 @@ from typing import List, Optional, Dict, Any
 import httpx
 from pydantic import BaseModel
 
-from app.core.patient_management.repositories import PatientRepository
+from app.core.patient_management.repositories import Patients
 from app.core.patient_management.entities import (
-    AneurysmAnalysisResultEntity,
-    ExplainabilityEntity,
-    LocationPredictionsEntity,
-    OverAllAneurysmPredictionEntity,
-    TopSliceEntity,
+    AneurysmAnalysisResult,
+    AnalysisRationale,
+    LocationPredictions,
+    OverAllAneurysmPrediction,
+    TopSlice,
 )
-from app.core.patient_management.services import ScanAnalysisService
+from app.core.patient_management.services import ScanAnalyzer
 
 class TopSliceDTO(BaseModel):
     slice_index: int
@@ -38,12 +38,12 @@ class AIServiceError(Exception):
         self.status_code = status_code
 
 
-class HTTPXScanAnalysisService(ScanAnalysisService):
+class HTTPXScanAnalysisService(ScanAnalyzer):
     def __init__(
             self,
             client: httpx.AsyncClient,
             base_url: str,
-            patient_repo: PatientRepository,
+            patient_repo: Patients,
             timeout: int = 60,
         ):
         self.client = client
@@ -57,7 +57,7 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                 binary_data: bytes,
                 explain: bool= False,
                 target_label: str = "Aneurysm Present",
-            ) -> AneurysmAnalysisResultEntity:
+            ) -> AneurysmAnalysisResult:
         
         query_params = {}
         if explain:
@@ -105,12 +105,12 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
             self,
             scan_id: str,
             dto: AIResponseDTO
-        ) -> AneurysmAnalysisResultEntity:
-        result = AneurysmAnalysisResultEntity(
-            overall=OverAllAneurysmPredictionEntity(
+        ) -> AneurysmAnalysisResult:
+        result = AneurysmAnalysisResult(
+            overall=OverAllAneurysmPrediction(
                 probability=dto.overall_prediction["Aneurysm Present"]
             ),
-            locations=LocationPredictionsEntity(
+            locations=LocationPredictions(
                 LeftInfraclinoidInternalCarotidArtery=dto.detailed_locations["Left Infraclinoid Internal Carotid Artery"],
                 RightInfraclinoidInternalCarotidArtery=dto.detailed_locations["Right Infraclinoid Internal Carotid Artery"],
                 LeftSupraclinoidInternalCarotidArtery=dto.detailed_locations["Left Supraclinoid Internal Carotid Artery"],
@@ -146,14 +146,14 @@ class HTTPXScanAnalysisService(ScanAnalysisService):
                     raw_ref = f"placeholder://scans/{scan_id}/slice_{slice_dto.slice_index}_raw.png"
                     print(f"WARNING: Raw slice not provided by AI for scan {scan_id}, slice {slice_dto.slice_index}")
                 top_slices_entities.append(
-                    TopSliceEntity(
+                    TopSlice(
                         slice_index=slice_dto.slice_index,
                         importance=slice_dto.importance,
                         overlay_slice_image_ref= overlay_ref,
                         raw_slice_image_ref= raw_ref
                     )
                 )
-            explainability_entity = ExplainabilityEntity(
+            explainability_entity = AnalysisRationale(
                 id=f"exp_{scan_id}_{dto.explainability.target_label.replace(' ', '_')}",
                 method=dto.explainability.method,
                 target_label=dto.explainability.target_label,

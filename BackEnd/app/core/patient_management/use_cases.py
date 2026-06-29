@@ -1,26 +1,26 @@
 from typing import List, Optional
 import asyncio
-from app.core.patient_management.entities import AneurysmAnalysisResultEntity, PatientEntity
-from app.core.patient_management.repositories import PatientRepository
-from app.core.patient_management.services import ScanAnalysisService
+from app.core.patient_management.entities import AneurysmAnalysisResult, Patient
+from app.core.patient_management.repositories import Patients
+from app.core.patient_management.services import ScanAnalyzer
 from app.modules.system_settings.repositories import SettingsRepository
-from app.core.patient_management.services import INotificationService
+from app.core.patient_management.services import Notifier
 
-class GetAllPatientsUseCase:
-    def __init__(self, patient_repo: PatientRepository, settings_repo: SettingsRepository):
+class GetAllPatients:
+    def __init__(self, patient_repo: Patients, settings_repo: SettingsRepository):
         self.patient_repo = patient_repo
         self.settings_repo = settings_repo
 
-    async def execute(self) -> List[PatientEntity] | None:
-        patients = await self.patient_repo.get_all_patients()
+    async def execute(self) -> List[Patient] | None:
+        patients = await self.patient_repo.get_all()
         return patients
 
 
-class GetPatientResultsUseCase:
-    def __init__(self, patient_repo: PatientRepository):
+class GetPatientDiagnosticReport:
+    def __init__(self, patient_repo: Patients):
         self.patient_repo = patient_repo
 
-    async def execute(self, patient_id: str) -> Optional[PatientEntity]:
+    async def execute(self, patient_id: str) -> Optional[Patient]:
         if not patient_id:
             return None
         patient = await self.patient_repo.get_patient_by_id(patient_id)
@@ -28,12 +28,12 @@ class GetPatientResultsUseCase:
             return None
         return patient
 
-class ScanAnalysisUseCase:
+class DetectAneurysmProbabilities:
     def __init__(
             self, 
-            patient_repo: PatientRepository,
-            ai_service: ScanAnalysisService, 
-            notifier: INotificationService,
+            patient_repo: Patients,
+            ai_service: ScanAnalyzer, 
+            notifier: Notifier,
             settings_repo : SettingsRepository
             ):
         self.patient_repo = patient_repo
@@ -47,7 +47,7 @@ class ScanAnalysisUseCase:
                 scan_id: str,
                 include_heatmap: bool = False,
                 target_label: str = "Aneurysm Present"
-            ) -> AneurysmAnalysisResultEntity:
+            ) -> AneurysmAnalysisResult:
         binary_data = await self.patient_repo.get_scan_file(scan_id)
         if not binary_data:
             raise ValueError(f"Scan record with id {scan_id} not found in DB")
@@ -73,8 +73,8 @@ class ScanAnalysisUseCase:
 
         return analysis_results
 
-class GetSliceImageUseCase:
-    def __init__(self,patient_repo: PatientRepository):
+class GetSliceImage:
+    def __init__(self,patient_repo: Patients):
         self.patient_repo = patient_repo
     
     async def execute(self, image_ref: str)->Optional[bytes]:

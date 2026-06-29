@@ -4,17 +4,17 @@ import random
 from typing import Any, Optional
 
 from app.core.patient_management.entities import (
-    AneurysmAnalysisResultEntity,
-    LocationPredictionsEntity,
-    OverAllAneurysmPredictionEntity,
-    ExplainabilityEntity,
-    TopSliceEntity,
+    AneurysmAnalysisResult,
+    LocationPredictions,
+    OverAllAneurysmPrediction,
+    AnalysisRationale,
+    TopSlice,
 )
-from app.core.patient_management.services import ScanAnalysisService
+from app.core.patient_management.services import ScanAnalyzer
 from app.infrastructure.ai.ai_client import AIServiceError
 
 
-class MockScanAnalysisService(ScanAnalysisService):
+class MockScanAnalysisService(ScanAnalyzer):
     """
     A fake implementation of ScanAnalysisService that returns predefined
     or random results without network calls. Useful for testing and development.
@@ -89,7 +89,7 @@ class MockScanAnalysisService(ScanAnalysisService):
         binary_data: bytes,
         explain: bool = False,  # ✅ Added to match abstract
         target_label: str = "Aneurysm Present",  # ✅ Added to match abstract
-    ) -> AneurysmAnalysisResultEntity:
+    ) -> AneurysmAnalysisResult:
         # Simulate failures
         if self.simulate_timeout:
             raise AIServiceError("Mock AI timeout", status_code=504)
@@ -122,9 +122,9 @@ class MockScanAnalysisService(ScanAnalysisService):
                 "Other Posterior Circulation": round(random.random(), 3),
             }
 
-        result = AneurysmAnalysisResultEntity(
-            overall=OverAllAneurysmPredictionEntity(probability=overall_prob),
-            locations=LocationPredictionsEntity(
+        result = AneurysmAnalysisResult(
+            overall=OverAllAneurysmPrediction(probability=overall_prob),
+            locations=LocationPredictions(
                 LeftInfraclinoidInternalCarotidArtery=loc_probs["Left Infraclinoid Internal Carotid Artery"],
                 RightInfraclinoidInternalCarotidArtery=loc_probs["Right Infraclinoid Internal Carotid Artery"],
                 LeftSupraclinoidInternalCarotidArtery=loc_probs["Left Supraclinoid Internal Carotid Artery"],
@@ -166,7 +166,7 @@ class MockScanAnalysisService(ScanAnalysisService):
                 )
 
                 top_slices_entities.append(
-                    TopSliceEntity(
+                    TopSlice(
                         slice_index=fake_slice["slice_index"],
                         importance=fake_slice["importance"],
                         overlay_slice_image_ref=fake_ref,
@@ -175,7 +175,7 @@ class MockScanAnalysisService(ScanAnalysisService):
                 )
 
             # ✅ Use the `target_label` passed from the Use Case
-            explainability_entity = ExplainabilityEntity(
+            explainability_entity = AnalysisRationale(
                 id=f"exp_{scan_id}_{target_label.replace(' ', '_')}",
                 method="Grad-CAM",
                 target_label=target_label,  # ✅ Use the actual passed label

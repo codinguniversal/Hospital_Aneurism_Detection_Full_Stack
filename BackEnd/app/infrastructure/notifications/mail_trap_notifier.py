@@ -1,7 +1,7 @@
 import httpx
-from app.core.patient_management.services import INotificationService
+from app.core.patient_management.services import Notifier
 
-class MailtrapEmailNotifier(INotificationService):
+class MailtrapEmailNotifier(Notifier):
     def __init__(
         self, 
         api_token: str, 

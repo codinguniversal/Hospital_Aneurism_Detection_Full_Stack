@@ -3,30 +3,30 @@ from datetime import datetime, timezone
 from typing import List, Optional
 
 from app.core.patient_management.entities import (
-    AneurysmAnalysisResultEntity,
-    PatientEntity,
-    ScanEntity,
+    AneurysmAnalysisResult,
+    Patient,
+    Scan,
     ScanStatus,
 )
-from app.core.patient_management.repositories import PatientRepository
+from app.core.patient_management.repositories import Patients
 from app.infrastructure.database.mock.data_layer import MockNoSQLDataLayer
 
 
-class MockPatientRepository(PatientRepository):
+class MockPatientRepository(Patients):
     def __init__(self, db: MockNoSQLDataLayer):
         self.db = db
 
-    async def get_all_patients(self) -> List[PatientEntity]:
+    async def get_all(self) -> List[Patient]:
         return [
-            PatientEntity.model_validate(patient)
+            Patient.model_validate(patient)
             for patient in self.db.patients.values()
         ]
 
-    async def get_patient_by_id(self, patient_id: str) -> Optional[PatientEntity]:
+    async def get_patient_by_id(self, patient_id: str) -> Optional[Patient]:
         patient = self.db.patients.get(patient_id)
         if not patient:
             return None
-        return PatientEntity.model_validate(patient)
+        return Patient.model_validate(patient)
 
     async def get_scan_file_path(self, scan_id: str) -> Optional[str]:
         for patient in self.db.patients.values():
@@ -47,7 +47,7 @@ class MockPatientRepository(PatientRepository):
     async def update_scan_results(
         self,
         scan_id: str,
-        ai_results: AneurysmAnalysisResultEntity,
+        ai_results: AneurysmAnalysisResult,
     ) -> bool:
         results_dict = ai_results.model_dump()
 
@@ -60,12 +60,12 @@ class MockPatientRepository(PatientRepository):
                     return True
         return False
 
-    async def get_all_pending_scans(self) -> List[ScanEntity]:
+    async def get_all_pending_scans(self) -> List[Scan]:
         pending_scans = []
         for patient in self.db.patients.values():
             for scan_data in patient.get("scans", []):
                 if scan_data.get("status") == "pending":
-                    pending_scans.append(ScanEntity.model_validate(scan_data))
+                    pending_scans.append(Scan.model_validate(scan_data))
         return pending_scans
     async def store_slice_image(
         self,

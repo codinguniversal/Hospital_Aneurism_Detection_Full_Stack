@@ -5,7 +5,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
-from app.core.patient_management.entities import AneurysmAnalysisResultEntity
+from app.core.patient_management.entities import AneurysmAnalysisResult
 
 
 
@@ -27,4 +27,4 @@ class ScanAnalysisResponseSchema(BaseModel):
     patient_name: str
     scan_id: str
     analysis_timestamp: datetime
-    result: AneurysmAnalysisResultEntity
+    result: AneurysmAnalysisResult

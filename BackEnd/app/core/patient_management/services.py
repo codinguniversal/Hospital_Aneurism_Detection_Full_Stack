@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
-from app.core.patient_management.entities import AneurysmAnalysisResultEntity
+from app.core.patient_management.entities import AneurysmAnalysisResult
 
 
-class ScanAnalysisService(ABC):
+class ScanAnalyzer(ABC):
     @abstractmethod
     async def analyze_scan(
         self,
@@ -11,7 +11,7 @@ class ScanAnalysisService(ABC):
         binary_data: bytes,
         explain: bool = False,
         target_label: str = "Aneurysm Present", 
-    ) -> AneurysmAnalysisResultEntity:
+    ) -> AneurysmAnalysisResult:
         """
         Analyze medical scans and returns Domain expected result entity
         along with explainability if present
@@ -24,7 +24,7 @@ class ScanAnalysisService(ABC):
         """
         pass
 
-class INotificationService(ABC):
+class Notifier(ABC):
     @abstractmethod
     async def send_urgent_alert(self, scan_id: str, probability: float) -> bool:
         """Dispatches an urgent priority alert without exposing HIPAA/PHI data."""
