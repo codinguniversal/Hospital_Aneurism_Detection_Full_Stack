@@ -20,6 +20,7 @@ from app.dependencies import (
 )
 from app.modules.identity_access.entities import UserEntity
 from app.modules.system_settings.entities import SettingsEntity
+from app.api.v1.dependencies.auth import get_current_user_claims
 
 # ============================================================================
 # SHARED TEST CLIENT
@@ -201,6 +202,7 @@ def setup_use_case_overrides(stub_records, stub_results, stub_auth, stub_registe
     # Handled as async calls to match async def in dependencies.py
     app.dependency_overrides[get_scan_analysis_use_case] = async_lambda(stub_scan_analysis)
     app.dependency_overrides[get_register_user_use_case] = async_lambda(stub_register)
+    app.dependency_overrides[get_current_user_claims] = lambda: {"sub": "test@test.com", "role": "Radiologist", "employee_id": "EMP-12345"}
     
     yield  # Run test
     
