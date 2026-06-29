@@ -1,7 +1,8 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
-from app.core.patient_management.use_cases import ScanAnalysisUseCase
+from app.core.patient_management.use_cases import  DetectAneurysmProbabilities
+
 from app.modules.system_settings.use_cases import GetSettingsUseCase
 from app.infrastructure.ai.ai_client import AIServiceError
 from app.dependencies import build_get_settings_use_case, build_scan_analysis_use_case
@@ -16,7 +17,7 @@ async def run_manual_analysis(
     scan_id: str,
     analysis_request: ScanAnalysisRequestSchema,
     target_label: str = "Aneurysm Present", 
-    use_case: ScanAnalysisUseCase = Depends(build_scan_analysis_use_case),
+    use_case: DetectAneurysmProbabilities = Depends(build_scan_analysis_use_case),
     get_settings_use_case: GetSettingsUseCase = Depends(build_get_settings_use_case),
 ):
     """

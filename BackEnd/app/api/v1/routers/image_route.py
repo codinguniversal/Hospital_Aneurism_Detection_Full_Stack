@@ -15,7 +15,7 @@ def image_response_or_404(image_bytes: bytes | None) -> Response:
 @router.get("")
 async def get_slice_image_by_query(
     image_ref: str,
-    get_slice_image_use_case: GetSliceImageUseCase = Depends(build_get_slice_image_use_case),
+    get_slice_image_use_case: GetSliceImage = Depends(build_get_slice_image_use_case),
 ):
     """Query form safely supports absolute Windows paths containing ':' and '\\'."""
     image_bytes = await get_slice_image_use_case.execute(image_ref=image_ref)
