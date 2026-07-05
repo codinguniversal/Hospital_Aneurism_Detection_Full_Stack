@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1. Run AI Service",
+            "type": "shell",
+            "command": "cd \"AI Service\" && python -m uvicorn app:app --host 127.0.0.1 --port 8001 --reload",
+            "presentation": { "group": "brain-cad-cluster" }
+        },
+        {
+            "label": "2. Run Backend",
+            "type": "shell",
+            "command": "cd backend && uvicorn app.main:app --reload",
+            "presentation": { "group": "brain-cad-cluster" }
+        },
+        {
+            "label": "3. Run Frontend",
+            "type": "shell",
+            "command": "cd frontend && npm run dev",
+            "presentation": { "group": "brain-cad-cluster" }
+        },
+        {
+            "label": "Start Full Stack",
+            "dependsOn": [
+                "1. Run AI Service",
+                "2. Run Backend",
+                "3. Run Frontend"
+            ],
+            "group": { "kind": "build", "isDefault": true }
+        }
+    ]
+}
