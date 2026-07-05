@@ -5,7 +5,7 @@ import time
 import pytest
 import threading
 from fastapi import status
-from app.core.patient_management.entities import PatientEntity
+from app.core.patient_management.entities import Patient
 from datetime import date
 
 try:
