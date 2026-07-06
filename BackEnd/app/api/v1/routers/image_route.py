@@ -14,8 +14,7 @@ def image_response_or_404(image_bytes: bytes | None) -> Response:
 
 
 @router.get(
-        "",
-        dependencies=[Depends(RoleChecker(["Radiologist", "Doctor"]))])
+        "")
 async def get_slice_image_by_query(
     image_ref: str,
     get_slice_image_use_case: GetSliceImage = Depends(build_get_slice_image_use_case),

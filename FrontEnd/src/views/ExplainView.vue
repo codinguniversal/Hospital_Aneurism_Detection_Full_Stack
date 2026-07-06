@@ -41,18 +41,18 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { patientService } from '../services/doctorServices/patientService.js'
+import { imageService } from '../services/doctorServices/imageService.js'
 
 const router = useRouter()
 const route = useRoute()
 const patientId = route.params.id
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 const slices = ref([])
 const isLoading = ref(true)
 const error = ref('')
 
-const imageUrl = (imageRef) =>
-  `${apiBaseUrl}/api/v1/images?image_ref=${encodeURIComponent(imageRef)}`
+//delegate the URL creation directly to the communications infrastructure
+const imageUrl = (imageRef) => imageService.getImageUrl(imageRef)
 
 const formatImportance = (importance) => `${((importance || 0) * 100).toFixed(1)}%`
 

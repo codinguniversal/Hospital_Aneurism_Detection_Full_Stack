@@ -1,4 +1,6 @@
 import base64
+import os
+import aiofiles
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -67,6 +69,7 @@ class MockPatientRepository(Patients):
                 if scan_data.get("status") == "pending":
                     pending_scans.append(Scan.model_validate(scan_data))
         return pending_scans
+    
     async def store_slice_image(
         self,
         scan_id: str,
@@ -74,32 +77,48 @@ class MockPatientRepository(Patients):
         base64_data: str,
         image_kind: str = "overlay",
     ) -> str:
-        """
-        Mock implementation of image storage.
-        Stores the Base64 image in an in-memory dictionary and returns a reference.
-        """
-        # Generate a reference that looks realistic
+        if "," in base64_data:
+            base64_data = base64_data.split(",")[1]
+
+        binary_image_bytes = base64.b64decode(base64_data)
+
+        scan_directory = os.path.join(self.storage_base_dir, scan_id)
+        os.makedirs(scan_directory, exist_ok=True)
+
         safe_image_kind = "raw" if image_kind == "raw" else "overlay"
-        ref = f"mock://scans/{scan_id}/{safe_image_kind}_slice_{slice_index}.png"
+        file_name = f"{safe_image_kind}_slice_{slice_index}.png"
+        target_file_path = os.path.normpath(os.path.join(scan_directory, file_name))
 
-        # Store the raw Base64 in the mock data layer's images dict
-        if not hasattr(self.db, "images"):
-            self.db.images = {}
-        self.db.images[ref] = base64_data
+        # FIX: Native non-blocking file writing
+        async with aiofiles.open(target_file_path, "wb") as file_out:
+            await file_out.write(binary_image_bytes)
 
-        return ref
-    async def get_slice_image(self, image_ref: str) -> Optional[bytes]:
-        """Retrieve the raw binary image data given its reference."""
-        if not hasattr(self.db, "images"):
+        # Motor MongoDB update stays async
+        await self.slice_meta_collection.update_one(
+            {"_id": target_file_path},
+            {
+                "$set": {
+                    "scan_id": scan_id,
+                    "slice_index": slice_index,
+                    "image_kind": safe_image_kind,
+                    "stored_at": datetime.utcnow()
+                }
+            },
+            upsert=True
+        )
+
+        return target_file_path
+
+
+    async def get_slice_image(self, slice_ref: str) -> Optional[bytes]:
+        if not slice_ref or not os.path.exists(slice_ref):
+            print(f"[REPO WARNING] Highlight slice reference target missing on disk: {slice_ref}")
             return None
-        
-        base64_str = self.db.images.get(image_ref)
-        if base64_str is None:
-            return None
-        
-        # Decode Base64 back to binary bytes
+
         try:
-            return base64.b64decode(base64_str)
-        except Exception:
+            # FIX: Native non-blocking file reading
+            async with aiofiles.open(slice_ref, "rb") as file_in:
+                return await file_in.read()
+        except Exception as e:
+            print(f"[REPO ERROR] OS exception encountered streaming file from disk: {e}")
             return None
-
