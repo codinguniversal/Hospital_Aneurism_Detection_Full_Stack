@@ -27,13 +27,7 @@ class MailtrapEmailNotifier(Notifier):
             "Content-Type": "application/json"
         }
         
-        email_body = (
-            f"URGENT CLINICAL ALERT\n\n"
-            f"An automated backend scan analysis has completed with high-urgency metrics.\n"
-            f"Scan Reference ID: {scan_id}\n"
-            f"Highest Location Probability: {probability * 100:.1f}%\n\n"
-            f"Please log into your hospital dashboard immediately to review the patient profile."
-        )
+        email_body = self._format_alert_body(scan_id, probability)
 
         #  Map email strings dynamically to Mailtrap's expected "to" field layout
         to_field_payload = [{"email": email} for email in self.recipients]
