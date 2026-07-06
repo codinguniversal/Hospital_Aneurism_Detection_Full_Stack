@@ -87,8 +87,8 @@ class MockScanAnalysisService(ScanAnalyzer):
         self,
         scan_id: str,
         binary_data: bytes,
-        explain: bool = False,  # ✅ Added to match abstract
-        target_label: str = "Aneurysm Present",  # ✅ Added to match abstract
+        explain: bool = False,  #  Added to match abstract
+        target_label: str = "Aneurysm Present",  #  Added to match abstract
     ) -> AneurysmAnalysisResult:
         # Simulate failures
         if self.simulate_timeout:
@@ -176,11 +176,11 @@ class MockScanAnalysisService(ScanAnalyzer):
                     )
                 )
 
-            # ✅ Use the `target_label` passed from the Use Case
+            # Use the `target_label` passed from the Use Case
             explainability_entity = AnalysisRationale(
                 id=f"exp_{scan_id}_{target_label.replace(' ', '_')}",
                 method="Grad-CAM",
-                target_label=target_label,  # ✅ Use the actual passed label
+                target_label=target_label,  #  Use the actual passed label
                 top_slices=top_slices_entities,
                 model_metadata={"mock": True, "simulated": True},
             )
