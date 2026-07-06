@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends,HTTPException
 from fastapi.responses import Response
+from app.api.v1.dependencies.auth import RoleChecker
 from app.core.patient_management.repositories import Patients
 from app.core.patient_management.use_cases import GetSliceImage
 from app.dependencies import build_get_slice_image_use_case, build_patient_repository
@@ -12,7 +13,9 @@ def image_response_or_404(image_bytes: bytes | None) -> Response:
     return Response(content=image_bytes, media_type="image/png")
 
 
-@router.get("")
+@router.get(
+        "",
+        dependencies=[Depends(RoleChecker(["Radiologist", "Doctor"]))])
 async def get_slice_image_by_query(
     image_ref: str,
     get_slice_image_use_case: GetSliceImage = Depends(build_get_slice_image_use_case),
@@ -22,10 +25,3 @@ async def get_slice_image_by_query(
     return image_response_or_404(image_bytes)
 
 
-@router.get("/{image_ref:path}")
-async def get_slice_image(
-    image_ref: str,
-    get_slice_image_use_case: GetSliceImage = Depends(build_get_slice_image_use_case)
-):
-    image_bytes = await get_slice_image_use_case.execute(image_ref= image_ref)
-    return image_response_or_404(image_bytes)

@@ -5,12 +5,12 @@ class Settings(BaseSettings):
     holds default values incase no environmental variables are found
     """
     #Database configuration
-    database_mode: str = "mongodb"  # Options: "mock" or "mongodb
+    database_mode: str = "mock"  # Options: "mock" or "mongodb
     mongodb_uri: str = "mongodb://127.0.0.1:27017"
     mongodb_db_name: str = "CAD_DB"
 
     # AI
-    use_mock_ai: bool = False
+    use_mock_ai: bool = True
 
     # security configurations
     JWT_SECRET: str= "YOUR_SUPER_SECRET_ENVIRONMENT_KEY_2026"

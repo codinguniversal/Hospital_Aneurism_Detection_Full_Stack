@@ -1,6 +1,8 @@
 import httpx
+import logging
 from app.core.patient_management.services import Notifier
 
+logger = logging.getLogger(__name__)
 class MailtrapEmailNotifier(Notifier):
     def __init__(
         self, 
@@ -19,7 +21,7 @@ class MailtrapEmailNotifier(Notifier):
 
     async def send_urgent_alert(self, scan_id: str, probability: float) -> bool:
         if not self.recipients:
-            print("[MAILTRAP WARNING] Notification skipped: No valid recipient emails configured.")
+            logger.warning(f"Mailtrap notification skipped for scan {scan_id}: No recipient emails configured.")
             return False
 
         headers = {
@@ -27,13 +29,7 @@ class MailtrapEmailNotifier(Notifier):
             "Content-Type": "application/json"
         }
         
-        email_body = (
-            f"URGENT CLINICAL ALERT\n\n"
-            f"An automated backend scan analysis has completed with high-urgency metrics.\n"
-            f"Scan Reference ID: {scan_id}\n"
-            f"Highest Location Probability: {probability * 100:.1f}%\n\n"
-            f"Please log into your hospital dashboard immediately to review the patient profile."
-        )
+        email_body = self._format_alert_body(scan_id, probability)
 
         #  Map email strings dynamically to Mailtrap's expected "to" field layout
         to_field_payload = [{"email": email} for email in self.recipients]
@@ -49,7 +45,11 @@ class MailtrapEmailNotifier(Notifier):
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(self.api_url, json=payload, headers=headers, timeout=5.0)
+                if response.status_code == 200:
+                    logger.info(f"Mailtrap alert successfully sent for scan {scan_id}")
+                else:
+                    logger.error(f"Mailtrap API returned {response.status_code} for scan {scan_id}")
                 return response.status_code == 200
         except Exception as e:
-            print(f"[MAILTRAP ERROR] Failed to deliver multi-recipient sandbox notification: {e}")
+            logger.error(f"Mailtrap delivery failed for scan {scan_id}: {e}")
             return False

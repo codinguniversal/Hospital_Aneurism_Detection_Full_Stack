@@ -13,6 +13,10 @@ from app.core.patient_management.entities import (
 )
 from app.core.patient_management.services import ScanAnalyzer
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class TopSliceDTO(BaseModel):
     slice_index: int
     importance: float
@@ -57,7 +61,7 @@ class HTTPXScanAnalysisService(ScanAnalyzer):
                 self,
                 scan_id: str,
                 binary_data: bytes,
-            explain: bool = True,
+                explain: bool = True,
                 target_label: str = "Aneurysm Present",
             ) -> AneurysmAnalysisResult:
         
@@ -67,6 +71,7 @@ class HTTPXScanAnalysisService(ScanAnalyzer):
         }
         
         files = {"file": (f"{scan_id}.zip", binary_data, "application/zip")}
+        logger.info(f"Routing scan {scan_id} to AI service at {self.base_url} with params {query_params}")
         try:
             print(f"\n[CROSS-SERVER] Backend -> AI Service: {self.base_url} with params {query_params}\n")
             response = await self.client.post(
@@ -88,16 +93,19 @@ class HTTPXScanAnalysisService(ScanAnalyzer):
             return await self._map_to_entity(scan_id= scan_id, dto= dto)
 
         except httpx.HTTPStatusError as exc:
+            logger.error(f"AI service HTTP error for scan {scan_id}: {exc.response.status_code} - {exc.response.text}")
             raise AIServiceError(
                 message=f"AIService HTTP Error {exc.response.status_code}: {exc.response.text}",
                 status_code=502,
             )
         except httpx.TimeoutException:
+            logger.error(f"AI service timeout for scan {scan_id}")
             raise AIServiceError(
                 message="The external AI service took too long to respond.",
                 status_code=504,
             )
         except httpx.RequestError as exc:
+            logger.exception(f"Unexpected error communicating with AI for scan {scan_id}")
             raise AIServiceError(
                 message=f"Failed to communicate with external AI network: {exc}",
                 status_code=503,

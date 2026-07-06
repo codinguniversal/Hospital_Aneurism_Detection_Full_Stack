@@ -15,17 +15,16 @@ class InvalidTokenError(Exception):
 class JWTTokenManager(TokenManager):
     def create_access_token(self,data: dict, expires_delta: Optional[timedelta] = None) -> str:
         """
-        Wraps a dictionary payload (e.g., identity metrics and roles), adds an 
-        expiration window, and cryptographically signs it into a JWT string.
+        Wraps a dictionary payload , adds an expiration window, and cryptographically signs it into a JWT string.
         """
-        to_encode = data.copy()
+        to_encode = data.copy() #shallow copy to avoid changing the original dictionary
         
         if expires_delta:
             expire = datetime.now(timezone.utc) + expires_delta
         else:
             expire = datetime.now(timezone.utc) + timedelta(hours=static_settings.ACCESS_TOKEN_EXPIRE_HOURS)
             
-        to_encode.update({"exp": expire})
+        to_encode.update({"exp": expire}) # inserts the expiration claim into the payload dictionary
         encoded_jwt = jwt.encode(to_encode, static_settings.JWT_SECRET, algorithm=static_settings.JWT_ALGORITHM)
         return encoded_jwt
 
@@ -35,8 +34,7 @@ class JWTTokenManager(TokenManager):
         """
         Decodes an incoming JWT token string and returns its raw claims dictionary.
         Raises custom exceptions (TokenExpiredError or InvalidTokenError) 
-        if the token is invalid or expired.
-        Notice: We do NOT throw FastAPI HTTPExceptions here, keeping this file pure Python.
+        Notice: We do NOT throw FastAPI HTTPExceptions here to avoid tight coupling with the web framework.
         """
 
         try:

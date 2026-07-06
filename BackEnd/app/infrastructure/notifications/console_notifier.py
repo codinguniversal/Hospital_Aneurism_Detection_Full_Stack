@@ -17,9 +17,7 @@ class ConsoleNotifier(Notifier):
             f"Highest Probability: {probability * 100:.1f}%"
         )
         # Also print it so it's clearly visible in the terminal
-        print(
-            f"\n[MOCK ALERT] Scan: {scan_id} | "
-            f"Probability: {probability * 100:.1f}%\n"
-        )
+        alert_text = self._format_alert_body(scan_id, probability)
+        print(alert_text)
         # Simulate successful delivery
         return True

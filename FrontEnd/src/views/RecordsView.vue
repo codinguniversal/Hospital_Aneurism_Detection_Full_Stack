@@ -2,7 +2,7 @@
   <div class="card-container wide">
     <div class="page-header flex-header">
       <div>
-        <h1>Patient Records</h1>
+        <h1>Patients Records</h1>
         <p>Manage and analyze patient scans</p>
       </div>
       <button @click="refreshRecords" class="action-btn btn-outline-green" :disabled="isLoading">

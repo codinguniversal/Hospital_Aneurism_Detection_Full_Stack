@@ -29,3 +29,15 @@ class Notifier(ABC):
     async def send_urgent_alert(self, scan_id: str, probability: float) -> bool:
         """Dispatches an urgent priority alert without exposing HIPAA/PHI data."""
         pass
+    def _format_alert_body(self, scan_id: str, probability: float) -> str:
+        """
+        Shared formatting logic for all notifiers.
+        This ensures the message structure is identical in development and production.
+        """
+        return (
+            f"URGENT CLINICAL ALERT\n\n"
+            f"An automated backend scan analysis has completed with high-urgency metrics.\n"
+            f"Scan Reference ID: {scan_id}\n"
+            f"Highest Location Probability: {probability * 100:.1f}%\n\n"
+            f"Please log into your hospital dashboard immediately."
+        )
