@@ -120,7 +120,7 @@ const formatProbability = (rawValue) => {
 
 // Helper to map and format data payloads adaptively
 const parsePayload = (rawData, urgencyOverride = null) => {
-  // 🔍 DEBUG TRACE LOGS
+  //
   console.log("%c=== DISPATCHING BACKEND DATA INSPECTION ===", "color: #1abc9c; font-weight: bold;");
   console.log("Raw Payload Arrived:", rawData);
 
