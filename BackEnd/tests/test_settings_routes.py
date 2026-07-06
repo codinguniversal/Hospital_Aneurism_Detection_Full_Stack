@@ -8,6 +8,14 @@ from fastapi import status
 class TestAdminSettingsRoute:
     """Tests for PUT /admin/settings endpoint."""
 
+    @pytest.fixture(autouse=True)
+    def override_claims_as_admin(self):
+        from app.api.v1.dependencies.auth import get_current_user_claims
+        from app.main import app
+        app.dependency_overrides[get_current_user_claims] = lambda: {"sub": "admin@test.com", "role": "Admin", "employee_id": "EMP-99999"}
+        yield
+        # conftest's teardown will clear dependency_overrides, so no explicit cleanup is strictly needed, but let's yield anyway.
+
     def test_update_settings_success(self, client, stub_update_settings):
         """Should return 200 with updated settings on valid payload."""
         payload = {

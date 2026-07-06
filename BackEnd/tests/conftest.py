@@ -130,10 +130,11 @@ class StubScanAnalysisUseCase:
         self.result = None
         self.raise_not_found = False
 
-    async def execute(self, scan_id: str):
+    async def execute(self, scan_id: str, *args, **kwargs):
         if self.raise_not_found:
             raise ValueError(f"Scan record with id {scan_id} not found in DB")
         return self.result
+
 
 
 # ============================================================================
@@ -209,6 +210,6 @@ def setup_use_case_overrides(stub_records, stub_results, stub_auth, stub_registe
     app.dependency_overrides.clear()  # Clean up after
 
 def async_lambda(value):
-    async def _async_wrapper(*args, **kwargs):
+    async def _async_wrapper():
         return value
     return _async_wrapper
