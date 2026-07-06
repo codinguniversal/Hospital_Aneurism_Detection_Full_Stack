@@ -27,7 +27,7 @@ router = APIRouter(prefix="/patients", tags=["Patients"])
     "/records", 
     response_model=List[PatientRecordResponseSchema], 
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(RoleChecker(["Radiologist", "Doctor"]))] 
+    dependencies=[Depends(RoleChecker(["Radiologist", "doctor"]))] 
 )
 async def get_records(
     get_all_patients_use_case: GetAllPatients = Depends(build_get_patient_records_use_case),
@@ -59,7 +59,7 @@ async def get_records(
     "/{patient_id}", 
     response_model=Patient, 
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(RoleChecker(["Radiologist", "Doctor", "Admin"]))]  
+    dependencies=[Depends(RoleChecker(["Radiologist", "doctor"]))]  
 )
 async def get_patient_results(
     patient_id: str,

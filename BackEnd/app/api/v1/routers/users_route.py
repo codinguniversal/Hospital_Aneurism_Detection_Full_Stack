@@ -2,12 +2,13 @@ from typing import List
 
 from fastapi import APIRouter, HTTPException, status, Depends
 
+from app.api.v1.dependencies.auth import RoleChecker
 from app.modules.identity_access.use_cases import DeleteUserByIdUseCase, GetAllUsersUseCase
 from app.dependencies import build_delete_user_by_id_use_case, build_get_all_users_use_case
 from app.api.v1.schemas.user_schema import UserResponseSchema
 from app.api.v1.mappers import user_entities_to_user_response
 
-router = APIRouter(prefix="/users", tags=["User management"])
+router = APIRouter(prefix="/users", tags=["User management"], dependencies=[Depends(RoleChecker(["admin"]))] )
 
 @router.get("", response_model=List[UserResponseSchema])
 async def get_all_users(

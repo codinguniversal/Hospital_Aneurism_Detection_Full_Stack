@@ -18,9 +18,16 @@
           <p>ID: {{ patientId }} | Reviewing AI detection results</p>
         </div>
         <div class="header-actions">
-          <button @click="handleRerun" class="action-btn btn-outline-green" :disabled="isProcessing">
-            <i class="fa fa-refresh" :class="{ 'fa-spin': isProcessing }"></i> Rerun Analysis
-          </button>
+          <div v-if="!isProcessing">
+            <button @click="handleRerun" class="action-btn btn-outline-green">
+              <i class="fa fa-refresh"></i> Rerun Analysis
+            </button>
+          </div>
+
+          <div v-else>
+            <AiLoader />
+          </div>
+
           <button @click="explainResults" class="action-btn btn-green">
             <i class="fa fa-magic"></i> Explain Results
           </button>
@@ -96,6 +103,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { patientService } from '../services/doctorServices/patientService.js'
 import { scanService } from '../services/doctorServices/scanService.js'
+import AiLoader from '../components/common/AiLoader.vue'
 
 const router = useRouter()
 const route = useRoute()

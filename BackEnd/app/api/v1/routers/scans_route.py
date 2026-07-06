@@ -1,5 +1,6 @@
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, status, Depends
+from app.api.v1.dependencies.auth import RoleChecker
 from app.api.v1.schemas.scan_schema import ScanAnalysisRequestSchema, ScanAnalysisResponseSchema
 from app.core.patient_management.use_cases import  DetectAneurysmProbabilities
 
@@ -9,7 +10,8 @@ from app.dependencies import build_get_settings_use_case, build_scan_analysis_us
 
 router = APIRouter(
     prefix="/api/scans",
-    tags=["AI Scanning"]
+    tags=["AI Scanning"],
+    dependencies=[Depends(RoleChecker(["Radiologist", "doctor"]))] 
 )
 
 @router.post("/{scan_id}/analyze", response_model=ScanAnalysisResponseSchema, status_code=status.HTTP_200_OK)

@@ -39,13 +39,18 @@ def get_current_user_claims(
 
 
 class RoleChecker:
-    """A parameterized dependency wrapper used to restrict endpoints to specific roles."""
+    """A parameterized dependency wrapper used to restrict endpoints to specific roles (Case-Insensitive)."""
     def __init__(self, allowed_roles: list[str]):
-        self.allowed_roles = allowed_roles
+        self.allowed_roles = [role.lower() for role in allowed_roles]
 
     def __call__(self, claims: dict = Depends(get_current_user_claims)) -> dict:
         user_role = claims.get("role")
-        if not user_role or user_role not in self.allowed_roles:
+        
+        # normalize the incoming token role to lowercase before evaluation
+        normalized_user_role = user_role.lower() if user_role else None
+        
+        # check permission or allow a global 'admin' override if desired
+        if not normalized_user_role or normalized_user_role not in self.allowed_roles:
             logger.warning(f"Access denied for role '{user_role}'")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
