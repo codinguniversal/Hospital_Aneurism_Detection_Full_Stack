@@ -3,11 +3,33 @@ Tests for authentication routes: POST /auth/login, POST /auth/register, GET /aut
 """
 import pytest
 from fastapi import status
+from app.main import app  
+from app.api.v1.dependencies.auth import get_current_user_claims
 from app.modules.identity_access.entities import UserEntity
 
 
 class TestEmailCheckRoute:
     """Tests for GET /auth/check-email endpoint."""
+
+    @pytest.fixture(autouse=True)
+    def setup_admin_rbac_claims(self):
+        """
+        Repeat the RBAC procedure: Override the default Radiologist claims
+        with Admin claims specifically for this admin-restricted router suite.
+        """
+        # inject an Admin role to satisfy Depends(RoleChecker(["admin"]))
+        app.dependency_overrides[get_current_user_claims] = lambda: {
+            "sub": "admin@hospital.com", 
+            "role": "admin", 
+            "employee_id": "ADM-001"
+        }
+        yield
+        # clean up and reset back to standard default context
+        app.dependency_overrides[get_current_user_claims] = lambda: {
+            "sub": "test@test.com", 
+            "role": "Radiologist", 
+            "employee_id": "EMP-12345"
+        }
 
     def test_check_email_available(self, client, stub_check_email):
         """Should return 200 with exists=False when email is not registered."""
