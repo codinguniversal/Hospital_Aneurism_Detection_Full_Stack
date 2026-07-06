@@ -1,7 +1,7 @@
 from typing import Optional
 import httpx
 
-from app.core.patient_management.services import Notifier
+from app.core.patient_management.services import Notifier, ScanAnalyzer
 from app.config import static_settings
 from app.core.patient_management.repositories import Patients
 from app.core.patient_management.use_cases import (
@@ -49,7 +49,7 @@ def get_ai_http_client() -> httpx.AsyncClient:
     return _ai_http_client
 
 
-async def build_ai_service():
+async def build_ai_service() -> ScanAnalyzer:
     patient_repo = build_patient_repository()
     if static_settings.use_mock_ai:
         return MockScanAnalysisService(patient_repo = patient_repo ,

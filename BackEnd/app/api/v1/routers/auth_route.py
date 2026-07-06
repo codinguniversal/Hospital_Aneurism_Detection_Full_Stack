@@ -6,6 +6,10 @@ from app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSche
 
 from app.dependencies import build_authenticate_user_use_case, build_register_user_use_case
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/login" ,response_model= LoginResponseSchema, status_code= status.HTTP_200_OK)
@@ -17,21 +21,13 @@ async def login(
         identifier= login_request.loginIdentifier,
         password= login_request.password,
     )
-    print("\n" + "="*50)
-    print("DEBUGGING AUTHENTICATION:")
-    print(f"Incoming Login Identifier: '{login_request.loginIdentifier}'")
-    print(f"Found User in DB?: {user is not None}")
-    if user:
-        print(f"DB Employee ID: '{user.employee_id}'")
-        print(f"DB User Email:  '{user.email}'")
-        print(f"DB User Role:   '{user.role}'")
-    print("="*50 + "\n")
-
     if not user:
+        logger.warning(f"Failed login attempt for identifier: '{login_request.loginIdentifier}'")
         raise HTTPException(
             status_code= status.HTTP_401_UNAUTHORIZED,
             detail= "invalid credentials or role selection"
         )
+    logger.info(f"User logged in: {user.employee_id} (Role: {user.role})")
 
     token_manager = get_token_manager()
     token = token_manager.create_access_token(

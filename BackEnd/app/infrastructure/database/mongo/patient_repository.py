@@ -9,6 +9,10 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from app.core.patient_management.entities import AneurysmAnalysisResult, Patient, Scan
 from app.core.patient_management.repositories import Patients as IPatientRepository
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 class MongoPatientRepository(IPatientRepository):
     def __init__(
             self, 
@@ -215,12 +219,11 @@ class MongoPatientRepository(IPatientRepository):
         """
         # Verify that the path string exists on disk before attempting to stream it
         if not slice_ref or not os.path.exists(slice_ref):
-            print(f"[REPO WARNING] Highlight slice reference target missing on disk: {slice_ref}")
+            logger.warning(f" Higlighted Slice image reference missing on disk: {slice_ref}")
             return None
 
         try:
             with open(slice_ref, "rb") as file_in:
                 return file_in.read()
         except Exception as e:
-            print(f"[REPO ERROR] OS exception encountered streaming file from disk: {e}")
-            return None
+            logger.error(f"Failed to read slice image {slice_ref}: {e}", exc_info=True)
