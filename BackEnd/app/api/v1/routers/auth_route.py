@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 
 from app.api.v1.dependencies.auth import get_token_manager
-from app.infrastructure.security.jwt_provider import JWTTokenManager
 from app.modules.identity_access.use_cases import AuthenticateUserUseCase, RegisterUserUseCase
 from app.api.v1.schemas.auth_schema import LoginRequestSchema, LoginResponseSchema, RegisterRequestSchema
 
